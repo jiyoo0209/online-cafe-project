@@ -1919,7 +1919,9 @@ function makeSupabaseRoom(cfg){
     const p = peers.get(payload.id); if (!p) return; // only people the presence list says are here
     p.presence = payload.s; emitPeers();
   });
-  ch.subscribe(status => { if (status === 'SUBSCRIBED'){ joined = true; trackIfChanged(); sendNow(); } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') joined = false; });
+  // after any drop (phone sleep, app switch, Wi-Fi/LTE change) the server forgets our presence, so re-track on every rejoin
+  ch.subscribe(status => { if (status === 'SUBSCRIBED'){ joined = true; tracked = ''; trackIfChanged(); sendNow(); } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED'){ joined = false; tracked = ''; } });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && joined){ tracked = ''; trackIfChanged(); sendNow(); } });
   setInterval(() => { if (mine && Date.now() - lastSend > 9000) sendNow(); }, 3000);
   return {
     presence(obj){ mine = obj; trackIfChanged(); const gap = 380, since = Date.now() - lastSend; clearTimeout(timer); if (since >= gap) sendNow(); else timer = setTimeout(sendNow, gap - since); return Promise.resolve(); },
