@@ -108,7 +108,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #floorMenu button[aria-checked="true"] .fb{background:var(--accent);color:var(--accent-ink)}
 #floorMenu button[aria-checked="true"] svg{visibility:visible}
 .acts button[aria-pressed="false"]{color:var(--ink-dim)}
-.hint{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));font-size:12px;color:var(--ink-dim);max-width:220px;line-height:1.55;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 
 /* Entry */
 #entry{position:fixed;inset:0;display:grid;place-items:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:radial-gradient(120% 90% at 50% 100%,rgba(20,12,8,.55),rgba(20,12,8,.05) 60%)}
@@ -149,7 +148,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ground);font-family:var(--font-display);font-size:18px;color:var(--ink-dim);transition:opacity .8s}
 
 @media (max-width:720px){
-  .hint{display:none}
 }
 @media (prefers-reduced-motion:reduce){.dot{animation:none}#toast{transition:none}}
 </style>
@@ -195,7 +193,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     <button id="bMenu" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8.6 1.4 0 2.3M11 3.5c-.6.8.6 1.4 0 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>메뉴 주문</button>
     <button id="bStand" class="act" type="button" hidden>일어서기</button>
   </nav>
-  <div class="hint">바닥을 눌러 걷기 · WASD로 이동 · 계단 쪽으로 걸어가면 오르내리기 · 드래그로 둘러보기 · 의자와 소파를 눌러 앉기 · 2층 고양이들을 눌러 쓰다듬기 · 턴테이블과 3층 망원경도 눌러보세요</div>
 </div>
 
 <div id="entry">
@@ -723,6 +720,107 @@ const dolphins = (() => {
     });
   } };
 })();
+// fireworks over the sea: 19:00, 20:00, 21:00, 22:00 (Seoul) for 5 minutes, same show for everyone (driven by the clock)
+const fireworks = (() => {
+  const MAX = 30000;
+  const geo = new THREE.BufferGeometry();
+  const P = new Float32Array(MAX * 3), Cc = new Float32Array(MAX * 3), S = new Float32Array(MAX);
+  geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('aCol', new THREE.BufferAttribute(Cc, 3)); geo.setAttribute('aSize', new THREE.BufferAttribute(S, 1));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uScale: { value: 900 } },
+    vertexShader: 'attribute vec3 aCol; attribute float aSize; uniform float uScale; varying vec3 vC; void main(){ vC = aCol; vec4 mv = modelViewMatrix * vec4(position, 1.); gl_PointSize = max(1.5, aSize * uScale / -mv.z); gl_Position = projectionMatrix * mv; }',
+    fragmentShader: 'varying vec3 vC; void main(){ float d = length(gl_PointCoord - .5) * 2.; float g = exp(-d * d * 5.) + .25 * exp(-d * d * 1.2); if (d > 1.) discard; gl_FragColor = vec4(vC * g, 1.); }',
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+  });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; scene.add(pts);
+  const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const PAL = [['#ff3b6b'], ['#ffd34d'], ['#5fd0ff'], ['#9b6bff'], ['#5dff9a'], ['#ff8a3d'], ['multi'], ['gold'], ['multi']];
+  const hsl = (h, s, l) => new THREE.Color().setHSL(h, s, l);
+  const tmp = new THREE.Vector3(), cpos = new THREE.Vector3();
+  const N = 240, dirs = [];
+  for (let i = 0; i < N; i++){ const y = 1 - (i + .5) / N * 2, r = Math.sqrt(1 - y * y), th = i * 2.39996; dirs.push(new THREE.Vector3(Math.cos(th) * r, y, Math.sin(th) * r)); }
+  let n = 0;
+  function put(x, y, z, c, s, a){
+    if (n >= MAX || a <= .003) return;
+    P[n * 3] = x; P[n * 3 + 1] = y; P[n * 3 + 2] = z; Cc[n * 3] = c.r * a; Cc[n * 3 + 1] = c.g * a; Cc[n * 3 + 2] = c.b * a; S[n] = s; n++;
+    // reflection: mirror below sea level, then pull onto the water surface along the view ray
+    const my = -2 * .3 - y, k = (cpos.y + .15) / (cpos.y - my);
+    if (k > 0 && k < 1 && n < MAX){ P[n * 3] = cpos.x + (x - cpos.x) * k; P[n * 3 + 1] = -.15; P[n * 3 + 2] = cpos.z + (z - cpos.z) * k; const ra = a * .5; Cc[n * 3] = c.r * ra; Cc[n * 3 + 1] = c.g * ra; Cc[n * 3 + 2] = c.b * ra; S[n] = s * k * 2.2; n++; }
+  }
+  const white = new THREE.Color(1, .97, .9), col = new THREE.Color(), launchC = new THREE.Color(1, .75, .45);
+  const shellT0 = k => k < 1000 ? k * .95 + hash(k) * .5 : 272 + (k - 1000) * .42 + hash(k) * .2;
+  function shell(k, t){
+    const t0 = shellT0(k), rise = 1.3 + hash(k + 9) * .4, age = t - t0;
+    if (age < 0 || age > rise + 4.2) return;
+    const bx = -48 + hash(k + 1) * 96, bz = -120 - hash(k + 2) * 50, by = 30 + hash(k + 3) * 16;
+    const kind = PAL[Math.floor(hash(k + 4) * PAL.length)][0], willow = kind === 'gold';
+    if (age < rise){ // launch: a warm spark climbing with a short tail
+      for (let j = 0; j < 10; j++){ const a2 = Math.max(0, age - j * .025), f = a2 / rise, y = -.3 + (by + .3) * (1 - (1 - f) * (1 - f)); put(bx, y, bz, launchC, j ? .8 : 1.4, (1 - j / 10) * .9); }
+      return;
+    }
+    const a = age - rise, v0 = (willow ? 30 : 36) + hash(k + 5) * 10, drag = willow ? 1.1 : 1.7, g = willow ? 7 : 5, life = willow ? 3.6 : 2.5, nT = willow ? 16 : 9, dT = willow ? .055 : .03;
+    const flash = Math.exp(-a * 7); if (flash > .01) put(bx, by, bz, white, 45, flash * .8);
+    const base = kind[0] === '#' ? new THREE.Color(kind) : null, hue0 = hash(k + 6);
+    for (let i = 0; i < N; i++){
+      const d = dirs[i], jit = .85 + hash(k * 31 + i) * .3, sp = v0 * jit;
+      let c;
+      if (base) c = base; else if (willow) c = new THREE.Color('#ffc46b'); else c = hsl((hue0 + Math.atan2(d.z, d.x) / 6.283 + d.y * .25 + 1) % 1, 1, .62);
+      const tw = (kind === 'multi' && a > life * .55) ? (.45 + .55 * (hash(i + Math.floor(a * 18) * 7.3) > .45 ? 1 : 0)) : 1;
+      for (let j = 0; j < nT; j++){
+        const aj = a - j * dT; if (aj < 0) break;
+        const s = sp * (1 - Math.exp(-drag * aj)) / drag;
+        const x = bx + d.x * s, y = by + d.y * s - .5 * g * aj * aj, z = bz + d.z * s * .6;
+        const fade = Math.pow(Math.max(0, 1 - a / life), 1.4) * Math.pow(1 - j / nT, 1.3);
+        col.copy(white).lerp(c, Math.min(1, aj / .18));
+        put(x, y, z, col, (j ? 1.0 : 1.7) * (willow ? .85 : 1), fade * tw * 1.15);
+      }
+    }
+  }
+  // sound: launch whoosh, boom (delayed by distance), crackle for the glittering shells
+  let lastT = -1, noiseBuf = null;
+  function noise(){ if (!noiseBuf){ const len = AC.sampleRate * 2; noiseBuf = AC.createBuffer(1, len, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; } const s = AC.createBufferSource(); s.buffer = noiseBuf; return s; }
+  function env(g, at, peak, a, d){ g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(peak, at + a); g.gain.exponentialRampToValueAtTime(.0001, at + a + d); }
+  function boom(at, loud){
+    const s = noise(), lp = AC.createBiquadFilter(), g = AC.createGain(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(1400, at); lp.frequency.exponentialRampToValueAtTime(120, at + 1.2);
+    env(g, at, .9 * loud, .006, 1.5); s.connect(lp); lp.connect(g); g.connect(fxG); s.start(at, Math.random()); s.stop(at + 1.8);
+    const o = AC.createOscillator(), og = AC.createGain(); o.frequency.setValueAtTime(70, at); o.frequency.exponentialRampToValueAtTime(32, at + .6); env(og, at, .8 * loud, .004, .7); o.connect(og); og.connect(fxG); o.start(at); o.stop(at + .9);
+  }
+  function whoosh(at, dur, loud){
+    const s = noise(), bp = AC.createBiquadFilter(), g = AC.createGain(); bp.type = 'bandpass'; bp.Q.value = 6; bp.frequency.setValueAtTime(700, at); bp.frequency.exponentialRampToValueAtTime(2600, at + dur);
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(.12 * loud, at + dur * .7); g.gain.linearRampToValueAtTime(0, at + dur); s.connect(bp); bp.connect(g); g.connect(fxG); s.start(at, Math.random()); s.stop(at + dur + .05);
+  }
+  function crackle(at, loud){
+    const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800; hp.connect(fxG);
+    for (let i = 0; i < 28; i++){ const s = noise(), g = AC.createGain(), tt = at + Math.random() * 1.1; env(g, tt, .35 * loud * Math.random(), .001, .03); s.connect(g); g.connect(hp); s.start(tt, Math.random()); s.stop(tt + .06); }
+  }
+  function sounds(k, tPrev, t){
+    const t0 = shellT0(k), rise = 1.3 + hash(k + 9) * .4, bx = -48 + hash(k + 1) * 96, bz = -120 - hash(k + 2) * 50, by = 30 + hash(k + 3) * 16;
+    const dist = tmp.set(bx, by, bz).distanceTo(camera.position), loud = Math.min(1, 140 / dist), lag = dist / 343, now = AC.currentTime;
+    const kind = PAL[Math.floor(hash(k + 4) * PAL.length)][0];
+    if (tPrev < t0 && t >= t0) whoosh(now + .05, rise * .9, loud);
+    const tb = t0 + rise + lag; if (tPrev < tb && t >= tb){ boom(now + .02, loud); if (kind === 'multi' || kind === 'gold') crackle(now + 1.2, loud * .8); }
+  }
+  let fxG = null;
+  return {
+    setVolume(v){ if (fxG) fxG.gain.setTargetAtTime(v, AC.currentTime, .2); },
+    initAudio(v){ fxG = AC.createGain(); fxG.gain.value = v; fxG.connect(master); },
+    tick(t){ // t: seconds into the current show, or -1 when no show is on
+      n = 0;
+      if (t >= 0){
+        cpos.copy(camera.position);
+        mat.uniforms.uScale.value = renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360));
+        const ks = [];
+        for (let k = Math.max(0, Math.floor((t - 7) / .95) - 1), k1 = Math.min(310, Math.floor(t / .95) + 1); k <= k1; k++) if (shellT0(k) < 296) ks.push(k);
+        if (t > 265) for (let k = 1000; k < 1060; k++) if (shellT0(k) < 296) ks.push(k);
+        ks.forEach(k => shell(k, t));
+        if (fxG && AC.state === 'running' && lastT >= 0 && t > lastT && t - lastT < 1 && !document.hidden) ks.forEach(k => sounds(k, lastT, t));
+      }
+      lastT = t;
+      geo.setDrawRange(0, n); geo.attributes.position.needsUpdate = true; geo.attributes.aCol.needsUpdate = true; geo.attributes.aSize.needsUpdate = true;
+      pts.visible = n > 0;
+    },
+  };
+})();
 // Distant islands + lighthouse
 const islandMat = M('#41564b', { flatShading: true });
 [[-260, -520, 90, 22, 40], [180, -600, 140, 30, 50], [420, -480, 70, 14, 30]].forEach(([x, z, sx, sy, sz]) => { const m = mesh(new THREE.SphereGeometry(1, 14, 8), islandMat, world, x, -4, z, false); m.scale.set(sx, sy, sz); });
@@ -1062,7 +1160,7 @@ strand([-11.9,-7.9],[11.9,-7.9],.5); strand([-11.9,0],[11.9,0],.9);
 const hemi = new THREE.HemisphereLight(C('#f2b8a0'), C('#6b5a70'), .55); scene.add(hemi);
 const sun = new THREE.DirectionalLight(C('#ffb070'), 1); sun.castShadow = true;
 sun.shadow.mapSize.set(matchMedia('(pointer: coarse)').matches ? 1024 : 2048, matchMedia('(pointer: coarse)').matches ? 1024 : 2048); Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, near: 1, far: 200 });
-sun.shadow.bias = -.0004; sun.shadow.normalBias = .03; scene.add(sun); scene.add(sun.target); sun.target.position.set(0, 4, -2);
+sun.shadow.bias = -.0006; sun.shadow.normalBias = .07; scene.add(sun); scene.add(sun.target); sun.target.position.set(0, 4, -2);
 const warm = [];
 [[0, -6, 3.1, 4.6], [0, 3.2, 3.0, 1.8], [0, 0, 2.6, -10.2], [1, -5.5, H + 3, .6], [1, 2.4, H + 3, 3.2], [1, -5, H + 2.8, -6.2], [2, -3, 2 * H + 2.8, -1], [2, 3.2, 2 * H + 1.0, 4.4]].forEach(([f, x, y, z]) => { const l = new THREE.PointLight(C('#ffc68a'), 0, 13, 2); l.position.set(x, y, z); scene.add(l); warm.push({ l, f, fire: f === 2 && y < 2 * H + 1.5 }); });
 
@@ -1528,7 +1626,7 @@ let AC = null, master, wavesG, musicG, musicOn = true, musicTimer = 0;
 const vol = (() => { const d = { wave: 100, music: 100, waveOff: false, musicOff: false }; try { const v = JSON.parse(store.get('bj-vol') || 'null'); if (v && typeof v === 'object') ['wave', 'music'].forEach(k => { if (Number.isFinite(v[k])) d[k] = clamp(v[k] | 0, 0, 100); d[k + 'Off'] = !!v[k + 'Off']; }); } catch (e) {} return d; })();
 const WAVE_MAX = .7, MUSIC_MAX = .4;
 const level = k => vol[k + 'Off'] ? 0 : vol[k] / 100;
-function applyVolumes(){ musicOn = level('music') > 0; if (!AC) return; wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, .25); musicG.gain.setTargetAtTime(MUSIC_MAX * level('music'), AC.currentTime, .25); }
+function applyVolumes(){ musicOn = level('music') > 0; if (!AC) return; wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, .25); musicG.gain.setTargetAtTime(MUSIC_MAX * level('music'), AC.currentTime, .25); fireworks.setVolume(level('wave')); }
 function renderSound(){
   ['wave', 'music'].forEach(k => {
     const off = vol[k + 'Off'], v = vol[k], p = off ? 0 : v, color = k === 'wave' ? '#8fd0cf' : '#f3b37c', name = k === 'wave' ? '파도 소리' : '음악';
@@ -1557,6 +1655,7 @@ function initAudio(){
   const lfo = AC.createOscillator(); lfo.frequency.value = .085; const lfoG = AC.createGain(); lfoG.gain.value = .38; lfo.connect(lfoG); lfoG.connect(swell.gain); lfo.start();
   src.connect(lp); lp.connect(swell); swell.connect(wavesG); wavesG.connect(master); src.start();
   wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, 1.5);
+  fireworks.initAudio(level('wave'));
   // music bus with soft delay
   musicG = AC.createGain(); musicG.gain.value = MUSIC_MAX * level('music');
   const mlp = AC.createBiquadFilter(); mlp.type = 'lowpass'; mlp.frequency.value = 1800;
@@ -1735,7 +1834,7 @@ function enter(){
 }
 
 /* ---------- main loop ---------- */
-const clock = new THREE.Clock(); let npcSayT = 4, firstFrame = true;
+const clock = new THREE.Clock(); let npcSayT = 4, firstFrame = true, fwAnnounced = false;
 const tmpV = new THREE.Vector3(), fwd = new THREE.Vector3();
 function frame(){
   requestAnimationFrame(frame);
@@ -1856,6 +1955,9 @@ function frame(){
     cats.forEach(cat => placeTag(cat, cat.g, .62 * (cat.g.scale.y || 1), cat.g.visible, now));
   }
   dolphins.tick(performance.now() / 1000);
+  { const ms = Date.now() + 9 * 3600e3, h = Math.floor(ms / 3600e3) % 24, sec = (ms % 3600e3) / 1000, showT = [19, 20, 21, 22].includes(h) && sec < 305 ? sec : -1;
+    if (showT >= 0 && showT < 290 && !fwAnnounced && entered){ fwAnnounced = true; setTimeout(() => toast('바다 위로 불꽃놀이가 한창이에요 · 3층 테라스에서 잘 보여요'), 3500); } if (showT < 0) fwAnnounced = false;
+    fireworks.tick(showT); }
   renderer.render(scene, camera);
   if (!entered && pv.r && pv.a){ pv.a.g.rotation.y = Math.sin(t * .6) * .7; pv.a.rot = pv.a.g.rotation.y; poseAvatar(pv.a, dt, t); pv.a.g.position.set(0, 0, 0); pv.r.render(pv.scene, pv.cam); }
   if (firstFrame){ firstFrame = false; const l = $('#loading'); l.style.opacity = 0; setTimeout(() => l.remove(), 900); }
