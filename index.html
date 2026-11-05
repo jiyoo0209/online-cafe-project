@@ -57,8 +57,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #names span i{width:6px;height:6px;border-radius:50%}
 
 .time{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;padding:4px;gap:2px}
-.time button{border:0;background:transparent;padding:7px 12px;border-radius:10px;font-size:13px;color:var(--ink-dim)}
-.time button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.time{align-items:center;gap:8px;padding:6px 6px 6px 12px;font-size:13px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.time b{font-weight:600;background:var(--accent);color:var(--accent-ink);border-radius:9px;padding:4px 10px}
 
 .floors{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;padding:6px;gap:4px}
 .floors button{border:0;background:transparent;text-align:left;padding:9px 12px;border-radius:10px;display:grid;grid-template-columns:30px 1fr;align-items:baseline;gap:4px;min-width:150px}
@@ -117,7 +117,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   .floors span{display:none}
   .hint{display:none}
   .time{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:auto}
-  .time button{padding:7px 9px}
   .brand{padding:10px 13px}
   .logo{font-size:19px}
 }
@@ -137,11 +136,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     <div class="who"><i class="dot"></i><span id="count">혼자 조용히 머무는 중</span></div>
     <div id="names"></div>
   </header>
-  <div class="time panel" role="group" aria-label="시간대">
-    <button data-t="day" aria-pressed="false">한낮</button>
-    <button data-t="sunset" aria-pressed="true">노을</button>
-    <button data-t="night" aria-pressed="false">밤바다</button>
-  </div>
+  <div class="time panel" aria-label="지금 서울 시각과 시간대"><span id="clock">서울 --:--</span><b id="clockMode">노을</b></div>
   <nav class="floors panel" aria-label="층 이동">
     <button data-f="2"><b>3F</b><span>루프탑 테라스</span></button>
     <button data-f="1"><b>2F</b><span>오션뷰 라운지</span></button>
@@ -958,8 +953,15 @@ const PRESETS = {
 };
 function envFrom(p){ return { top: new THREE.Color(p.top), hor: new THREE.Color(p.hor), sunC: new THREE.Color(p.sunC), sunDir: p.sunDir.clone(), sunI: p.sunI, hemiS: C(p.hemiS), hemiG: C(p.hemiG), hemiI: p.hemiI, deep: new THREE.Color(p.deep), shallow: new THREE.Color(p.shallow), glow: p.glow, stars: p.stars, exp: p.exp, cloud: new THREE.Color(p.cloud), glint: p.glint, disk: p.disk, gAmt: p.gAmt, warm: p.warm, beam: p.beam, fogN: p.fogN, fogF: p.fogF, wet: new THREE.Color(p.wet), foamC: new THREE.Color(p.foamC), amb: p.amb, sandC: new THREE.Color(p.sandC) }; }
 function envLerp(a, b, t){ const o = {}; for (const k in a){ if (a[k] && a[k].isColor) o[k] = a[k].clone().lerp(b[k], t); else if (a[k] && a[k].isVector3) o[k] = a[k].clone().lerp(b[k], t).normalize(); else o[k] = a[k] + (b[k] - a[k]) * t; } return o; }
-let env = envFrom(PRESETS.sunset), envFromS = null, envTo = null, envT = 1, envName = 'sunset';
-function setPreset(name){ envName = name; envFromS = env; envTo = envFrom(PRESETS[name]); envT = 0; document.querySelectorAll('.time button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === name)); }
+// Time of day follows the real clock in Seoul: 06–16 day, 16–20 sunset, 20–06 night
+function seoulNow(){ const d = new Date(Date.now() + 9 * 3600e3); return { h: d.getUTCHours(), m: d.getUTCMinutes() }; }
+function presetForHour(h){ return h >= 6 && h < 16 ? 'day' : h >= 16 && h < 20 ? 'sunset' : 'night'; }
+const MODE_NAME = { day: '한낮', sunset: '노을', night: '밤바다' };
+let envName = presetForHour(seoulNow().h);
+let env = envFrom(PRESETS[envName]), envFromS = null, envTo = null, envT = 1;
+function setPreset(name){ envName = name; envFromS = env; envTo = envFrom(PRESETS[name]); envT = 0; }
+function tickClock(){ const { h, m } = seoulNow(); const mode = presetForHour(h); $('#clock').textContent = `서울 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`; $('#clockMode').textContent = MODE_NAME[mode]; if (mode !== envName) setPreset(mode); }
+tickClock(); setInterval(tickClock, 15000);
 function applyEnv(e){
   skyU.uTop.value.copy(e.top); skyU.uHor.value.copy(e.hor); skyU.uSunDir.value.copy(e.sunDir); skyU.uSunColor.value.copy(e.sunC); skyU.uDisk.value = e.disk; skyU.uGlowAmt.value = e.gAmt;
   oceanU.uDeep.value.copy(e.deep); oceanU.uShallow.value.copy(e.shallow); oceanU.uHorizon.value.copy(e.hor); oceanU.uSunColor.value.copy(e.sunC); oceanU.uSunDir.value.copy(e.sunDir); oceanU.uGlint.value = e.glint; oceanU.uTop.value.copy(e.top); oceanU.uWet.value.copy(e.wet); oceanU.uFoam.value.copy(e.foamC); oceanU.uSand.value.copy(e.sandC); oceanU.uAmb.value = e.amb;
@@ -1399,7 +1401,6 @@ function enterScope(){ if (ctrl.floor !== 2) return; cam.mode = 'scope'; scope.y
 $('#scopeExit').onclick = () => { cam.mode = 'follow'; $('#scope').hidden = true; $('#hud').hidden = false; joy.el.hidden = !isTouch; camera.fov = 48; camera.updateProjectionMatrix(); };
 
 // time of day
-document.querySelectorAll('.time button').forEach(b => b.onclick = () => setPreset(b.dataset.t));
 document.querySelectorAll('.floors button').forEach(b => b.onclick = () => goFloor(+b.dataset.f));
 
 /* ---------- sound: waves + soft lo-fi ---------- */
