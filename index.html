@@ -46,19 +46,26 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #joy .knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,245,232,.9);box-shadow:0 3px 12px rgba(30,15,5,.3);pointer-events:none}
 #hud{position:fixed;inset:0;pointer-events:none}
 #hud > *{pointer-events:auto}
-.brand{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));padding:12px 16px 12px;display:flex;flex-direction:column;gap:6px;max-width:min(320px,calc(100vw - 32px))}
-.logo{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:.02em;line-height:1.1}
-.logo small{font-weight:400;font-size:13px;color:var(--ink-dim);margin-left:6px;letter-spacing:.08em}
-.who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-dim)}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--sea);box-shadow:0 0 0 3px rgba(143,208,207,.18);animation:breath 2.6s ease-in-out infinite}
-@keyframes breath{50%{box-shadow:0 0 0 6px rgba(143,208,207,.05)}}
-#names{display:flex;flex-wrap:wrap;gap:4px}
-#names span{font-size:11.5px;padding:2px 8px;border-radius:99px;background:rgba(255,240,222,.09);border:1px solid var(--line);display:inline-flex;align-items:center;gap:5px}
-#names span i{width:6px;height:6px;border-radius:50%}
+.brand{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:12px}
+.brand .cup{font-size:15px;line-height:1}
+.brand b{font-family:var(--font-display);font-weight:700;font-size:15px}
+.brand small{font-size:12px;letter-spacing:.12em;color:var(--ink-dim)}
+#who{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:7px;height:36px;padding:0 12px 0 11px;border-radius:99px;font-size:13.5px}
+#who[aria-expanded="true"]{background:rgba(255,245,232,.92);border-color:rgba(255,232,206,.6);color:var(--accent-ink)}
+#who .dot{width:8px;height:8px;border-radius:50%;background:var(--sea);box-shadow:0 0 0 3px rgba(143,208,207,.22)}
+#who[aria-expanded="true"] .dot{background:#3e9e9b;box-shadow:none}
+#who svg{transition:transform .2s}
+#who[aria-expanded="true"] svg{transform:rotate(180deg)}
+#people{position:absolute;top:calc(60px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));width:220px;height:140px;box-sizing:border-box;padding:6px;border-radius:16px;background:rgba(36,24,18,.88);box-shadow:0 14px 40px rgba(20,10,4,.35);overflow:hidden}
+#peopleList{list-style:none;margin:0;padding:0 2px 0 0;height:128px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,245,232,.35) transparent}
+#peopleList li{flex:none;height:40px;display:flex;align-items:center;gap:10px;padding:0 8px;border-radius:10px;font-size:14px}
+#peopleList li.me{background:rgba(255,245,232,.07)}
+#peopleList .av{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:rgba(30,20,14,.82)}
+#peopleList .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#peopleList .tag-me{font-size:11px;padding:1px 6px;border-radius:99px;background:var(--accent);color:var(--accent-ink);margin-left:4px}
+#peopleList .fl{font-size:12px;color:var(--ink-dim)}
+#people .fade{position:absolute;left:1px;right:1px;bottom:1px;height:30px;border-radius:0 0 15px 15px;background:linear-gradient(rgba(36,24,18,0),rgba(36,24,18,.95));pointer-events:none}
 
-.time{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;padding:4px;gap:2px}
-.time{align-items:center;gap:8px;padding:6px 6px 6px 12px;font-size:13px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
-.time b{font-weight:600;background:var(--accent);color:var(--accent-ink);border-radius:9px;padding:4px 10px}
 
 .floors{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;padding:6px;gap:4px}
 .floors button{border:0;background:transparent;text-align:left;padding:9px 12px;border-radius:10px;display:grid;grid-template-columns:30px 1fr;align-items:baseline;gap:4px;min-width:150px}
@@ -71,7 +78,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .acts button{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:7px 13px;border-radius:99px;font-size:13px}
 .acts button[aria-pressed="false"]{color:var(--ink-dim)}
-.hint{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(122px + env(safe-area-inset-top,0px));font-size:12px;color:var(--ink-dim);max-width:220px;line-height:1.55;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.hint{position:absolute;left:max(16px,env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));font-size:12px;color:var(--ink-dim);max-width:220px;line-height:1.55;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 
 /* Entry */
 #entry{position:fixed;inset:0;display:grid;place-items:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:radial-gradient(120% 90% at 50% 100%,rgba(20,12,8,.55),rgba(20,12,8,.05) 60%)}
@@ -116,9 +123,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   .floors button{min-width:0;grid-template-columns:auto;padding:7px 10px}
   .floors span{display:none}
   .hint{display:none}
-  .time{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:auto}
-  .brand{padding:10px 13px}
-  .logo{font-size:19px}
 }
 @media (prefers-reduced-motion:reduce){.dot{animation:none}#toast{transition:none}}
 </style>
@@ -131,12 +135,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="loading">카페 문을 여는 중…</div>
 
 <div id="hud" hidden>
-  <header class="brand panel">
-    <div class="logo">분좋느좋 <small>CAFÉ · 바다 앞 3층</small></div>
-    <div class="who"><i class="dot"></i><span id="count">혼자 조용히 머무는 중</span></div>
-    <div id="names"></div>
-  </header>
-  <div class="time panel" aria-label="지금 서울 시각과 시간대"><span id="clock">서울 --:--</span><b id="clockMode">노을</b></div>
+  <header class="brand panel"><span class="cup" aria-hidden="true">☕</span><b>해변가</b><small>CAFE</small></header>
+  <button id="who" class="panel" type="button" aria-expanded="false" aria-controls="people" aria-label="접속 중인 사람 보기"><i class="dot"></i><b id="count">1명</b><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
   <nav class="floors panel" aria-label="층 이동">
     <button data-f="2"><b>3F</b><span>루프탑 테라스</span></button>
     <button data-f="1"><b>2F</b><span>오션뷰 라운지</span></button>
@@ -956,11 +957,10 @@ function envLerp(a, b, t){ const o = {}; for (const k in a){ if (a[k] && a[k].is
 // Time of day follows the real clock in Seoul: 06–16 day, 16–20 sunset, 20–06 night
 function seoulNow(){ const d = new Date(Date.now() + 9 * 3600e3); return { h: d.getUTCHours(), m: d.getUTCMinutes() }; }
 function presetForHour(h){ return h >= 6 && h < 16 ? 'day' : h >= 16 && h < 20 ? 'sunset' : 'night'; }
-const MODE_NAME = { day: '한낮', sunset: '노을', night: '밤바다' };
 let envName = presetForHour(seoulNow().h);
 let env = envFrom(PRESETS[envName]), envFromS = null, envTo = null, envT = 1;
 function setPreset(name){ envName = name; envFromS = env; envTo = envFrom(PRESETS[name]); envT = 0; }
-function tickClock(){ const { h, m } = seoulNow(); const mode = presetForHour(h); $('#clock').textContent = `서울 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`; $('#clockMode').textContent = MODE_NAME[mode]; if (mode !== envName) setPreset(mode); }
+function tickClock(){ const mode = presetForHour(seoulNow().h); if (mode !== envName) setPreset(mode); }
 tickClock(); setInterval(tickClock, 15000);
 function applyEnv(e){
   skyU.uTop.value.copy(e.top); skyU.uHor.value.copy(e.hor); skyU.uSunDir.value.copy(e.sunDir); skyU.uSunColor.value.copy(e.sunC); skyU.uDisk.value = e.disk; skyU.uGlowAmt.value = e.gAmt;
@@ -1276,7 +1276,7 @@ function stairFromWalk(dir){
   return false;
 }
 let visFloor = -1;
-function setVisibleFloor(v){ if (v === visFloor) return; visFloor = v; floors.forEach((g, i) => g.visible = i <= v); document.querySelectorAll('.floors button').forEach(b => b.setAttribute('aria-current', +b.dataset.f === v)); }
+function setVisibleFloor(v){ if (v === visFloor) return; visFloor = v; if (!$('#people').hidden) renderPeople(); floors.forEach((g, i) => g.visible = i <= v); document.querySelectorAll('.floors button').forEach(b => b.setAttribute('aria-current', +b.dataset.f === v)); }
 function goFloor(to){
   if (!me) return; standUp();
   const from = ctrl.floor; if (to === from && !ctrl.path.length) return;
@@ -1484,16 +1484,35 @@ function handlePeers(list){
   for (const [k, r] of remotes){ if (!seen.has(k)){ scene.remove(r.a.g); removeTag(r.a); if (r.seat >= 0 && seats[r.seat]) seats[r.seat].occRemote = false; remotes.delete(k); } }
   updateCount();
 }
+// Top-right: head count; tap it for a fixed-height list (three rows visible, the rest scrolls)
 function updateCount(){
   const n = remotes.size + (entered ? 1 : 0);
-  const txt = !room ? (entered ? '조용히 혼자 머무는 중' : '카페 둘러보는 중') : n <= 1 ? (entered ? '지금은 나 혼자 · 누가 오면 여기 보여요' : '지금 카페가 한산해요') : `지금 ${n}명이 함께 머무는 중`;
-  $('#count').textContent = txt;
+  $('#count').textContent = `${n}명`;
+  $('#who').setAttribute('aria-label', `접속 중인 사람 ${n}명 보기`);
   $('#entryCount').textContent = room && remotes.size ? `지금 ${remotes.size}명이 카페에 있어요` : '지금 카페에 들어가 볼까요';
-  const names = $('#names'); names.textContent = '';
-  const arr = [...remotes.values()].slice(0, 8);
-  if (entered && me) arr.unshift({ name: myName + ' (나)', a: me });
-  if (arr.length > 1) arr.forEach(r => { const s = document.createElement('span'); const i = document.createElement('i'); i.style.background = r.a ? r.a.L.top : '#ccc'; s.appendChild(i); s.appendChild(document.createTextNode(r.name)); names.appendChild(s); });
+  if (!$('#people').hidden) renderPeople();
 }
+function renderPeople(){
+  const ul = $('#peopleList'), keep = ul.scrollTop; ul.textContent = '';
+  const rows = [];
+  if (entered && me) rows.push({ name: myName, color: me.L.top, f: ctrl.floor, me: true });
+  [...remotes.values()].filter(r => r.a && r.name).sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(r => rows.push({ name: r.name, color: r.a.L.top, f: r.f, me: false }));
+  rows.forEach(p => {
+    const li = document.createElement('li'); if (p.me) li.className = 'me';
+    const av = document.createElement('span'); av.className = 'av'; av.style.background = p.color; { const c = new THREE.Color(p.color); av.style.color = (c.r * .299 + c.g * .587 + c.b * .114) < .55 ? '#fff8ee' : 'rgba(30,20,14,.82)'; } av.textContent = [...p.name][0] || '?';
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name;
+    if (p.me){ const t = document.createElement('span'); t.className = 'tag-me'; t.textContent = '나'; nm.appendChild(t); }
+    const fl = document.createElement('span'); fl.className = 'fl'; fl.textContent = `${(p.f | 0) + 1}F`;
+    li.append(av, nm, fl); ul.appendChild(li);
+  });
+  ul.scrollTop = keep;
+  $('#peopleFade').hidden = rows.length <= 3;
+}
+function setPeopleOpen(open){ $('#people').hidden = !open; $('#who').setAttribute('aria-expanded', open); if (open) renderPeople(); }
+$('#who').addEventListener('click', e => { e.stopPropagation(); setPeopleOpen($('#people').hidden); });
+$('#people').addEventListener('pointerdown', e => e.stopPropagation());
+document.addEventListener('pointerdown', e => { const t = e.target; if (!$('#people').hidden && !(t instanceof Element && t.closest('#who'))) setPeopleOpen(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#people').hidden) setPeopleOpen(false); });
 // Supabase Realtime adapter with the same two calls the page uses: presence(state) and onPeers(cb).
 // Presence carries only name + look (slow-changing); position/actions go over Broadcast, throttled.
 function makeSupabaseRoom(cfg){
