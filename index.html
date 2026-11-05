@@ -1304,6 +1304,7 @@ function lookFrom(seed){
 }
 const HIP = .44;
 function makeAvatar(seed, o = {}){
+  if (AVLIB) return makeAvatar3D(seed);
   const L = lookFrom(seed);
   if (o.apron){ L.top = '#f4ecdf'; L.longSleeve = true; L.stripe = false; L.hat = 3; L.hatC = '#3e5a4c'; L.glasses = false; L.scarf = false; L.phones = false; L.skirt = false; L.shorts = false; L.bottom = '#2f2a27'; }
   const g = new THREE.Group(); g.scale.setScalar(L.size);
@@ -1374,6 +1375,109 @@ function makeAvatar(seed, o = {}){
   return { g, L, torso, head, eyes, legs, arms, holder, phase: rand(0, 10), blinkT: rand(1, 4), seed,
     pos: new THREE.Vector3(), rot: 0, moving: false, seat: -1, waveUntil: 0, petUntil: 0, item: -1, itemObj: null, bubbleUntil: 0, tag: null };
 }
+/* ---------- 3D characters: supplied boy/girl models, parts mixed per seed ---------- */
+// Both files share one body; hair, top and bottom come from either file, and every colour is picked from the seed,
+// so the same seed builds the same person on every screen. Parts are rigid, so joints are rebuilt from part positions.
+let AVLIB = null;
+const LOOK3 = {
+  skin: ['#fbe3d0', '#f6d6bd', '#efc7a6', '#e2b08a', '#c89068', '#9a6a48'],
+  hair: ['#3a2a22', '#5a3a28', '#7a4e33', '#a06b44', '#c99a62', '#e3c27a', '#2b2b30', '#8e8a88', '#b5523e', '#e39ab0', '#8fb3e0', '#9c86c9', '#6fa58a', '#f2e6d0'],
+  top: ['#f7f3ec', '#e9a37c', '#9cc6b6', '#f0d27a', '#a9b9ea', '#e6a7c2', '#cdb594', '#7f9bb5', '#c96f5a', '#8fb08a', '#3f5570', '#b7a0d6', '#f2b8a0', '#2f2f35', '#d5e7a8', '#ffd1dc'],
+  bottom: ['#2f3442', '#4a5a72', '#8fa9c9', '#d9cbb4', '#5a4636', '#2a2a2a', '#c9b28c', '#55705f', '#8e6f9e', '#b85c5c'],
+  shoe: ['#f4efe6', '#2a2a2a', '#c96f5a', '#7f9bb5', '#e8c46a', '#9cc6b6', '#e6a7c2'],
+};
+const HAIR3 = ['단발', '짧은 머리', '짧은 머리 · 삐친 머리', '중단발'];
+function lookFrom3D(seed){
+  const r = rng(seed ^ 0x5bd1e995), pick = a => a[(r() * a.length) | 0];
+  const L = { v3: true, skin: pick(LOOK3.skin), hair: pick(LOOK3.hair), style: (r() * HAIR3.length) | 0, top: pick(LOOK3.top), topType: r() < .5 ? 'tee' : 'hoodie',
+    longSleeve: r() < .35, bottom: pick(LOOK3.bottom), shoe: pick(LOOK3.shoe), size: .95 + r() * .1, happy: true };
+  const b = r(); L.bottomType = b < .34 ? 'skirt' : b < .67 ? 'shorts' : 'pants';
+  if (L.bottom === L.top) L.bottom = LOOK3.bottom[0];
+  return L;
+}
+function loadAvatarLib(done){
+  if (!THREE.GLTFLoader) return done();
+  const ld = new THREE.GLTFLoader(), files = { boy: null, girl: null };
+  const get = (name, cb) => ld.load(`models/${name}.glb`, cb, undefined, () => fetch(`models/${name}.glb.txt`).then(x => x.ok ? x.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'models/', cb, () => done()); }).catch(() => done()));
+  const finish = () => {
+    const parts = {};   // name -> [{geo, c, box}] in metres, Y up, facing +Z
+    for (const k of ['boy', 'girl']){
+      const holder = new THREE.Group(), sc = files[k].scene; holder.add(sc); sc.rotation.x = -Math.PI / 2; holder.updateMatrixWorld(true);
+      sc.traverse(o => { if (!o.isMesh) return; const base = o.name.replace(/_\d+$/, ''); const key = (base.startsWith('Body_') || base.startsWith('Face_') || base.startsWith('Shoes_')) ? base : base;
+        if ((base.startsWith('Body_') || base.startsWith('Face_') || base.startsWith('Shoes_')) && k === 'girl') return;   // shared parts: take them once
+        const geo = o.geometry.clone(); geo.applyMatrix4(o.matrixWorld); geo.computeBoundingBox(); const c = geo.boundingBox.getCenter(new THREE.Vector3()); geo.translate(-c.x, -c.y, -c.z); geo.computeVertexNormals(); geo.computeBoundingBox();
+        (parts[key] = parts[key] || []).push({ geo, c, box: geo.boundingBox.clone() }); });
+    }
+    // floor at y = 0, then scale so the hip joint sits at HIP
+    let minY = Infinity; for (const k in parts) for (const p of parts[k]) minY = Math.min(minY, p.c.y + p.box.min.y);
+    const top = p => p.c.y + p.box.max.y - minY;
+    const thigh = parts.Body_Thigh_L[0], s = HIP / top(thigh);
+    for (const k in parts) for (const p of parts[k]){ p.c.y -= minY; p.c.multiplyScalar(s); p.geo.scale(s, s, s); p.geo.computeBoundingBox(); p.box = p.geo.boundingBox.clone(); }
+    // shoulder joint: the inner, upper end of the upper arm (where it meets the body)
+    const shoulder = name => { const p = parts[name][0], sx = Math.sign(p.c.x) || 1; return new THREE.Vector3(p.c.x - sx * p.box.max.x * .55, p.c.y + p.box.max.y * .75, p.c.z); };
+    const pv = (name, at = 'top') => { const p = parts[name][0]; return new THREE.Vector3(p.c.x, at === 'top' ? p.c.y + p.box.max.y : p.c.y, p.c.z); };
+    AVLIB = { parts, faceM: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5 }),
+      piv: { hipL: pv('Body_Thigh_L'), hipR: pv('Body_Thigh_R'), kneeL: pv('Body_Shin_L'), kneeR: pv('Body_Shin_R'), shL: shoulder('Body_UpperArm_L'), shR: shoulder('Body_UpperArm_R'), neck: pv('Body_Neck', 'mid'),
+        eyeL: pv('Face_Eye_L', 'mid'), eyeR: pv('Face_Eye_R', 'mid'), height: Math.max(...Object.values(parts).flat().map(p => p.c.y + p.box.max.y)) } };
+    // the short haircut has no back piece: a cap over the back of the head, sized from the head itself
+    { const hd = parts.Body_Head[0], hs = hd.box.getSize(new THREE.Vector3()), cap = new THREE.SphereGeometry(.5, 32, 18, 0, TAU, 0, Math.PI * .58);
+      cap.rotateX(-.95); cap.scale(hs.x * 1.05, hs.y * 1.04, hs.z * 1.05); cap.translate(0, hs.y * .02, -hs.z * .02); cap.computeBoundingBox();
+      parts.Hair_Short_Back = [{ geo: cap, c: hd.c.clone(), box: cap.boundingBox.clone() }]; }
+    done();
+  };
+  let n = 0; for (const k of ['boy', 'girl']) get(`${k}_default`, gl => { files[k] = gl; if (++n === 2) finish(); });
+}
+function makeAvatar3D(seed){
+  const L = lookFrom3D(seed), P = AVLIB.parts, V = AVLIB.piv;
+  const g = new THREE.Group(); g.scale.setScalar(L.size);
+  const mm = (c, o = {}) => M(c, Object.assign({ roughness: .75 }, o));
+  const skin = mm(L.skin, { roughness: .6 }), hairM = mm(L.hair, { roughness: .8 }), topM = mm(L.top), topA = mm(shade(L.top, -.12)), botM = mm(L.bottom), botA = mm(shade(L.bottom, -.1)),
+    shoeM = mm(L.shoe, { roughness: .55 }), shoeA = mm(shade(L.shoe, -.15)), white = mm('#f6f2ea'), browM = mm(shade(L.hair, -.15));
+  const add = (name, parent, origin, mat, i = -1) => (P[name] || []).forEach((p, j) => { if (i >= 0 && j !== i) return; const m = new THREE.Mesh(p.geo, mat); m.position.copy(p.c).sub(origin); m.castShadow = true; parent.add(m); });
+  const O = new THREE.Vector3(0, HIP, 0);
+  // legs
+  const pants = L.bottomType === 'pants';
+  const legs = [['R', -1], ['L', 1]].sort((a, b) => V['hip' + a[0]].x - V['hip' + b[0]].x).map(([sd]) => {
+    const hp = V['hip' + sd], kp = V['knee' + sd];
+    const thigh = new THREE.Group(); thigh.position.set(hp.x, HIP, hp.z); g.add(thigh);
+    add('Body_Thigh_' + sd, thigh, hp, pants ? botM : skin);
+    if (L.bottomType !== 'skirt') add('Cloth_Shorts_Leg_' + sd, thigh, hp, botM);
+    const knee = new THREE.Group(); knee.position.copy(kp).sub(hp); thigh.add(knee);
+    add('Body_Shin_' + sd, knee, kp, pants ? botM : skin); add('Body_Foot_' + sd, knee, kp, skin);
+    add('Shoes_Main_' + sd, knee, kp, shoeM); add('Shoes_Sole_' + sd, knee, kp, white); add('Shoes_Toecap_' + sd, knee, kp, shoeA); add('Shoes_Lace_' + sd, knee, kp, white); add('Shoes_Sock_' + sd, knee, kp, white);
+    return { thigh, knee };
+  });
+  // torso (pivots at the hip, like before)
+  const torso = new THREE.Group(); torso.position.copy(O); g.add(torso);
+  add('Body_Hip', torso, O, botM); add('Body_TorsoSkin', torso, O, topM); add('Body_Neck', torso, O, skin);
+  if (L.topType === 'tee'){ add('Cloth_TShirt', torso, O, topM); add('Cloth_TShirt_Collar', torso, O, topA); }
+  else { add('Cloth_Hoodie_Torso', torso, O, topM); add('Cloth_Hoodie_Hood', torso, O, topA); add('Cloth_Hoodie_Collar', torso, O, topA); add('Cloth_Hoodie_Pocket', torso, O, topA); add('Cloth_Hoodie_Drawstring_L', torso, O, white); add('Cloth_Hoodie_Drawstring_R', torso, O, white); }
+  if (L.bottomType === 'skirt'){ add('Cloth_Skirt', torso, O, botM); add('Cloth_Skirt_Waist', torso, O, botA); add('Cloth_Skirt_Pleat', torso, O, botA); }
+  else add('Cloth_Shorts_Waist', torso, O, botA);
+  // arms
+  const arms = [['R', -1], ['L', 1]].sort((a, b) => V['sh' + a[0]].x - V['sh' + b[0]].x).map(([sd]) => {
+    const sp = V['sh' + sd], sh = new THREE.Group(); sh.position.copy(sp).sub(O); torso.add(sh);
+    const longArm = L.topType === 'hoodie' || L.longSleeve;
+    add('Body_UpperArm_' + sd, sh, sp, skin); add('Body_Forearm_' + sd, sh, sp, longArm ? topM : skin);
+    if (L.topType === 'tee') add('Cloth_TShirt_Sleeve_' + sd, sh, sp, topM);
+    else { add('Cloth_Hoodie_Sleeve_' + sd, sh, sp, topM); add('Cloth_Hoodie_Cuff_' + sd, sh, sp, topA); }
+    const hp = P['Body_Hand_' + sd][0], hand = new THREE.Mesh(hp.geo, skin); hand.position.copy(hp.c).sub(sp); hand.castShadow = true; sh.add(hand);
+    return { sh, hand };
+  });
+  // head: face keeps its own painted colours; eyes are grouped so they can blink
+  const head = new THREE.Group(); head.position.copy(V.neck).sub(O); torso.add(head);
+  add('Body_Head', head, V.neck, skin); add('Body_Ear_L', head, V.neck, skin); add('Body_Ear_R', head, V.neck, skin);
+  ['Face_Cheek_L', 'Face_Cheek_R', 'Face_Mouth', 'Face_Tongue'].forEach(n => add(n, head, V.neck, AVLIB.faceM));
+  add('Face_Brow_L', head, V.neck, browM); add('Face_Brow_R', head, V.neck, browM);
+  const eyes = ['L', 'R'].map(sd => { const ep = V['eye' + sd], eg = new THREE.Group(); eg.position.copy(ep).sub(V.neck); head.add(eg); ['Face_Eye_', 'Face_Pupil_', 'Face_Glint_'].forEach(n => add(n + sd, eg, ep, AVLIB.faceM)); return eg; });
+  const st = L.style;
+  if (st === 0){ ['Hair_Bob_Crown', 'Hair_Bob_Back', 'Hair_Bob_Side', 'Hair_Bob_Bang'].forEach(n => add(n, head, V.neck, hairM)); }
+  else if (st === 3){ ['Hair_Short_Crown', 'Hair_Short_Fringe', 'Hair_Bob_Back', 'Hair_Bob_Side'].forEach(n => add(n, head, V.neck, hairM)); }
+  else { ['Hair_Short_Crown', 'Hair_Short_Fringe', 'Hair_Short_Back'].forEach(n => add(n, head, V.neck, hairM)); if (st === 2) add('Hair_Cowlick', head, V.neck, hairM); }
+  const holder = new THREE.Group(); arms[0].hand.add(holder); holder.position.set(0, -.03, .06);
+  return { g, L, torso, head, eyes, legs, arms, holder, phase: rand(0, 10), blinkT: rand(1, 4), seed, v3: true,
+    pos: new THREE.Vector3(), rot: 0, moving: false, seat: -1, waveUntil: 0, petUntil: 0, item: -1, itemObj: null, bubbleUntil: 0, tag: null };
+}
 function setItem(a, i){ if (a.item === i) return; a.item = i; if (a.itemObj){ a.holder.remove(a.itemObj); a.itemObj = null; } if (i >= 0 && ITEMS[i]){ a.itemObj = makeItem(i); a.holder.add(a.itemObj); } }
 
 function roundRect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
@@ -1422,7 +1526,7 @@ function poseAvatar(a, dt, t){
   // blink
   a.blinkT -= dt; const bl = a.blinkT < .12 ? .15 : (a.L.happy ? 1 : 1.2); if (a.blinkT < 0) a.blinkT = rand(2, 5); a.eyes.forEach(e => e.scale.y = bl);
   // right arm: swing or wave
-  if (now < a.waveUntil){ aR.sh.rotation.set(0, 0, 2.7 + Math.sin(t * 13) * .28); }
+  if (now < a.waveUntil){ aR.sh.rotation.set(0, 0, a.v3 ? 1.85 + Math.sin(t * 13) * .3 : 2.7 + Math.sin(t * 13) * .28); }   // big-headed 3D characters wave out to the side so the hand isn't hidden
   else if (petting) aR.sh.rotation.set(-1.05 + Math.sin(t * 8) * .22, 0, -.2);
   else aR.sh.rotation.set(seat ? -.5 : sw * .55, 0, .12);
   // left arm: swing, or hold the cup in front of the chest (sip now and then)
@@ -1985,9 +2089,19 @@ try {
 } catch (e) { pv.r = null; }
 const STYLE_NAMES = ['짧은 머리', '단발', '긴 머리', '포니테일', '양갈래 똥머리', '짧게 민 머리', '곱슬머리', '옆으로 넘긴 앞머리'];
 const HAT_NAMES = ['비니', '버킷햇', '베레모', '볼캡'];
-function lookText(L){ const t = [STYLE_NAMES[L.style]]; if (L.hat >= 0) t.push(HAT_NAMES[L.hat]); if (L.glasses) t.push('동그란 안경'); if (L.phones) t.push('헤드폰'); if (L.scarf) t.push('목도리'); t.push(L.skirt ? '치마' : L.shorts ? '반바지' : '긴바지'); t.push(L.longSleeve ? '긴팔' : '반팔'); return t.join(' · '); }
+function lookText(L){ if (L.v3) return [HAIR3[L.style], L.topType === 'tee' ? (L.longSleeve ? '긴팔 티셔츠' : '반팔 티셔츠') : '후드티', { skirt: '치마', shorts: '반바지', pants: '긴바지' }[L.bottomType]].join(' · ');
+  const t = [STYLE_NAMES[L.style]]; if (L.hat >= 0) t.push(HAT_NAMES[L.hat]); if (L.glasses) t.push('동그란 안경'); if (L.phones) t.push('헤드폰'); if (L.scarf) t.push('목도리'); t.push(L.skirt ? '치마' : L.shorts ? '반바지' : '긴바지'); t.push(L.longSleeve ? '긴팔' : '반팔'); return t.join(' · '); }
 function showPreview(){ if (pv.a) pv.scene.remove(pv.a.g); pv.a = makeAvatar(mySeed); pv.a.g.scale.setScalar(1); pv.scene.add(pv.a.g); $('#lookDesc').textContent = lookText(pv.a.L); }
 showPreview();
+// once the character models arrive, rebuild everyone already on screen with them
+loadAvatarLib(() => {
+  if (!AVLIB) return;
+  const swap = (old, seed) => { const a = makeAvatar(seed); a.pos.copy(old.pos); a.rot = old.rot; a.g.rotation.y = old.g.rotation.y; a.seat = old.seat; a.moving = old.moving; a.g.visible = old.g.visible;
+    a.tag = old.tag; old.tag = null; setItem(a, old.item); if (old.g.parent) old.g.parent.add(a.g); old.g.parent && old.g.parent.remove(old.g); return a; };
+  showPreview();
+  if (me) me = swap(me, mySeed);
+  for (const r of remotes.values()) if (r.a) r.a = swap(r.a, r.seed);
+});
 $('#reroll').onclick = () => { mySeed = newSeed(); showPreview(); };
 $('#nick').value = myName;
 $('#nick').addEventListener('keydown', e => { if (e.key === 'Enter') enter(); });
@@ -2122,8 +2236,9 @@ function frame(){
   // 2D name tags and bubbles
   tagLayer.hidden = !entered || cam.mode === 'scope' || (photo.on && !photo.tags);
   if (!tagLayer.hidden){
-    if (me) placeTag(me, me.g, 1.5 * me.L.size, true, now);
-    for (const r of remotes.values()) placeTag(r.a, r.a.g, 1.5 * r.a.L.size, r.a.g.visible, now);
+    const tagH = a => (a.v3 ? AVLIB.piv.height + .08 : 1.5) * a.L.size;
+    if (me) placeTag(me, me.g, tagH(me), true, now);
+    for (const r of remotes.values()) placeTag(r.a, r.a.g, tagH(r.a), r.a.g.visible, now);
     cats.forEach(cat => placeTag(cat, cat.g, CAT_H * cat.size + .12, cat.g.visible, now));
   }
   dolphins.tick(performance.now() / 1000);
