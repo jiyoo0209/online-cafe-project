@@ -36,6 +36,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(14px) saturate(1.15);-webkit-backdrop-filter:blur(14px) saturate(1.15)}
 
 /* HUD */
+#tags{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.tag{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:5px;will-change:transform;white-space:nowrap}
+.tag .bub{max-width:210px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;background:rgba(255,250,242,.97);color:#3a2618;font-size:14px;line-height:1.4;padding:7px 12px;border-radius:15px;box-shadow:0 4px 14px rgba(40,20,10,.22);position:relative;text-align:center;transition:opacity .3s}
+.tag .bub::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:rgba(255,250,242,.97);border-bottom:0}
+.tag .nm{font-size:12px;font-weight:600;padding:2px 9px 2px 7px;border-radius:99px;background:rgba(30,20,14,.6);color:#fff5e8;display:inline-flex;align-items:center;gap:5px}
+.tag .nm i{width:7px;height:7px;border-radius:50%}
+#joy{position:fixed;left:0;top:0;width:124px;height:124px;margin:-62px 0 0 -62px;border-radius:50%;background:rgba(255,245,232,.13);border:1.5px solid rgba(255,245,232,.5);box-shadow:0 0 0 1px rgba(40,20,10,.12);pointer-events:none}
+#joy .knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(255,245,232,.88);box-shadow:0 3px 12px rgba(30,15,5,.3)}
 #hud{position:fixed;inset:0;pointer-events:none}
 #hud > *{pointer-events:auto}
 .brand{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));padding:12px 16px 12px;display:flex;flex-direction:column;gap:6px;max-width:min(320px,calc(100vw - 32px))}
@@ -123,6 +131,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </head>
 <body>
 <div id="stage"></div>
+<div id="tags" hidden></div>
+<div id="joy" hidden><div class="knob"></div></div>
 <div id="loading">카페 문을 여는 중…</div>
 
 <div id="hud" hidden>
@@ -154,7 +164,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <button id="bSound" type="button" aria-pressed="true">파도 소리</button>
     </div>
   </div>
-  <div class="hint">바닥을 눌러 걷기 · 의자와 소파를 눌러 앉기 · 드래그로 둘러보기 · 2층 턴테이블, 3층 망원경, 고양이도 눌러보세요</div>
+  <div class="hint">바닥을 눌러 걷기 · WASD로 이동 · 드래그로 둘러보기 · 의자와 소파를 눌러 앉기 · 2층 고양이를 눌러 쓰다듬기 · 턴테이블과 3층 망원경도 눌러보세요</div>
 </div>
 
 <div id="entry">
@@ -974,29 +984,26 @@ function makeAvatar(seed, o = {}){
   if (L.phones){ const pm = M(L.phonesC); const band = mesh(new THREE.TorusGeometry(.275, .022, 8, 24, Math.PI), pm, head, 0, 0, 0); band.rotation.z = 0; [-1, 1].forEach(sd => { const cup = mesh(new THREE.CylinderGeometry(.07, .07, .06, 14), pm, head, sd * .26, 0, 0); cup.rotation.z = Math.PI / 2; }); }
   const holder = new THREE.Group(); arms[0].hand.add(holder); holder.position.set(0, .02, .06);
   return { g, L, torso, head, eyes, legs, arms, holder, phase: rand(0, 10), blinkT: rand(1, 4), seed,
-    pos: new THREE.Vector3(), rot: 0, moving: false, seat: -1, waveUntil: 0, item: -1, itemObj: null, bubble: null, bubbleUntil: 0, label: null };
+    pos: new THREE.Vector3(), rot: 0, moving: false, seat: -1, waveUntil: 0, petUntil: 0, item: -1, itemObj: null, bubbleUntil: 0, tag: null };
 }
 function setItem(a, i){ if (a.item === i) return; a.item = i; if (a.itemObj){ a.holder.remove(a.itemObj); a.itemObj = null; } if (i >= 0 && ITEMS[i]){ a.itemObj = makeItem(i); a.holder.add(a.itemObj); } }
 
 function roundRect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-function textSprite(text, kind, color){
-  const cv = document.createElement('canvas'); const g = cv.getContext('2d'); const dpr = 2;
-  const font = kind === 'label' ? `600 ${15 * dpr}px "Gowun Dodum", sans-serif` : `${17 * dpr}px "Gowun Dodum", sans-serif`;
-  g.font = font;
-  let lines = [text];
-  if (kind === 'bubble'){ lines = []; let cur = ''; for (const ch of text){ if (g.measureText(cur + ch).width > 230 * dpr){ lines.push(cur); cur = ch; if (lines.length === 2) break; } else cur += ch; } if (lines.length < 3 && cur) lines.push(cur); lines = lines.slice(0, 3); }
-  const pad = kind === 'label' ? 10 * dpr : 14 * dpr, lh = (kind === 'label' ? 20 : 24) * dpr;
-  const w = Math.ceil(Math.max(...lines.map(l => g.measureText(l).width)) + pad * 2), h = Math.ceil(lines.length * lh + pad * (kind === 'label' ? 1 : 1.3)) + (kind === 'bubble' ? 10 * dpr : 0);
-  cv.width = w; cv.height = h; g.font = font; g.textBaseline = 'middle';
-  if (kind === 'label'){ g.fillStyle = 'rgba(30,20,14,.62)'; roundRect(g, 0, 0, w, h, h / 2); g.fill(); g.fillStyle = color || '#fff5e8'; g.beginPath(); g.arc(pad * .9, h / 2, 4 * dpr, 0, TAU); g.fill(); g.fillStyle = '#fff5e8'; g.textAlign = 'left'; g.fillText(lines[0], pad * 1.6, h / 2 + 1); }
-  else { const bh = h - 10 * dpr; g.fillStyle = 'rgba(255,250,242,.96)'; roundRect(g, 0, 0, w, bh, 16 * dpr); g.fill(); g.beginPath(); g.moveTo(w / 2 - 8 * dpr, bh - 1); g.lineTo(w / 2, h); g.lineTo(w / 2 + 8 * dpr, bh - 1); g.fill(); g.fillStyle = '#3a2618'; g.textAlign = 'center'; lines.forEach((l, i) => g.fillText(l, w / 2, pad * .65 + lh * (i + .5))); }
-  const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.minFilter = THREE.LinearFilter;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, fog: false }));
-  const k = kind === 'label' ? .0085 : .0062; s.scale.set(w * k / 2, h * k / 2, 1); s.renderOrder = kind === 'label' ? 10 : 11; s.center.set(.5, 0);
-  return s;
+// Names and speech bubbles are HTML laid over the canvas, so they keep the same on-screen size at any zoom.
+const tagLayer = $('#tags');
+function ensureTag(a){ if (a.tag) return a.tag; const el = document.createElement('div'); el.className = 'tag'; const bub = document.createElement('div'); bub.className = 'bub'; bub.hidden = true; const nm = document.createElement('div'); nm.className = 'nm'; nm.hidden = true; el.append(bub, nm); tagLayer.appendChild(el); a.tag = { el, bub, nm, shown: true }; return a.tag; }
+function removeTag(a){ if (a && a.tag){ a.tag.el.remove(); a.tag = null; } }
+function setLabel(a, text, color){ const t = ensureTag(a); t.nm.textContent = ''; const i = document.createElement('i'); i.style.background = color || '#fff5e8'; t.nm.append(i, document.createTextNode(text)); t.nm.hidden = false; }
+function say(a, text, dur = 6500){ const t = ensureTag(a); t.bub.textContent = text; t.bub.hidden = false; t.bub.style.opacity = 1; a.bubbleUntil = performance.now() + dur; }
+const projV = new THREE.Vector3();
+function placeTag(a, obj, h, visible, now){
+  const t = a.tag; if (!t) return;
+  if (!t.bub.hidden){ const life = a.bubbleUntil - now; if (life <= 0) t.bub.hidden = true; else t.bub.style.opacity = Math.min(1, life / 350); }
+  let show = visible && (!t.bub.hidden || !t.nm.hidden), x = 0, y = 0;
+  if (show){ projV.copy(obj.position); projV.y += h; projV.project(camera); x = (projV.x * .5 + .5) * innerWidth; y = (-projV.y * .5 + .5) * innerHeight; if (projV.z > 1 || x < -150 || x > innerWidth + 150 || y < -40 || y > innerHeight + 260) show = false; }
+  if (show !== t.shown){ t.el.style.display = show ? '' : 'none'; t.shown = show; }
+  if (show) t.el.style.transform = `translate3d(${x.toFixed(1)}px,${(y - 4).toFixed(1)}px,0) translate(-50%,-100%)`;
 }
-function setLabel(a, text, color){ if (a.label){ a.g.remove(a.label); a.label.material.map.dispose(); } a.label = textSprite(text, 'label', color); a.label.position.y = 1.52; a.g.add(a.label); }
-function say(a, text, dur = 6500){ if (a.bubble){ a.g.remove(a.bubble); a.bubble.material.map.dispose(); } a.bubble = textSprite(text, 'bubble'); a.bubble.position.y = a.label ? 1.82 : 1.55; a.g.add(a.bubble); a.bubbleUntil = performance.now() + dur; }
 
 function poseAvatar(a, dt, t){
   const now = performance.now();
@@ -1006,7 +1013,11 @@ function poseAvatar(a, dt, t){
   if (a.moving) a.phase += dt * 9; else a.phase += dt * 1.3;
   const sw = a.moving ? Math.sin(a.phase) : 0;
   const [lL, lR] = a.legs, [aL, aR] = a.arms;
-  if (seat){
+  const petting = now < a.petUntil;
+  if (petting){
+    lL.thigh.rotation.x = lR.thigh.rotation.x = -1.25; lL.knee.rotation.x = lR.knee.rotation.x = 1.95;
+    a.torso.position.y = HIP; a.torso.rotation.x = .4; a.torso.rotation.z = 0; a.g.position.y = a.pos.y - .2 * a.L.size;
+  } else if (seat){
     lL.thigh.rotation.x = lR.thigh.rotation.x = lounge ? -1.35 : -Math.PI / 2;
     lL.knee.rotation.x = lounge ? .15 : Math.PI / 2 - .05 + Math.sin(t * 1.3 + a.phase) * .06;
     lR.knee.rotation.x = lounge ? .1 : Math.PI / 2 - .05 + Math.sin(t * 1.3 + a.phase + 1.4) * .06;
@@ -1017,18 +1028,18 @@ function poseAvatar(a, dt, t){
     a.torso.position.y = HIP + (a.moving ? Math.abs(Math.cos(a.phase)) * .035 : Math.sin(t * 1.6 + a.phase) * .006);
     a.torso.rotation.x = a.moving ? .06 : 0; a.torso.rotation.z = a.moving ? sw * .04 : 0;
   }
-  a.head.rotation.y = a.moving ? 0 : Math.sin(t * .35 + a.phase) * .3;
+  a.head.rotation.y = a.moving || petting ? 0 : Math.sin(t * .35 + a.phase) * .3;
+  a.head.rotation.x = petting ? .3 : 0;
   a.head.rotation.z = Math.sin(t * .5 + a.phase * 2) * .04;
   // blink
   a.blinkT -= dt; const bl = a.blinkT < .12 ? .15 : (a.L.happy ? 1 : 1.2); if (a.blinkT < 0) a.blinkT = rand(2, 5); a.eyes.forEach(e => e.scale.y = bl);
   // right arm: swing or wave
   if (now < a.waveUntil){ aR.sh.rotation.set(0, 0, 2.7 + Math.sin(t * 13) * .28); }
+  else if (petting) aR.sh.rotation.set(-1.05 + Math.sin(t * 8) * .22, 0, -.2);
   else aR.sh.rotation.set(seat ? -.5 : sw * .55, 0, .12);
   // left arm: swing, or hold the cup in front of the chest (sip now and then)
   if (a.itemObj){ const sip = !a.moving && Math.sin(t * .4 + a.phase) > .93; aL.sh.rotation.set(sip ? -2.3 : -1.25, 0, sip ? -.55 : -.38); a.holder.rotation.set(-aL.sh.rotation.x, 0, -aL.sh.rotation.z); }
   else aL.sh.rotation.set(seat ? -.5 : -sw * .55, 0, -.12);
-  if (a.bubble && now > a.bubbleUntil){ a.g.remove(a.bubble); a.bubble.material.map.dispose(); a.bubble = null; }
-  if (a.bubble){ const life = a.bubbleUntil - now; a.bubble.material.opacity = Math.min(1, life / 400); }
 }
 function placeSeated(a, i){ const s = seats[i]; a.seat = i; a.pos.set(s.x, FL[s.f] + s.h - (HIP - .06) * a.L.size, s.z); a.rot = s.rot; a.g.rotation.y = s.rot; a.moving = false; }
 
@@ -1058,15 +1069,68 @@ const cat = (() => {
   mesh(new THREE.SphereGeometry(.14, 16, 12), fur, head, 0, 0, 0);
   mesh(new THREE.SphereGeometry(.07, 10, 8), white, head, 0, -.04, .09).scale.set(1.2, .8, .8);
   [-.07, .07].forEach(x => { const e = mesh(new THREE.ConeGeometry(.05, .1, 4), fur, head, x, .13, 0); e.rotation.z = -x * 3; });
-  [-.05, .05].forEach(x => mesh(new THREE.SphereGeometry(.018, 8, 6), M('#2a1d18'), head, x, .02, .125, false));
+  const eyes = [-.05, .05].map(x => mesh(new THREE.SphereGeometry(.018, 8, 6), M('#2a1d18'), head, x, .02, .125, false));
   const tail = new THREE.Group(); tail.position.set(0, .25, -.25); g.add(tail);
   const tm = mesh(new THREE.CylinderGeometry(.025, .035, .4, 8), fur, tail, 0, .18, -.05); tm.rotation.x = -.6;
   const legs = [[-.08, .14], [.08, .14], [-.08, -.14], [.08, -.14]].map(([x, z]) => mesh(new THREE.CylinderGeometry(.035, .035, .14, 8), fur, g, x, .07, z));
   scene.add(g);
   act(g, { type: 'cat' });
-  return { g, head, tail, legs, body, pos: new THREE.Vector3(-1, FL[1], -2), target: new THREE.Vector3(-1, FL[1], -2), rot: 0, state: 'walk', timer: 3, bubble: null, bubbleUntil: 0 };
+  return { g, head, tail, legs, body, eyes, pos: new THREE.Vector3(-1, FL[1], -2), rot: 0, state: 'sit', walking: false, dest: new THREE.Vector3(), petUntil: 0, bubbleUntil: 0, tag: null };
 })();
-const catSpots = [[-1, -3], [-4.2, -4.5], [-6, 3.6], [0, 1], [4.5, -4], [-9, 1.5], [1.6, -1.5], [-2.5, 5.5]];
+const catSpots = [[-1, -3], [-4.2, -4.5], [-6, 3.6], [0, 1], [4.5, -4], [-9, 1.5], [1.6, -1.5], [-2.5, 5.5], [5.5, -1.5], [-7.8, -3.6]];
+// The cat's route is computed from the clock, so every visitor sees it in the same place.
+// Routes go around furniture: A* on a 25 cm grid built from the 2F obstacles, then shortcut where the line is clear.
+const CAT = { R: .24, SPEED: .5, SEG: 40000, EPOCH: Date.UTC(2026, 0, 1), CELL: .25, grid: null, nx: 0, nz: 0, spots: null, cache: {} };
+function blockedAt(f, x, z, r){ const b = BOUNDS[f]; if (x < b[0] + .1 || x > b[1] - .1 || z < b[2] + .1 || z > b[3] - .1) return true; for (const o of obstacles){ if (o.f !== f) continue; if (o.t === 'c'){ if (Math.hypot(x - o.x, z - o.z) < o.r + r) return true; } else if (x > o.x0 - r && x < o.x1 + r && z > o.z0 - r && z < o.z1 + r) return true; } return false; }
+function catInit(){
+  if (CAT.grid) return; const B = BOUNDS[1], C = CAT.CELL;
+  CAT.nx = Math.floor((B[1] - B[0]) / C) + 1; CAT.nz = Math.floor((B[3] - B[2]) / C) + 1; CAT.grid = new Uint8Array(CAT.nx * CAT.nz);
+  for (let j = 0; j < CAT.nz; j++) for (let i = 0; i < CAT.nx; i++) CAT.grid[j * CAT.nx + i] = blockedAt(1, B[0] + i * C, B[2] + j * C, CAT.R) ? 1 : 0;
+  CAT.spots = catSpots.filter(([x, z]) => !blockedAt(1, x, z, CAT.R));
+}
+function catClear(ax, az, bx, bz){ const d = Math.hypot(bx - ax, bz - az), n = Math.ceil(d / .1); for (let k = 1; k < n; k++){ const u = k / n; if (blockedAt(1, ax + (bx - ax) * u, az + (bz - az) * u, CAT.R - .02)) return false; } return true; }
+function catPath(a, b){
+  const key = a + '-' + b; if (CAT.cache[key]) return CAT.cache[key];
+  const B = BOUNDS[1], C = CAT.CELL, nx = CAT.nx, nz = CAT.nz, G = CAT.grid;
+  const [sx, sz] = CAT.spots[a], [gx, gz] = CAT.spots[b];
+  const si = Math.round((sx - B[0]) / C), sj = Math.round((sz - B[2]) / C), gi = Math.round((gx - B[0]) / C), gj = Math.round((gz - B[2]) / C);
+  const N = nx * nz, gs = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
+  const heap = []; const push = (f, n) => { heap.push([f, n]); let i = heap.length - 1; while (i){ const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length){ heap[0] = last; let i = 0; for (;;){ const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+  const start = sj * nx + si, goal = gj * nx + gi; gs[start] = 0; push(0, start);
+  const hcost = n => Math.hypot((n % nx) - gi, ((n / nx) | 0) - gj);
+  while (heap.length){
+    const [, n] = pop(); if (closed[n]) continue; closed[n] = 1; if (n === goal) break;
+    const i = n % nx, j = (n / nx) | 0;
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++){
+      if (!di && !dj) continue; const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= nx || jj >= nz) continue;
+      const m = jj * nx + ii; if (G[m] || closed[m]) continue; if (di && dj && (G[j * nx + ii] || G[jj * nx + i])) continue;
+      const g2 = gs[n] + (di && dj ? 1.4142 : 1); if (g2 < gs[m]){ gs[m] = g2; from[m] = n; push(g2 + hcost(m), m); }
+    }
+  }
+  let pts = [];
+  if (from[goal] >= 0 || goal === start){ for (let n = goal; n >= 0; n = from[n]){ pts.push([B[0] + (n % nx) * C, B[2] + ((n / nx) | 0) * C]); if (n === start) break; } pts.reverse(); pts[0] = [sx, sz]; pts[pts.length - 1] = [gx, gz]; }
+  else pts = [[sx, sz]];
+  // shortcut corners where the straight line is free
+  const sm = [pts[0]]; let k = 0; while (k < pts.length - 1){ let far = k + 1; for (let m = pts.length - 1; m > k + 1; m--) if (catClear(pts[k][0], pts[k][1], pts[m][0], pts[m][1])){ far = m; break; } sm.push(pts[far]); k = far; }
+  const cum = [0]; for (let i = 1; i < sm.length; i++) cum.push(cum[i - 1] + Math.hypot(sm[i][0] - sm[i - 1][0], sm[i][1] - sm[i - 1][1]));
+  return (CAT.cache[key] = { pts: sm, cum, len: cum[cum.length - 1] });
+}
+function hash32(n){ n = Math.imul(n ^ (n >>> 16), 0x45d9f3b); n = Math.imul(n ^ (n >>> 16), 0x45d9f3b); return (n ^ (n >>> 16)) >>> 0; }
+function catStateAt(ms){
+  catInit(); const T = ms - CAT.EPOCH, k = Math.floor(T / CAT.SEG), tt = (T - k * CAT.SEG) / 1000, n = CAT.spots.length;
+  const a = hash32(k * 7 + 13) % n, b = hash32((k + 1) * 7 + 13) % n, P = catPath(a, b);
+  const speed = Math.max(CAT.SPEED, P.len / (CAT.SEG / 1000 * .7)), walkT = P.len / speed, end = P.pts[P.pts.length - 1];
+  const lastDir = P.pts.length > 1 ? Math.atan2(end[0] - P.pts[P.pts.length - 2][0], end[1] - P.pts[P.pts.length - 2][1]) : 0;
+  if (P.len > .05 && tt < walkT){
+    const sd = tt * speed; let i = 1; while (i < P.cum.length - 1 && P.cum[i] < sd) i++;
+    const p0 = P.pts[i - 1], p1 = P.pts[i], u = (sd - P.cum[i - 1]) / Math.max(1e-6, P.cum[i] - P.cum[i - 1]);
+    return { x: p0[0] + (p1[0] - p0[0]) * u, z: p0[1] + (p1[1] - p0[1]) * u, rot: Math.atan2(p1[0] - p0[0], p1[1] - p0[1]), walking: true, dx: end[0], dz: end[1] };
+  }
+  return { x: end[0], z: end[1], rot: lastDir, walking: false, pose: hash32(k * 3 + 1) % 2 ? 'sit' : 'loaf', dx: end[0], dz: end[1] };
+}
+function catPetted(){ const now = performance.now(); cat.petUntil = now + 3600; say(cat, ['골골골…', '골골골골 (기분 좋아요)', '냐아~', '(눈 감고 골골)'][(Math.random() * 4) | 0], 3400); hearts(cat.g.position); setTimeout(() => hearts(cat.g.position), 1200); setTimeout(() => hearts(cat.g.position), 2400); }
+
 
 /* ---------- me ---------- */
 let entered = false;
@@ -1074,7 +1138,7 @@ const newSeed = () => (Math.random() * 2147483647) | 0;
 let mySeed = (() => { const v = parseInt(store.get('bj-seed'), 10); return Number.isFinite(v) && v > 0 ? v : newSeed(); })();
 let myName = store.get('bj-name') || ['파도소리', '윤슬', '노을빛', '모래알', '갈매기', '바닷바람', '라떼한잔'][(Math.random() * 7) | 0] + ((Math.random() * 90 + 10) | 0);
 let me = null; // avatar
-const ctrl = { floor: 0, target: null, pendingSeat: -1, path: [], stuck: 0 };
+const ctrl = { floor: 0, target: null, pendingSeat: -1, path: [], stuck: 0, petWait: 0 };
 
 /* ---------- collision ---------- */
 const BOUNDS = [[-11.5, 11.5, -11.9, 7.5], [-11.4, 11.4, -7.6, 7.5], [-11.6, 11.6, -7.7, 7.7]];
@@ -1106,18 +1170,39 @@ function goFloor(to){
 /* ---------- input ---------- */
 const cam = { theta: .5, phi: .42, dist: 15, target: new THREE.Vector3(0, 6, -2), tgt: new THREE.Vector3(0, 6, -2), mode: 'intro', fov: 48 };
 const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
-const pointers = new Map(); let dragMoved = 0, pinchD = 0;
+const pointers = new Map(); let dragMoved = 0, pinchD = 0, twoMid = null;
+const joy = { id: null, cand: null, x0: 0, y0: 0, vx: 0, vy: 0, el: $('#joy'), knob: $('#joy .knob') };
+function cancelJoy(){ joy.id = null; joy.cand = null; joy.vx = joy.vy = 0; joy.el.hidden = true; }
 const cv = renderer.domElement;
-cv.addEventListener('pointerdown', e => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragMoved = 0; cv.setPointerCapture(e.pointerId); if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pinchD = Math.hypot(a.x - b.x, a.y - b.y); } });
+cv.addEventListener('pointerdown', e => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragMoved = 0; cv.setPointerCapture(e.pointerId);
+  if (pointers.size === 2){ cancelJoy(); const [a, b] = [...pointers.values()]; pinchD = Math.hypot(a.x - b.x, a.y - b.y); twoMid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+  else if (pointers.size === 1 && e.pointerType !== 'mouse' && entered && cam.mode === 'follow'){ joy.cand = e.pointerId; joy.x0 = e.clientX; joy.y0 = e.clientY; }
+});
 cv.addEventListener('pointermove', e => {
   const p = pointers.get(e.pointerId); if (!p) return;
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
-  if (pointers.size === 2){ const [a, b] = [...pointers.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinchD) cam.dist = clamp(cam.dist * pinchD / d, 4, 40); pinchD = d; dragMoved = 99; return; }
+  if (pointers.size === 2){
+    const [a, b] = [...pointers.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y), mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    if (pinchD) cam.dist = clamp(cam.dist * pinchD / d, 4, 40); pinchD = d;
+    if (twoMid && cam.mode !== 'scope'){ cam.theta -= (mid.x - twoMid.x) * .007; cam.phi = clamp(cam.phi + (mid.y - twoMid.y) * .005, .08, 1.38); }
+    twoMid = mid; dragMoved = 99; return;
+  }
   dragMoved += Math.abs(dx) + Math.abs(dy);
-  if (dragMoved > 6){ cv.classList.add('dragging'); if (cam.mode === 'scope'){ scope.yaw -= dx * .0016; scope.pitch = clamp(scope.pitch + dy * .0012, -.2, .25); } else { cam.theta -= dx * .006; cam.phi = clamp(cam.phi + dy * .004, .08, 1.38); } }
+  if (joy.cand === e.pointerId && joy.id === null && dragMoved > 8){ joy.id = e.pointerId; joy.el.style.transform = `translate(${joy.x0}px,${joy.y0}px)`; joy.el.hidden = false; }
+  if (joy.id === e.pointerId){
+    let jx = e.clientX - joy.x0, jy = e.clientY - joy.y0; const R = 50, d = Math.hypot(jx, jy); if (d > R){ jx *= R / d; jy *= R / d; }
+    joy.knob.style.transform = `translate(${jx}px,${jy}px)`; joy.vx = jx / R; joy.vy = jy / R; return;
+  }
+  if (dragMoved > 6 && joy.cand !== e.pointerId){ cv.classList.add('dragging'); if (cam.mode === 'scope'){ scope.yaw -= dx * .0016; scope.pitch = clamp(scope.pitch + dy * .0012, -.2, .25); } else { cam.theta -= dx * .006; cam.phi = clamp(cam.phi + dy * .004, .08, 1.38); } }
 });
-function endPointer(e){ const had = pointers.has(e.pointerId); pointers.delete(e.pointerId); cv.classList.remove('dragging'); if (pointers.size < 2) pinchD = 0; if (had && dragMoved <= 6 && pointers.size === 0) onTap(e.clientX, e.clientY); }
-cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); cv.classList.remove('dragging'); });
+function endPointer(e){
+  const had = pointers.has(e.pointerId); pointers.delete(e.pointerId); cv.classList.remove('dragging');
+  if (pointers.size < 2){ pinchD = 0; twoMid = null; }
+  if (joy.id === e.pointerId || joy.cand === e.pointerId){ const wasJoy = joy.id === e.pointerId; cancelJoy(); if (wasJoy) return; }
+  if (had && dragMoved <= 6 && pointers.size === 0) onTap(e.clientX, e.clientY);
+}
+cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); cv.classList.remove('dragging'); if (joy.id === e.pointerId || joy.cand === e.pointerId) cancelJoy(); });
 cv.addEventListener('wheel', e => { e.preventDefault(); if (cam.mode === 'scope'){ scope.fov = clamp(scope.fov + e.deltaY * .01, 6, 30); return; } cam.dist = clamp(cam.dist * (1 + e.deltaY * .0011), 4, 40); }, { passive: false });
 const keys = {};
 addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; if (e.key === 'Enter' && entered){ $('#say').focus(); e.preventDefault(); } });
@@ -1135,7 +1220,7 @@ function onTap(x, y){
   if (hit){ const a = hit.object.userData.act; if (handleAct(a, hit.point)) return; }
   if (!hitFloor || ctrl.path.length) return;
   const b = BOUNDS[ctrl.floor]; if (fp.x < b[0] - 1 || fp.x > b[1] + 1 || fp.z < b[2] - 1 || fp.z > b[3] + 1) return;
-  standUp(); ctrl.pendingSeat = -1; ctrl.target = new THREE.Vector3(clamp(fp.x, b[0], b[1]), floorY, clamp(fp.z, b[2], b[3])); ctrl.stuck = 0;
+  standUp(); ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; ctrl.target = new THREE.Vector3(clamp(fp.x, b[0], b[1]), floorY, clamp(fp.z, b[2], b[3])); ctrl.stuck = 0;
   ripple(ctrl.target);
 }
 function handleAct(a, pt){
@@ -1150,7 +1235,7 @@ function handleAct(a, pt){
   if (a.type === 'counter'){ openMenu(); return true; }
   if (a.type === 'record'){ toggleMusic(); return true; }
   if (a.type === 'scope'){ enterScope(); return true; }
-  if (a.type === 'cat'){ catSay(['냐아옹', '골골골…', '(꾹꾹이 중)', '냥!'][(Math.random() * 4) | 0]); hearts(cat.g.position); return true; }
+  if (a.type === 'cat'){ goPetCat(); return true; }
   return false;
 }
 
@@ -1159,7 +1244,17 @@ const fx = [];
 function ripple(p){ const m = new THREE.Mesh(new THREE.RingGeometry(.15, .22, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xfff1d8, transparent: true, opacity: .8, depthWrite: false })); m.position.copy(p).y += .03; scene.add(m); fx.push({ m, t: 0, d: .7, kind: 'ripple' }); }
 const heartTex = canvasTex(64, 64, (g) => { g.fillStyle = '#ff8fa3'; g.font = '48px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.beginPath(); g.moveTo(32, 52); g.bezierCurveTo(4, 32, 10, 8, 32, 20); g.bezierCurveTo(54, 8, 60, 32, 32, 52); g.fill(); });
 function hearts(p){ for (let i = 0; i < 5; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: heartTex, transparent: true, depthWrite: false })); s.scale.setScalar(.22); s.position.copy(p).add(new THREE.Vector3(rand(-.2, .2), .5 + i * .05, rand(-.2, .2))); scene.add(s); fx.push({ m: s, t: -i * .12, d: 1.4, kind: 'heart', vx: rand(-.2, .2) }); } }
-function catSay(t){ if (cat.bubble){ cat.g.remove(cat.bubble); } cat.bubble = textSprite(t, 'bubble'); cat.bubble.position.y = .6; cat.bubble.scale.multiplyScalar(.85); cat.g.add(cat.bubble); cat.bubbleUntil = performance.now() + 3000; }
+function goPetCat(){
+  if (!me) return;
+  if (ctrl.floor !== 1){ toast('고양이는 2층 라운지에 있어요'); say(cat, '냐옹?', 2200); return; }
+  standUp(); const c = cat.walking ? cat.dest : cat.pos;
+  const dx = me.pos.x - c.x, dz = me.pos.z - c.z, d = Math.hypot(dx, dz) || 1;
+  const [tx, tz] = resolve(1, c.x + dx / d * .6, c.z + dz / d * .6);
+  ctrl.target = new THREE.Vector3(tx, FL[1], tz); ctrl.pendingSeat = -1; ctrl.stuck = 0; ctrl.petWait = performance.now() + 15000;
+  toast(cat.walking ? '고양이가 멈추면 쓰다듬어 줄게요' : '고양이에게 다가가는 중');
+}
+let myPet = 0;
+function startPet(){ me.petUntil = performance.now() + 3600; me.rot = Math.atan2(cat.pos.x - me.pos.x, cat.pos.z - me.pos.z); myPet = Date.now(); pushPresence(true); catPetted(); }
 
 let toastT = 0;
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2600); }
@@ -1246,7 +1341,7 @@ function pushPresence(force){ presenceDirty = true; if (force) lastSent = 0; }
 function sendPresence(now){
   if (!room || !me || !presenceDirty || now - lastSent < 110) return; presenceDirty = false; lastSent = now;
   const r2 = v => Math.round(v * 100) / 100;
-  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, say: mySay, st: mySayT, mv: me.moving ? 1 : 0 }).catch(() => {});
+  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, pt: myPet, say: mySay, st: mySayT, mv: me.moving ? 1 : 0 }).catch(() => {});
 }
 const num = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(v, a, b) : d;
 function handlePeers(list){
@@ -1259,7 +1354,7 @@ function handlePeers(list){
     const seed = (num(pr.ap, 1, 2147483647, 1)) | 0;
     const name = pr.n.replace(/[\u0000-\u001f]/g, '').slice(0, 10) || '손님';
     if (!r){ r = { a: null, name: '', seed: -1, tgt: new THREE.Vector3(), w: 0, st: 0, seat: -1, f: 0, first: true }; remotes.set(p.peer, r); }
-    if (r.seed !== seed){ const old = r.a; const a = makeAvatar(seed); scene.add(a.g); if (old){ a.pos.copy(old.pos); a.g.rotation.y = old.g.rotation.y; setItem(a, old.item); scene.remove(old.g); } r.a = a; r.seed = seed; r.name = ''; }
+    if (r.seed !== seed){ const old = r.a; const a = makeAvatar(seed); scene.add(a.g); if (old){ a.pos.copy(old.pos); a.g.rotation.y = old.g.rotation.y; setItem(a, old.item); scene.remove(old.g); removeTag(old); } r.a = a; r.seed = seed; r.name = ''; }
     if (r.name !== name){ r.name = name; setLabel(r.a, name, r.a.L.top); }
     r.tgt.set(num(pr.x, -40, 40, 0), num(pr.y, -2, 12, 0), num(pr.z, -40, 40, 0)); r.rot = num(pr.r, -10, 10, 0); r.f = num(pr.f, 0, 2, 0) | 0; r.moving = pr.mv === 1;
     if (r.first && typeof pr.x === 'number'){ r.a.pos.copy(r.tgt); r.first = false; }
@@ -1268,9 +1363,10 @@ function handlePeers(list){
     if (si !== r.seat){ if (r.seat >= 0 && seats[r.seat]) seats[r.seat].occRemote = false; r.seat = si; if (si >= 0) seats[si].occRemote = true; }
     setItem(r.a, num(pr.i, -1, ITEMS.length - 1, -1) | 0);
     const w = num(pr.w, 0, 1e15, 0); if (w && w !== r.w){ if (r.w) r.a.waveUntil = performance.now() + 2200; r.w = w; }
+    const pt = num(pr.pt, 0, 1e15, 0); if (pt && pt !== r.pt){ if (r.pt || Date.now() - pt < 3000){ r.a.petUntil = performance.now() + 3600; if (r.f === 1 && Math.hypot(r.tgt.x - cat.pos.x, r.tgt.z - cat.pos.z) < 2) catPetted(); } r.pt = pt; }
     const st = num(pr.st, 0, 1e15, 0); if (st && st !== r.st){ const fresh = Date.now() - st < 8000; r.st = st; if (typeof pr.say === 'string' && fresh) say(r.a, pr.say.replace(/[\u0000-\u001f]/g, '').slice(0, 60)); }
   }
-  for (const [k, r] of remotes){ if (!seen.has(k)){ scene.remove(r.a.g); if (r.seat >= 0 && seats[r.seat]) seats[r.seat].occRemote = false; remotes.delete(k); } }
+  for (const [k, r] of remotes){ if (!seen.has(k)){ scene.remove(r.a.g); removeTag(r.a); if (r.seat >= 0 && seats[r.seat]) seats[r.seat].occRemote = false; remotes.delete(k); } }
   updateCount();
 }
 function updateCount(){
@@ -1354,6 +1450,7 @@ function enter(){
   cam.mode = 'follow'; cam.theta = 0.12; cam.phi = .58; cam.dist = 13;
   initAudio(); if (AC && AC.state === 'suspended') AC.resume();
   setTimeout(() => say(barista, `어서오세요, ${myName}님! 해변가입니다`, 4500), 1400);
+  if (matchMedia('(pointer: coarse)').matches) setTimeout(() => toast('화면을 누른 채 끌면 조이스틱 · 두 손가락으로 회전과 확대'), 600);
   pushPresence(true); updateCount();
 }
 
@@ -1380,19 +1477,25 @@ function frame(){
       ctrl.floor = clamp(Math.floor((me.pos.y + .3 * H) / H), 0, 2); moved = true; me.moving = true;
     } else {
       // keyboard
-      let kx = 0, kz = 0;
+      let kx = 0, kz = 0, spMul = 1;
       if (keys['w'] || keys['arrowup']) kz += 1; if (keys['s'] || keys['arrowdown']) kz -= 1; if (keys['a'] || keys['arrowleft']) kx -= 1; if (keys['d'] || keys['arrowright']) kx += 1;
+      const jm = Math.hypot(joy.vx, joy.vy);
+      if (joy.id !== null && jm > .15){ kx += joy.vx; kz -= joy.vy; spMul = Math.min(1, .35 + jm * .75); }
       let dir = null;
-      if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
+      if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
       else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } } else dir = tmpV.normalize(); }
       if (dir && me.seat < 0){
-        const sp = 3.0 * dt; const ox = me.pos.x, oz = me.pos.z;
+        const sp = 3.0 * dt * spMul; const ox = me.pos.x, oz = me.pos.z;
         const [nx, nz] = resolve(ctrl.floor, me.pos.x + dir.x * sp, me.pos.z + dir.z * sp);
         me.pos.x = nx; me.pos.z = nz; me.pos.y = FL[ctrl.floor]; me.rot = Math.atan2(dir.x, dir.z);
         const real = Math.hypot(nx - ox, nz - oz);
         if (real < sp * .25){ ctrl.stuck += dt; if (ctrl.stuck > .35){ if (ctrl.pendingSeat >= 0 && ctrl.target && Math.hypot(ctrl.target.x - me.pos.x, ctrl.target.z - me.pos.z) < 1.3){ sitAt(ctrl.pendingSeat); } ctrl.target = null; ctrl.pendingSeat = -1; ctrl.stuck = 0; } } else ctrl.stuck = 0;
         moved = true; me.moving = true;
       } else me.moving = false;
+    }
+    if (ctrl.petWait){
+      if (now > ctrl.petWait || ctrl.floor !== 1) ctrl.petWait = 0;
+      else { const dc = Math.hypot(cat.pos.x - me.pos.x, cat.pos.z - me.pos.z); if (!cat.walking && (dc < 1.0 || (dc < 1.9 && (!ctrl.target || ctrl.stuck > .15)))){ ctrl.petWait = 0; ctrl.target = null; startPet(); } }
     }
     if (moved) pushPresence();
     poseAvatar(me, dt, t);
@@ -1421,17 +1524,22 @@ function frame(){
   if (npcSayT < 0){ npcSayT = rand(5, 11); const pool = npcs.filter(n => n.kind === 'guest' && n.f === visFloor); if (pool.length){ const n = pool[(Math.random() * pool.length) | 0]; say(n.a, LINES.guest[(Math.random() * LINES.guest.length) | 0], 5000); } else if (Math.random() < .3 && visFloor === 0) say(barista, LINES.barista[(Math.random() * LINES.barista.length) | 0], 4000); }
 
   // cat
-  cat.timer -= dt;
-  if (cat.state === 'walk'){ tmpV.subVectors(cat.target, cat.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .1){ cat.state = Math.random() < .5 ? 'sit' : 'loaf'; cat.timer = rand(4, 10); } else { cat.pos.addScaledVector(tmpV.normalize(), .55 * dt); cat.rot = lerpAngle(cat.rot, Math.atan2(tmpV.x, tmpV.z), dt * 5); } }
-  else if (cat.timer < 0){ const s = catSpots[(Math.random() * catSpots.length) | 0]; cat.target.set(s[0], FL[1], s[1]); cat.state = 'walk'; }
-  cat.g.position.copy(cat.pos); cat.g.rotation.y = cat.rot;
-  const walking = cat.state === 'walk';
-  cat.legs.forEach((l, i) => { l.visible = cat.state !== 'loaf'; l.position.z = (i < 2 ? .14 : -.14) + (walking ? Math.sin(t * 9 + i * 1.6) * .04 : 0); });
-  cat.body.position.y = cat.state === 'loaf' ? .13 : .2; cat.head.position.y = cat.state === 'loaf' ? .28 : .36;
-  cat.tail.rotation.z = Math.sin(t * (walking ? 4 : 1.5)) * .5;
-  cat.head.rotation.y = walking ? 0 : Math.sin(t * .4) * .5;
-  cat.g.visible = visFloor >= 1;
-  if (cat.bubble && now > cat.bubbleUntil){ cat.g.remove(cat.bubble); cat.bubble = null; }
+  {
+    const cs = catStateAt(Date.now()), petted = now < cat.petUntil;
+    cat.pos.set(cs.x, FL[1], cs.z); cat.walking = cs.walking && !petted; cat.dest.set(cs.dx, FL[1], cs.dz);
+    cat.state = cs.walking ? 'walk' : cs.pose;
+    if (petted) cat.state = 'loaf';
+    cat.rot = lerpAngle(cat.rot, cs.rot, Math.min(1, dt * 5));
+    cat.g.position.copy(cat.pos); cat.g.rotation.y = cat.rot;
+    const walking = cat.state === 'walk';
+    cat.legs.forEach((l, i) => { l.visible = cat.state !== 'loaf'; l.position.z = (i < 2 ? .14 : -.14) + (walking ? Math.sin(t * 9 + i * 1.6) * .04 : 0); });
+    cat.body.position.y = cat.state === 'loaf' ? .13 : .2; cat.head.position.y = cat.state === 'loaf' ? .28 : .36;
+    cat.tail.rotation.z = Math.sin(t * (walking ? 4 : petted ? .9 : 1.5)) * (petted ? .25 : .5);
+    cat.head.rotation.y = walking || petted ? 0 : Math.sin(t * .4) * .5;
+    cat.head.rotation.x = petted ? -.35 : 0; cat.head.rotation.z = petted ? Math.sin(t * 3) * .12 : 0;
+    cat.eyes.forEach(e => e.scale.y = petted ? .2 : 1);
+    cat.g.visible = visFloor >= 1;
+  }
 
   // world motion
   gulls.forEach(g => { g.a += g.sp * dt; g.g.position.set(g.cx + Math.cos(g.a) * g.r, g.h + Math.sin(t * .5 + g.ph) * 1.2, g.cz + Math.sin(g.a) * g.r * .6); g.g.rotation.y = -g.a + (g.sp > 0 ? 0 : Math.PI); const fl = Math.sin(t * 6 + g.ph) * .5; g.wl.rotation.z = fl; g.wr.rotation.z = -fl; });
@@ -1468,6 +1576,14 @@ function frame(){
   // dollhouse walls: hide the walls between the camera and the room
   walls.forEach(w => { w.mesh.visible = ((camera.position.x - w.px) * w.nx + (camera.position.z - w.pz) * w.nz) < 0; });
 
+  // 2D name tags and bubbles
+  tagLayer.hidden = !entered || cam.mode === 'scope';
+  if (!tagLayer.hidden){
+    if (me) placeTag(me, me.g, 1.5 * me.L.size, true, now);
+    for (const r of remotes.values()) placeTag(r.a, r.a.g, 1.5 * r.a.L.size, r.a.g.visible, now);
+    npcs.forEach(n => placeTag(n.a, n.a.g, 1.5 * n.a.L.size, n.a.g.visible, now));
+    placeTag(cat, cat.g, .62, cat.g.visible, now);
+  }
   renderer.render(scene, camera);
   if (!entered && pv.r && pv.a){ pv.a.g.rotation.y = Math.sin(t * .6) * .7; pv.a.rot = pv.a.g.rotation.y; poseAvatar(pv.a, dt, t); pv.a.g.position.set(0, 0, 0); pv.r.render(pv.scene, pv.cam); }
   if (firstFrame){ firstFrame = false; const l = $('#loading'); l.style.opacity = 0; setTimeout(() => l.remove(), 900); }
