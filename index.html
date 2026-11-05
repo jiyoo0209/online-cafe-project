@@ -1099,16 +1099,20 @@ strand([-11.9,-7.9],[11.9,-7.9],.5); strand([-11.9,0],[11.9,0],.9);
       const front = root.getObjectByName('Cube') || root, fb = new THREE.Box3().setFromObject(front), k = 1.06 / fb.getSize(new THREE.Vector3()).y;
       wrap.scale.setScalar(k); wrap.updateMatrixWorld(true);
       const b2 = new THREE.Box3().setFromObject(front), c = b2.getCenter(new THREE.Vector3());
-      wrap.position.set(-6.5 - c.x, y - b2.min.y, 4.7 - c.z);
+      wrap.position.set(-6.5 - c.x, y - b2.min.y, 4.7 - c.z); wrap.updateMatrixWorld(true);
+      // push the wooden back bar and everything on it flat against the back wall (inner face z 7.775)
+      const back = root.children.find(o => o.name.replace('.', '') === 'Cube008');
+      if (back){ const dz = 7.775 - new THREE.Box3().setFromObject(back).max.z;
+        root.children.filter(o => new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()).z > 4.7 + .5).forEach(o => { o.position.x -= dz / k; }); }
       floors[f].add(wrap); act(wrap, { type: 'counter' });
     };
     if (THREE.GLTFLoader){ const ld = new THREE.GLTFLoader(); ld.load('models/counter.glb', ready, undefined, () => {
       fetch('models/counter.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), ch => ch.charCodeAt(0)); ld.parse(bin.buffer, 'models/', ready, () => {}); }).catch(() => {}); }); } }
   // back bar shelves
   const bb = grp(floors[f], -6.5, y, 7.55);
-  [1.6, 2.2].forEach(h => box(7, .05, .3, mat.wood, bb, 0, h, .05));
-  for (let i = 0; i < 26; i++){ const h = rand(.18, .3); cyl(.05, .05, h, M(['#e9dccb','#8a6a4a','#cfe0dc','#d9a85b','#3e5a50'][i % 5], i % 3 ? {} : { transparent: true, opacity: .7 }), bb, -3.2 + i * .25, i % 2 ? 1.65 : 2.25, .05, 10); }
-  obR(f, -9.6, -3.55, 6.3, 8);
+  [1.75, 2.2].forEach(h => box(7, .05, .3, mat.wood, bb, 0, h, .05));   // lower shelf clears the blender on the back bar
+  for (let i = 0; i < 26; i++){ const h = rand(.18, .3); cyl(.05, .05, h, M(['#e9dccb','#8a6a4a','#cfe0dc','#d9a85b','#3e5a50'][i % 5], i % 3 ? {} : { transparent: true, opacity: .7 }), bb, -3.2 + i * .25, i % 2 ? 1.8 : 2.25, .05, 10); }
+  obR(f, -9.6, -3.55, 7.0, 8);
   // big menu board fixed to the back wall above the shelves (part of the wall, so it hides with it)
   { const wall = walls[0].mesh, mb = new THREE.Group(); mb.position.set(-6.5, 3.3 - (H - .35) / 2, -.14); mb.rotation.y = Math.PI; wall.add(mb);
     box(3.5, 1.8, .06, mat.wood, mb, 0, -.9, -.02);
