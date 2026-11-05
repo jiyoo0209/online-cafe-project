@@ -42,7 +42,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .tag .bub::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:rgba(255,250,242,.97);border-bottom:0}
 .tag .nm{font-size:12px;font-weight:600;padding:2px 9px 2px 7px;border-radius:99px;background:rgba(30,20,14,.6);color:#fff5e8;display:inline-flex;align-items:center;gap:5px}
 .tag .nm i{width:7px;height:7px;border-radius:50%}
-#joy{position:fixed;left:calc(max(16px,env(safe-area-inset-left,0px)) + 6px);bottom:calc(206px + env(safe-area-inset-bottom,0px));width:118px;height:118px;border-radius:50%;background:rgba(40,26,18,.28);border:1.5px solid rgba(255,245,232,.55);box-shadow:0 0 0 1px rgba(40,20,10,.12);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:none;z-index:3}
+#joy{position:fixed;left:calc(max(16px,env(safe-area-inset-left,0px)) + 6px);bottom:calc(132px + env(safe-area-inset-bottom,0px));width:118px;height:118px;border-radius:50%;background:rgba(40,26,18,.28);border:1.5px solid rgba(255,245,232,.55);box-shadow:0 0 0 1px rgba(40,20,10,.12);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:none;z-index:3}
 #joy .knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,245,232,.9);box-shadow:0 3px 12px rgba(30,15,5,.3);pointer-events:none}
 #hud{position:fixed;inset:0;pointer-events:none}
 #hud > *{pointer-events:auto}
@@ -68,10 +68,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .floors button[aria-current="true"] b{color:var(--accent)}
 
 .dock{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;align-items:center;width:min(560px,calc(100vw - 32px))}
-#chat{display:flex;width:100%;padding:5px;gap:4px}
-#say{flex:1;min-width:0;border:0;background:transparent;padding:9px 12px;font-size:15px;outline:none}
-#say::placeholder{color:var(--ink-dim)}
-#chat button{border:0;border-radius:10px;padding:8px 16px;background:var(--accent);color:var(--accent-ink);font-weight:600}
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .acts button{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:7px 13px;border-radius:99px;font-size:13px}
 .acts button[aria-pressed="false"]{color:var(--ink-dim)}
@@ -116,11 +112,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ground);font-family:var(--font-display);font-size:18px;color:var(--ink-dim);transition:opacity .8s}
 
 @media (max-width:720px){
-  .floors{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));transform:none;flex-direction:row;padding:4px}
+  .floors{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:none;flex-direction:row;padding:4px}
   .floors button{min-width:0;grid-template-columns:auto;padding:7px 10px}
   .floors span{display:none}
   .hint{display:none}
-  .time{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:auto}
+  .time{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:auto}
   .time button{padding:7px 9px}
   .brand{padding:10px 13px}
   .logo{font-size:19px}
@@ -152,10 +148,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     <button data-f="0" aria-current="true"><b>1F</b><span>카운터 · 바다 데크</span></button>
   </nav>
   <div class="dock">
-    <form id="chat" class="panel" autocomplete="off">
-      <input id="say" maxlength="60" placeholder="옆 사람에게 한마디 건네기" aria-label="말하기">
-      <button type="submit">말하기</button>
-    </form>
     <div class="acts">
       <button id="bWave" type="button">손 흔들기</button>
       <button id="bMenu" type="button">메뉴 주문</button>
@@ -164,7 +156,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <button id="bSound" type="button" aria-pressed="true">파도 소리</button>
     </div>
   </div>
-  <div class="hint">바닥을 눌러 걷기 · WASD로 이동 · 드래그로 둘러보기 · 의자와 소파를 눌러 앉기 · 2층 고양이를 눌러 쓰다듬기 · 턴테이블과 3층 망원경도 눌러보세요</div>
+  <div class="hint">바닥을 눌러 걷기 · WASD로 이동 · 계단 쪽으로 걸어가면 오르내리기 · 드래그로 둘러보기 · 의자와 소파를 눌러 앉기 · 2층 고양이를 눌러 쓰다듬기 · 턴테이블과 3층 망원경도 눌러보세요</div>
 </div>
 
 <div id="entry">
@@ -499,6 +491,7 @@ const oceanU = {
   uTime: { value: 0 }, uDeep: { value: new THREE.Color('#2c3e5c') }, uShallow: { value: new THREE.Color('#5aa7a8') }, uHorizon: { value: new THREE.Color('#f6a96b') },
   uSunColor: { value: new THREE.Color('#ffb070') }, uSunDir: { value: new THREE.Vector3(0, .1, -1).normalize() }, uCam: { value: new THREE.Vector3() }, uGlint: { value: 1 },
   uTop: { value: new THREE.Color('#45508a') }, uWet: { value: new THREE.Color('#a8826a') }, uFoam: { value: new THREE.Color('#ffe8d6') },
+  uSand: { value: new THREE.Color('#e8d3ad') }, uAmb: { value: 1 },
 };
 const ocean = new THREE.Mesh(new THREE.PlaneGeometry(2400, 1400, 240, 140).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
   uniforms: oceanU,
@@ -518,50 +511,54 @@ const ocean = new THREE.Mesh(new THREE.PlaneGeometry(2400, 1400, 240, 140).rotat
       float shore = smoothstep(-70.0, -24.0, w.z) * (1.0 - smoothstep(-22.5, -20.5, w.z));
       float ph = -w.z * 0.5 - uTime * 1.25 + sin(w.x * 0.045) * 1.6;
       float sw = max(0.0, sin(ph)); float br = pow(sw, 6.0);
-      h += br * 0.16 * shore;
-      g.y += 0.16 * shore * 6.0 * pow(sw, 5.0) * cos(ph) * -0.5;
+      h += br * 0.08 * shore;
+      g.y += 0.08 * shore * 6.0 * pow(sw, 5.0) * cos(ph) * -0.5;
       w.y += h;
       vW = w.xyz; vH = h; vBreak = br * shore; vN = normalize(vec3(-g.x, 1.0, -g.y));
       gl_Position = projectionMatrix * viewMatrix * w;
     }`,
   fragmentShader: `
-    uniform vec3 uDeep, uShallow, uHorizon, uTop, uWet, uFoam, uSunColor, uSunDir, uCam; uniform float uTime, uGlint;
+    uniform vec3 uDeep, uShallow, uHorizon, uTop, uWet, uFoam, uSand, uSunColor, uSunDir, uCam; uniform float uTime, uGlint, uAmb;
     varying vec3 vW; varying vec3 vN; varying float vH; varying float vBreak;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+    vec2 hash2(vec2 p){ p = vec2(dot(p, vec2(127.1,311.7)), dot(p, vec2(269.5,183.3))); return fract(sin(p) * 43758.5453); }
     float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
     float fbm(vec2 p){ return noise(p) * 0.55 + noise(p * 2.1 + 7.0) * 0.3 + noise(p * 4.3 + 3.0) * 0.15; }
+    vec2 voronoi(vec2 x, float t){ vec2 n = floor(x), f = fract(x); float F1 = 8.0, F2 = 8.0;
+      for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){ vec2 g = vec2(float(i), float(j)); vec2 o = hash2(n + g); o = 0.5 + 0.5 * sin(t + 6.2831 * o); vec2 r = g + o - f; float d = dot(r, r); if (d < F1){ F2 = F1; F1 = d; } else if (d < F2) F2 = d; }
+      return vec2(sqrt(F1), sqrt(F2) - sqrt(F1)); }
+    // same beach height as the sand mesh (sandY in JS)
+    float sandY(vec2 p){ return -0.06 + sin(p.x * 0.21) * cos(p.y * 0.3) * 0.04 + sin(p.x * 0.9 + p.y * 1.7) * 0.006 - max(0.0, -p.y - 15.0) * 0.055; }
     void main(){
-      vec3 V = normalize(uCam - vW);
-      vec2 q = vW.xz * 0.7 + uTime * vec2(0.04, 0.11);
-      vec3 n = normalize(vN + vec3(noise(q*1.7)-0.5, 0.0, noise(q*1.7 + 19.0)-0.5) * 0.4 + vec3(noise(q*5.0)-0.5, 0.0, noise(q*5.0+7.0)-0.5) * 0.15);
+      vec3 V = normalize(uCam - vW), L = normalize(uSunDir);
+      float dist = length(vW.xz - uCam.xz);
+      vec2 rip = vec2(fbm(vW.xz * 0.8 + uTime * 0.15), fbm(vW.xz * 0.8 - uTime * 0.12 + 5.0)) - 0.5;
+      vec3 n = normalize(vN + vec3(rip.x, 0.0, rip.y) * 0.35);
+      float depth = max(-0.36 - sandY(vW.xz), 0.0);
+      // sea floor seen through clear water, bent by the ripples, with moving caustic light
+      vec2 sp = vW.xz + n.xz * min(depth, 4.0) * 0.9;
+      vec3 sand = uSand * (0.9 + 0.2 * noise(sp * 6.0)) * (0.95 + 0.1 * noise(sp * 0.7));
+      float near = 1.0 - smoothstep(40.0, 110.0, dist);
+      vec2 c1 = voronoi(sp * 1.1 + uTime * vec2(0.12, 0.08), uTime * 1.1);
+      vec2 c2 = voronoi(sp * 1.6 - uTime * vec2(0.09, 0.11), uTime * 0.8 + 2.0);
+      float caus = ((1.0 - smoothstep(0.0, 0.16, c1.y)) * 0.7 + (1.0 - smoothstep(0.0, 0.12, c2.y)) * 0.6) * near;
+      sand *= 1.0 + caus * 1.3 * exp(-depth * 0.35) * uAmb;
+      vec3 absorb = exp(-depth * vec3(0.75, 0.22, 0.16));
+      vec3 body = sand * absorb * uAmb + mix(uShallow, uDeep, smoothstep(0.5, 6.0, depth)) * (1.0 - absorb);
+      body += uShallow * smoothstep(0.04, 0.22, vH) * 0.18;
       float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, V), 0.0), 5.0);
-      float t = clamp((-vW.z - 22.0) / 120.0, 0.0, 1.0);
-      float depth = (-vW.z - 20.5) * 0.055;
-      // water body: turquoise in the shallows, deep blue offshore, light glowing through wave crests
-      vec3 water = mix(uShallow, uDeep, t);
-      water += uShallow * smoothstep(0.03, 0.22, vH) * 0.3;
-      // shallow water lets the sand show through
-      float clear = smoothstep(0.0, 1.1, depth);
-      water = mix(mix(uWet, uShallow, 0.45), water, clear);
-      // reflection of the sky
       vec3 R = reflect(-V, n);
       vec3 sky = mix(uHorizon, uTop, pow(clamp(R.y, 0.0, 1.0), 0.6));
-      vec3 col = mix(water, sky, clamp(fres * 1.15, 0.0, 0.92));
-      // sun path, sparkles
-      float s = max(dot(R, normalize(uSunDir)), 0.0);
-      col += uSunColor * (pow(s, 420.0) * 5.0 + pow(s, 50.0) * 0.45 + pow(s, 8.0) * 0.07) * uGlint;
-      float spark = step(0.982, noise(vW.xz * 7.0 + uTime * vec2(1.3, 0.7))) * pow(s, 5.0);
-      col += uSunColor * spark * 1.6 * uGlint;
-      // foam: breaking swells, lacy shoreline, a few whitecaps offshore
-      float fn = fbm(vW.xz * vec2(0.9, 1.6) + vec2(uTime * 0.12, uTime * 0.05));
-      float foam = smoothstep(0.5, 0.9, vBreak + (fn - 0.5) * 0.6) * (1.0 - smoothstep(0.2, 2.2, depth));
-      foam += smoothstep(0.2, 0.3, vH + (fn - 0.5) * 0.12) * 0.25 * t;
-      float lap = 1.0 - smoothstep(0.0, 0.12, depth + (fn - 0.5) * 0.08);
-      foam = max(foam, lap * 0.75);
-      foam *= 0.55 + 0.45 * fbm(vW.xz * 3.0 + uTime * 0.2);
-      col = mix(col, uFoam, clamp(foam, 0.0, 1.0) * 0.9);
-      float d = length(vW.xz - uCam.xz);
-      col = mix(col, uHorizon, smoothstep(160.0, 1100.0, d));
+      vec3 col = mix(body, sky, clamp(fres * 0.95, 0.0, 0.88));
+      float s = max(dot(R, L), 0.0);
+      col += uSunColor * (pow(s, 500.0) * 6.0 + pow(s, 50.0) * 0.35 + pow(s, 8.0) * 0.05) * uGlint;
+      col += uSunColor * step(0.985, noise(vW.xz * 8.0 + uTime)) * pow(s, 6.0) * 1.5 * uGlint;
+      // gentle foam: soft lap at the water's edge and a little where the small swells tip over
+      float tex = fbm(vW.xz * 3.0 + uTime * 0.3);
+      float lap = 1.0 - smoothstep(0.0, 0.16, depth + (tex - 0.5) * 0.14 - (sin(uTime * 0.9) * 0.5 + 0.5) * 0.08);
+      float brk = smoothstep(0.55, 0.9, vBreak + (tex - 0.5) * 0.5) * (1.0 - smoothstep(0.3, 1.6, depth)) * 0.6;
+      col = mix(col, uFoam, clamp(lap * smoothstep(0.35, 0.6, tex + 0.2) + brk * smoothstep(0.4, 0.6, tex), 0.0, 1.0));
+      col = mix(col, uHorizon, smoothstep(160.0, 1100.0, dist));
       gl_FragColor = vec4(col, 1.0);
     }`,
 }));
@@ -733,8 +730,8 @@ function slab(x0, x1, z0, z1, top, m, parent){
   for (let i = 0; i < pos.count; i++){ if (nor.getY(i) > .5){ uv.setXY(i, (pos.getX(i) + b.position.x) / 4.8, (pos.getZ(i) + b.position.z) / 3.2); } }
   uv.needsUpdate = true; return b;
 }
-[[-12, 9, -8, 8], [9, 12, -8, -.3], [9, 12, 6.2, 8]].forEach(([x0, x1, z0, z1]) => slab(x0, x1, z0, z1, H, mat.oakFloorW, floors[1]));
-[[-12.2, 6.5, -8.2, 8.2], [6.5, 12.2, -8.2, .5], [6.5, 12.2, 6.6, 8.2], [9.1, 12.2, .5, 6.6]].forEach(([x0, x1, z0, z1]) => slab(x0, x1, z0, z1, 2 * H, mat.teakFloor, floors[2]));
+[[-12, 9, -8, 8], [9, 12, -8, -1.0], [9, 12, 5.2, 8]].forEach(([x0, x1, z0, z1]) => slab(x0, x1, z0, z1, H, mat.oakFloorW, floors[1]));
+[[-12.2, 6.5, -8.2, 8.2], [6.5, 12.2, -8.2, -.4], [6.5, 12.2, 5.7, 8.2], [9.1, 12.2, -.4, 5.7]].forEach(([x0, x1, z0, z1]) => slab(x0, x1, z0, z1, 2 * H, mat.teakFloor, floors[2]));
 // slab fascia trim (white edges seen from the beach)
 box(24.4, .5, .2, mat.plasterPlain, floors[1], 0, H - .45, -8.05);
 box(24.4, .5, .2, mat.plasterPlain, floors[2], 0, 2 * H - .45, -8.25);
@@ -778,15 +775,15 @@ function stairs(f, x0, x1, zs, ze, ys, ye, link){
   [x0 + .03, x1 - .03].forEach(xx => { const rail = mesh(new THREE.BoxGeometry(.05, .05, len), mat.brass, g, xx, (ys + ye) / 2 + .95, (zs + ze) / 2); rail.rotation.x = dir > 0 ? -ang : ang; });
   act(g, { type: 'stair', a: link[0], b: link[1] });
 }
-stairs(0, 9.2, 11.6, 0, 6, 0, H, [0, 1]);
-stairs(1, 6.7, 9.0, 6.5, .5, H, 2 * H, [1, 2]);
-obR(0, 9.0, 12, -.1, 6.4);
-obR(1, 9.0, 12, -.4, 6.25); obR(1, 6.55, 9.1, .35, 6.6);
-obR(2, 6.4, 9.2, .45, 6.7);
+stairs(0, 9.2, 11.6, -.9, 5.1, 0, H, [0, 1]);
+stairs(1, 6.7, 9.0, 5.6, -.4, H, 2 * H, [1, 2]);
+obR(0, 9.0, 12, -1.0, 5.3);
+obR(1, 9.0, 12, -1.3, 5.15); obR(1, 6.55, 9.1, -.55, 5.7);
+obR(2, 6.4, 9.2, -.45, 5.75);
 // rails around holes
 function railLine(f, x0, z0, x1, z1, hgt = 1){ const g = floors[f]; const len = Math.hypot(x1 - x0, z1 - z0); const a = Math.atan2(x1 - x0, z1 - z0); const p = mesh(new THREE.BoxGeometry(.04, hgt, len), mat.glass, g, (x0 + x1) / 2, FL[f] + hgt / 2, (z0 + z1) / 2, false); p.rotation.y = a; const top = mesh(new THREE.BoxGeometry(.07, .06, len + .04), mat.wood, g, (x0 + x1) / 2, FL[f] + hgt, (z0 + z1) / 2); top.rotation.y = a; }
-railLine(1, 9.0, -.25, 12, -.25); railLine(1, 9.05, -.25, 9.05, 6.2);
-railLine(2, 6.45, .5, 6.45, 6.65); railLine(2, 9.15, .5, 9.15, 6.65); railLine(2, 6.45, 6.65, 9.15, 6.65);
+railLine(1, 9.0, -1.05, 12, -1.05); railLine(1, 9.05, -1.05, 9.05, 5.15);
+railLine(2, 6.45, -.4, 6.45, 5.7); railLine(2, 9.15, -.4, 9.15, 5.7); railLine(2, 6.45, 5.7, 9.15, 5.7);
 
 // Floor 3 perimeter glass railing + posts for string lights
 railLine(2, -12.1, -8.15, 12.1, -8.15, 1.05); railLine(2, -12.1, 8.15, 12.1, 8.15, 1.05);
@@ -955,17 +952,17 @@ const warm = [];
 /* ---------- environment presets ---------- */
 function dirFrom(el, az){ el *= Math.PI / 180; az *= Math.PI / 180; return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).normalize(); }
 const PRESETS = {
-  day:    { top: '#4e93d4', hor: '#cfe4ef', sunC: '#fff2dc', sunDir: dirFrom(52, 28), sunI: 1.25, hemiS: '#d6e9ff', hemiG: '#e2cfae', hemiI: .62, deep: '#1e6688', shallow: '#4cc0bf', glow: 0, stars: 0, exp: 1.0, cloud: '#ffffff', glint: .8, disk: 2200, gAmt: .25, warm: .25, beam: 0, fogN: 120, fogF: 900, wet: '#b89c7c', foamC: '#ffffff' },
-  sunset: { top: '#45508a', hor: '#f4a46f', sunC: '#ffad6b', sunDir: dirFrom(5, -14), sunI: .95, hemiS: '#f3b9a0', hemiG: '#5f4e66', hemiI: .55, deep: '#2a3b5a', shallow: '#4f8f97', glow: .65, stars: .15, exp: 1.08, cloud: '#ffc0a8', glint: 1.3, disk: 1500, gAmt: .55, warm: 1.0, beam: 0, fogN: 80, fogF: 760, wet: '#9a7563', foamC: '#ffe6d2' },
-  night:  { top: '#060a1c', hor: '#1c2949', sunC: '#c9d6ff', sunDir: dirFrom(18, 16), sunI: .32, hemiS: '#3b4c7e', hemiG: '#1b1622', hemiI: .42, deep: '#0a1328', shallow: '#123049', glow: 1, stars: 1, exp: 1.12, cloud: '#3a4566', glint: .9, disk: 5000, gAmt: .12, warm: 1.7, beam: 1, fogN: 60, fogF: 640, wet: '#232634', foamC: '#8c9ab4' },
+  day:    { top: '#4e93d4', hor: '#cfe4ef', sunC: '#fff2dc', sunDir: dirFrom(52, 28), sunI: 1.25, hemiS: '#d6e9ff', hemiG: '#e2cfae', hemiI: .62, deep: '#0c4a6e', shallow: '#1aa6a6', glow: 0, stars: 0, exp: 1.0, cloud: '#ffffff', glint: .8, disk: 2200, gAmt: .25, warm: .25, beam: 0, fogN: 120, fogF: 900, wet: '#b89c7c', foamC: '#ffffff', amb: 1, sandC: '#e8d3ad' },
+  sunset: { top: '#45508a', hor: '#f4a46f', sunC: '#ffad6b', sunDir: dirFrom(5, -14), sunI: .95, hemiS: '#f3b9a0', hemiG: '#5f4e66', hemiI: .55, deep: '#253a5c', shallow: '#3f8c95', glow: .65, stars: .15, exp: 1.08, cloud: '#ffc0a8', glint: 1.3, disk: 1500, gAmt: .55, warm: 1.0, beam: 0, fogN: 80, fogF: 760, wet: '#9a7563', foamC: '#ffe6d2', amb: .72, sandC: '#e2b994' },
+  night:  { top: '#060a1c', hor: '#1c2949', sunC: '#c9d6ff', sunDir: dirFrom(18, 16), sunI: .32, hemiS: '#3b4c7e', hemiG: '#1b1622', hemiI: .42, deep: '#0a1328', shallow: '#123049', glow: 1, stars: 1, exp: 1.12, cloud: '#3a4566', glint: .9, disk: 5000, gAmt: .12, warm: 1.7, beam: 1, fogN: 60, fogF: 640, wet: '#232634', foamC: '#8c9ab4', amb: .2, sandC: '#9aa6c4' },
 };
-function envFrom(p){ return { top: new THREE.Color(p.top), hor: new THREE.Color(p.hor), sunC: new THREE.Color(p.sunC), sunDir: p.sunDir.clone(), sunI: p.sunI, hemiS: C(p.hemiS), hemiG: C(p.hemiG), hemiI: p.hemiI, deep: new THREE.Color(p.deep), shallow: new THREE.Color(p.shallow), glow: p.glow, stars: p.stars, exp: p.exp, cloud: new THREE.Color(p.cloud), glint: p.glint, disk: p.disk, gAmt: p.gAmt, warm: p.warm, beam: p.beam, fogN: p.fogN, fogF: p.fogF, wet: new THREE.Color(p.wet), foamC: new THREE.Color(p.foamC) }; }
+function envFrom(p){ return { top: new THREE.Color(p.top), hor: new THREE.Color(p.hor), sunC: new THREE.Color(p.sunC), sunDir: p.sunDir.clone(), sunI: p.sunI, hemiS: C(p.hemiS), hemiG: C(p.hemiG), hemiI: p.hemiI, deep: new THREE.Color(p.deep), shallow: new THREE.Color(p.shallow), glow: p.glow, stars: p.stars, exp: p.exp, cloud: new THREE.Color(p.cloud), glint: p.glint, disk: p.disk, gAmt: p.gAmt, warm: p.warm, beam: p.beam, fogN: p.fogN, fogF: p.fogF, wet: new THREE.Color(p.wet), foamC: new THREE.Color(p.foamC), amb: p.amb, sandC: new THREE.Color(p.sandC) }; }
 function envLerp(a, b, t){ const o = {}; for (const k in a){ if (a[k] && a[k].isColor) o[k] = a[k].clone().lerp(b[k], t); else if (a[k] && a[k].isVector3) o[k] = a[k].clone().lerp(b[k], t).normalize(); else o[k] = a[k] + (b[k] - a[k]) * t; } return o; }
 let env = envFrom(PRESETS.sunset), envFromS = null, envTo = null, envT = 1, envName = 'sunset';
 function setPreset(name){ envName = name; envFromS = env; envTo = envFrom(PRESETS[name]); envT = 0; document.querySelectorAll('.time button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === name)); }
 function applyEnv(e){
   skyU.uTop.value.copy(e.top); skyU.uHor.value.copy(e.hor); skyU.uSunDir.value.copy(e.sunDir); skyU.uSunColor.value.copy(e.sunC); skyU.uDisk.value = e.disk; skyU.uGlowAmt.value = e.gAmt;
-  oceanU.uDeep.value.copy(e.deep); oceanU.uShallow.value.copy(e.shallow); oceanU.uHorizon.value.copy(e.hor); oceanU.uSunColor.value.copy(e.sunC); oceanU.uSunDir.value.copy(e.sunDir); oceanU.uGlint.value = e.glint; oceanU.uTop.value.copy(e.top); oceanU.uWet.value.copy(e.wet); oceanU.uFoam.value.copy(e.foamC);
+  oceanU.uDeep.value.copy(e.deep); oceanU.uShallow.value.copy(e.shallow); oceanU.uHorizon.value.copy(e.hor); oceanU.uSunColor.value.copy(e.sunC); oceanU.uSunDir.value.copy(e.sunDir); oceanU.uGlint.value = e.glint; oceanU.uTop.value.copy(e.top); oceanU.uWet.value.copy(e.wet); oceanU.uFoam.value.copy(e.foamC); oceanU.uSand.value.copy(e.sandC); oceanU.uAmb.value = e.amb;
   scene.fog.color.copy(e.hor).convertSRGBToLinear(); scene.fog.near = e.fogN; scene.fog.far = e.fogF;
   sun.color.copy(e.sunC).convertSRGBToLinear(); sun.intensity = e.sunI; sun.position.copy(sun.target.position).addScaledVector(e.sunDir.y < .12 ? new THREE.Vector3(e.sunDir.x, .2, e.sunDir.z).normalize() : e.sunDir, 80);
   hemi.color.copy(e.hemiS); hemi.groundColor.copy(e.hemiG); hemi.intensity = e.hemiI;
@@ -1256,20 +1253,23 @@ function resolve(f, x, z, r = .32){
 
 /* ---------- floors / stairs ---------- */
 const P = (x, y, z) => new THREE.Vector3(x, y, z);
-const UP = [[P(10.4, 0, -.9), P(10.4, 0, 0), P(10.4, H, 6), P(10.4, H, 7.1)], [P(7.85, H, 7.2), P(7.85, H, 6.5), P(7.85, 2 * H, .5), P(7.85, 2 * H, -.9)]];
+const UP = [[P(10.4, 0, -1.9), P(10.4, 0, -.9), P(10.4, H, 5.1), P(10.4, H, 6.3)], [P(7.85, H, 6.7), P(7.85, H, 5.6), P(7.85, 2 * H, -.4), P(7.85, 2 * H, -1.7)]];
 const DOWN = UP.map(p => p.slice().reverse());
 // Walking into a stair opening (keyboard or joystick) starts the climb, in the direction you're heading
 const STAIR_TRIG = [
-  { f: 0, x0: 9.1, x1: 11.7, z0: -1.7, z1: -.2, dz: 1, path: () => UP[0] },
-  { f: 1, x0: 9.1, x1: 11.7, z0: 6.4, z1: 7.6, dz: -1, path: () => DOWN[0] },
-  { f: 1, x0: 6.6, x1: 9.05, z0: 6.7, z1: 7.6, dz: -1, path: () => UP[1] },
-  { f: 2, x0: 6.6, x1: 9.1, z0: -1.7, z1: .3, dz: 1, path: () => DOWN[1] },
+  { f: 0, x0: 9.3, x1: 11.5, z0: -1.9, z1: -1.0, dz: 1, path: () => UP[0] },
+  { f: 1, x0: 9.3, x1: 11.5, z0: 5.3, z1: 5.9, dz: -1, path: () => DOWN[0] },
+  { f: 1, x0: 6.8, x1: 8.9, z0: 5.8, z1: 6.4, dz: -1, path: () => UP[1] },
+  { f: 2, x0: 6.8, x1: 8.9, z0: -1.4, z1: -.5, dz: 1, path: () => DOWN[1] },
 ];
+let stairHold = 0, stairHoldAt = 0;
 function stairFromWalk(dir){
-  if (performance.now() < ctrl.stairCool) return false;
+  const now = performance.now(); if (now < ctrl.stairCool) return false;
   for (const st of STAIR_TRIG){
-    if (st.f !== ctrl.floor || me.pos.x < st.x0 || me.pos.x > st.x1 || me.pos.z < st.z0 || me.pos.z > st.z1 || dir.z * st.dz < .45) continue;
-    ctrl.path = st.path().slice(); ctrl.target = null; ctrl.pendingSeat = -1; return true;
+    if (st.f !== ctrl.floor || me.pos.x < st.x0 || me.pos.x > st.x1 || me.pos.z < st.z0 || me.pos.z > st.z1 || dir.z * st.dz < .75) continue;
+    const gap = now - stairHoldAt; stairHold = gap < 1000 ? stairHold + Math.min(gap, 100) : 0; stairHoldAt = now;
+    if (stairHold < 280) return false;
+    stairHold = 0; ctrl.path = st.path().slice(); ctrl.target = null; ctrl.pendingSeat = -1; return true;
   }
   return false;
 }
@@ -1320,7 +1320,7 @@ function endPointer(e){
 cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); cv.classList.remove('dragging'); });
 cv.addEventListener('wheel', e => { e.preventDefault(); if (cam.mode === 'scope'){ scope.fov = clamp(scope.fov + e.deltaY * .01, 6, 30); return; } cam.dist = clamp(cam.dist * (1 + e.deltaY * .0011), 4, 40); }, { passive: false });
 const keys = {};
-addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; if (e.key === 'Enter' && entered){ $('#say').focus(); e.preventDefault(); } });
+addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
 function isShown(o){ while (o){ if (!o.visible) return false; o = o.parent; } return true; }
@@ -1379,8 +1379,7 @@ function standUp(){ if (!me || me.seat < 0) return; const s = seats[me.seat]; s.
 function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.occ = true; $('#bStand').hidden = false; pushPresence(true); }
 $('#bStand').onclick = () => standUp();
 $('#bWave').onclick = () => { if (!me) return; me.waveUntil = performance.now() + 2200; myWave = Date.now(); pushPresence(true); };
-let myWave = 0, mySay = '', mySayT = 0;
-$('#chat').addEventListener('submit', e => { e.preventDefault(); const v = $('#say').value.replace(/\s+/g, ' ').trim().slice(0, 60); if (!v || !me) return; say(me, v); mySay = v; mySayT = Date.now(); $('#say').value = ''; $('#say').blur(); pushPresence(true); });
+let myWave = 0;
 
 // menu
 const ml = $('#menuList');
@@ -1456,7 +1455,7 @@ function pushPresence(force){ presenceDirty = true; if (force) lastSent = 0; }
 function sendPresence(now){
   if (!room || !me || !presenceDirty || now - lastSent < 110) return; presenceDirty = false; lastSent = now;
   const r2 = v => Math.round(v * 100) / 100;
-  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, pt: myPet, say: mySay, st: mySayT, mv: me.moving ? 1 : 0 }).catch(() => {});
+  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, pt: myPet, mv: me.moving ? 1 : 0 }).catch(() => {});
 }
 const num = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(v, a, b) : d;
 function handlePeers(list){
