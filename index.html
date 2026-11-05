@@ -659,6 +659,70 @@ for (let i = 0; i < 16; i++){
   s.scale.set(rand(260, 480), rand(70, 120), 1); world.add(s); clouds.push(s);
 }
 
+// dolphins: a pod of three jumping near the horizon, best seen through the 3F telescope
+const dolphins = (() => {
+  const foam = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85, fog: false });
+  const pod = []; const base = new THREE.Vector3(-0.149 * 380 + 9.55, -.3, -0.989 * 380 - 7.3);
+  const right = new THREE.Vector3(0.989, 0, -0.149);
+  const top = new THREE.Color('#56616c').convertSRGBToLinear(), low = new THREE.Color('#dfe3e6').convertSRGBToLinear();
+  const skinV = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .38 });
+  const finM = new THREE.MeshStandardMaterial({ color: new THREE.Color('#4c5660').convertSRGBToLinear(), roughness: .4, side: THREE.DoubleSide });
+  // body: lathe profile from tail stock to rounded melon and short beak
+  const prof = [[0,-1.25],[.06,-1.2],[.1,-1.0],[.2,-.65],[.31,-.25],[.36,.1],[.35,.35],[.29,.6],[.22,.76],[.15,.86],[.09,.9],[.075,.98],[.06,1.06],[.035,1.11],[0,1.13]].map(([r, z]) => new THREE.Vector2(r, z));
+  const bodyG = new THREE.LatheGeometry(prof, 22).rotateX(Math.PI / 2); bodyG.scale(1, .92, 1);
+  const pos = bodyG.attributes.position, col = [];
+  for (let k = 0; k < pos.count; k++){ const y = pos.getY(k), z = pos.getZ(k); let t = THREE.MathUtils.smoothstep(-y, .02, .16); if (z > .9) t = Math.max(t, THREE.MathUtils.smoothstep(-y, -.02, .03)); const c = top.clone().lerp(low, t); col.push(c.r, c.g, c.b); }
+  bodyG.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); bodyG.computeVertexNormals();
+  const ext = (sh, d) => new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: .012, bevelSize: .012, bevelSegments: 2, curveSegments: 10 });
+  // dorsal fin: hooked back
+  const ds = new THREE.Shape(); ds.moveTo(-.14, 0); ds.quadraticCurveTo(-.06, .16, .2, .34); ds.quadraticCurveTo(.12, .2, .2, 0); ds.lineTo(-.14, 0);
+  const dorsalG = ext(ds, .02).translate(0, 0, -.01).rotateY(Math.PI / 2);
+  // flukes: crescent with a center notch
+  const fs = new THREE.Shape(); fs.moveTo(0, -.04); fs.quadraticCurveTo(.2, .02, .4, .26); fs.quadraticCurveTo(.2, .2, .02, .2); fs.lineTo(0, .16); fs.lineTo(-.02, .2); fs.quadraticCurveTo(-.2, .2, -.4, .26); fs.quadraticCurveTo(-.2, .02, 0, -.04);
+  const flukeG = ext(fs, .015).translate(0, 0, -.008).rotateX(-Math.PI / 2);
+  const ps = new THREE.Shape(); ps.moveTo(0, 0); ps.quadraticCurveTo(.08, .02, .26, .12); ps.quadraticCurveTo(.1, .12, 0, .1); ps.lineTo(0, 0);
+  const pecG = ext(ps, .012).rotateX(-Math.PI / 2);
+  const eyeM = new THREE.MeshStandardMaterial({ color: 0x1a1d20, roughness: .2 });
+  for (let i = 0; i < 3; i++){
+    const g = new THREE.Group(); world.add(g);
+    const inner = new THREE.Group(); g.add(inner);
+    mesh(bodyG, skinV, inner, 0, 0, 0);
+    mesh(dorsalG, finM, inner, 0, .27, -.05);
+    const fl = mesh(flukeG, finM, inner, 0, 0, -1.2); fl.rotation.set(-.08, 0, .35);
+    [-1, 1].forEach(sd => { const p = mesh(pecG, finM, inner, sd * .22, -.18, .45); p.scale.x = sd; p.rotation.set(.15, 0, sd * -.55); });
+    [-1, 1].forEach(sd => mesh(new THREE.SphereGeometry(.025, 8, 6), eyeM, inner, sd * .19, .05, .74));
+    const splash = new THREE.Group(); world.add(splash);
+    const dropG = new THREE.SphereGeometry(1, 6, 4); for (let k = 0; k < 26; k++){ const d = mesh(dropG, foam, splash, 0, 0, 0); d.userData.a = Math.random() * Math.PI * 2; d.userData.v = .5 + Math.random(); d.userData.r = .04 + Math.random() * .07; }
+    const trail = new THREE.Group(); world.add(trail); for (let k = 0; k < 14; k++){ const d = mesh(dropG, foam, trail, 0, 0, 0); d.userData.f = Math.random(); d.userData.r = .03 + Math.random() * .05; d.userData.j = (Math.random() - .5) * .5; }
+    const ring = mesh(new THREE.RingGeometry(.4, .7, 24).rotateX(-Math.PI / 2), foam.clone(), splash, 0, -.25, 0);
+    const S = 2.3; const lane = (i - 1) * 1.55 * S, depth = [0, 4, -3][i], phase = [0, .2, .4][i];
+    splash.scale.setScalar(S); pod.push({ g, inner, splash, trail, ring, lane, depth, phase, size: (i === 2 ? .8 : 1) * S });
+  }
+  return { tick(t){
+    pod.forEach(d => {
+      const per = 2.4, u = ((t / per + d.phase) % 1 + 1) % 1, air = .62;
+      const along = right.clone().multiplyScalar(d.lane);
+      const p = base.clone().add(along); p.z += d.depth; p.x += d.depth * .15;
+      d.g.scale.setScalar(d.size);
+      if (u < air){
+        const k = u / air, h = 2.3 * d.size;
+        d.g.visible = true; d.g.position.set(p.x + right.x * (k - .5) * 4 * d.size, -.5 + Math.sin(Math.PI * k) * h, p.z + right.z * (k - .5) * 4 * d.size);
+        d.g.rotation.set(0, Math.atan2(right.x, right.z), 0);
+        d.inner.rotation.x = -Math.atan2(Math.cos(Math.PI * k) * Math.PI * h, 4 * d.size) * .95;
+        d.trail.visible = true; d.trail.position.copy(d.g.position);
+        d.trail.children.forEach(c => { const f = c.userData.f; c.position.set(c.userData.j * d.size * .3, -f * (d.g.position.y + .5) * 1.0 - .2 * d.size, -(k - .5) * f * 2 * d.size * .5); c.scale.setScalar(c.userData.r * d.size); });
+      } else { d.g.visible = false; d.trail.visible = false; }
+      // splash at entry (k≈1) and exit (k≈0)
+      const se = u < .12 ? u / .12 : (u > air && u < air + .2) ? (u - air) / .2 : -1;
+      d.splash.visible = se >= 0;
+      if (se >= 0){
+        const atEnd = u > air; d.splash.position.set(p.x + right.x * (atEnd ? 2 : -2) * d.size, -.2, p.z + right.z * (atEnd ? 2 : -2) * d.size);
+        d.splash.children.forEach(c => { if (c === d.ring) return; const a = c.userData.a, v = c.userData.v; c.position.set(Math.cos(a) * se * .9 * v, Math.sin(Math.PI * se) * 1.6 * v, Math.sin(a) * se * .9 * v); c.scale.setScalar(c.userData.r * (1 - se * .5)); });
+        d.ring.scale.setScalar(.6 + se * 2.2); d.ring.material.opacity = .8 * (1 - se);
+      }
+    });
+  } };
+})();
 // Distant islands + lighthouse
 const islandMat = M('#41564b', { flatShading: true });
 [[-260, -520, 90, 22, 40], [180, -600, 140, 30, 50], [420, -480, 70, 14, 30]].forEach(([x, z, sx, sy, sz]) => { const m = mesh(new THREE.SphereGeometry(1, 14, 8), islandMat, world, x, -4, z, false); m.scale.set(sx, sy, sz); });
@@ -1211,16 +1275,7 @@ function seatNear(f, x, z){ let best = -1, bd = 1e9; seats.forEach((s, i) => { i
 // three cats on 2F, each with its own coat and its own clock-driven route
 function makeCat(i, coat){
   const g = new THREE.Group(); const fur = M(coat.fur, { roughness: 1 }), white = M(coat.white, { roughness: 1 });
-  let bodyMat = fur;
-  if (coat.stripe){ // stripes painted into the fur texture, so nothing sticks out of the body
-    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 128; const cx = cv.getContext('2d');
-    cx.fillStyle = coat.fur; cx.fillRect(0, 0, 64, 128); cx.fillStyle = coat.stripe;
-    [34, 52, 70, 88].forEach(y => cx.fillRect(0, y, 64, 7));
-    const tx = new THREE.CanvasTexture(cv); tx.encoding = THREE.sRGBEncoding;
-    bodyMat = new THREE.MeshStandardMaterial({ map: tx, roughness: 1 });
-  }
-  const bg = new THREE.SphereGeometry(.2, 16, 12); if (coat.stripe) bg.rotateX(Math.PI / 2);
-  const body = mesh(bg, bodyMat, g, 0, .2, 0); body.scale.set(.85, .8, 1.35);
+  const body = mesh(new THREE.SphereGeometry(.2, 16, 12), fur, g, 0, .2, 0); body.scale.set(.85, .8, 1.35);
   mesh(new THREE.SphereGeometry(.12, 12, 10), white, g, 0, .2, .2);
   const head = new THREE.Group(); head.position.set(0, .36, .26); g.add(head);
   mesh(new THREE.SphereGeometry(.14, 16, 12), fur, head, 0, 0, 0);
@@ -1238,7 +1293,7 @@ function makeCat(i, coat){
 }
 const cats = [
   makeCat(0, { fur: '#e3a564', white: '#fbf3e6', eye: '#2a1d18' }),                                   // 치즈
-  makeCat(1, { fur: '#9a9ea6', white: '#f2f1ee', eye: '#2a1d18', stripe: '#6c7078', size: .95 }),     // 회색 줄무늬
+  makeCat(1, { fur: '#9a9ea6', white: '#f2f1ee', eye: '#2a1d18', size: .95 }),     // 회색
   makeCat(2, { fur: '#2b2a2e', white: '#f4f1ec', eye: '#e8cf5a', socks: true, size: .9 }),            // 까망이 (흰 양말)
 ];
 const catSpots = [[-1, -3], [-4.2, -4.5], [-6, 3.6], [0, 1], [4.5, -4], [-9, 1.5], [1.6, -1.5], [-2.5, 5.5], [5.5, -1.5], [-7.8, -3.6]];
@@ -1800,6 +1855,7 @@ function frame(){
     for (const r of remotes.values()) placeTag(r.a, r.a.g, 1.5 * r.a.L.size, r.a.g.visible, now);
     cats.forEach(cat => placeTag(cat, cat.g, .62 * (cat.g.scale.y || 1), cat.g.visible, now));
   }
+  dolphins.tick(performance.now() / 1000);
   renderer.render(scene, camera);
   if (!entered && pv.r && pv.a){ pv.a.g.rotation.y = Math.sin(t * .6) * .7; pv.a.rot = pv.a.g.rotation.y; poseAvatar(pv.a, dt, t); pv.a.g.position.set(0, 0, 0); pv.r.render(pv.scene, pv.cam); }
   if (firstFrame){ firstFrame = false; const l = $('#loading'); l.style.opacity = 0; setTimeout(() => l.remove(), 900); }
