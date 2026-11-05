@@ -1451,7 +1451,7 @@ const cats = [
   makeCat(1, { tex: 'cats/cat_gray.jpg', size: .95 }),      // 회색
   makeCat(2, { tex: 'cats/cat_black.jpg', size: .9 }),      // 까망이
 ];
-if (THREE.GLTFLoader && THREE.SkeletonUtils) new THREE.GLTFLoader().load('cats/cat.glb', gl => {
+function catModelReady(gl){
   cats.forEach(cat => {
     const tx = new THREE.TextureLoader().load(cat.coat.tex); tx.encoding = THREE.sRGBEncoding; tx.flipY = false; tx.anisotropy = 4;
     const m = THREE.SkeletonUtils.clone(gl.scene);
@@ -1460,7 +1460,10 @@ if (THREE.GLTFLoader && THREE.SkeletonUtils) new THREE.GLTFLoader().load('cats/c
     const b = {}; m.traverse(o => { if (o.isBone){ b[o.name] = o; o.userData.r0 = o.rotation.clone(); } });
     cat.model = m; cat.b = b; cat.g.add(m);
   });
-}, undefined, () => {});
+}
+// cats/cat.glb normally; where .glb can't be served, the same file is read from a base64 text copy
+if (THREE.GLTFLoader && THREE.SkeletonUtils){ const gltf = new THREE.GLTFLoader(); gltf.load('cats/cat.glb', catModelReady, undefined, () => {
+  fetch('cats/cat.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); gltf.parse(bin.buffer, 'cats/', catModelReady, () => {}); }).catch(() => {}); }); }
 const catAdd = (o, x, y, z) => { if (o){ o.rotation.x += x; o.rotation.y += y; o.rotation.z += z; } };
 function catTail(b, t, up, sway){ catAdd(b.Tail, up, sway * Math.sin(t * 2.2), 0); catAdd(b.Tail1, up * .3, sway * Math.sin(t * 2.2 - .6), 0); catAdd(b.Tail2, up * .2, sway * Math.sin(t * 2.2 - 1.2), 0); catAdd(b.Tail3, 0, sway * Math.sin(t * 2.2 - 1.8), 0); }
 function animateCat(cat, t, state){
