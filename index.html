@@ -99,6 +99,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .fb{width:32px;height:32px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:15px;flex:none}
 #bar .act{flex:1;min-width:0;height:46px;border-radius:13px;background:transparent;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
 #bar .act:hover{background:rgba(255,245,232,.06)}
+#bar .act svg{flex:none}
+#bar .act[aria-expanded="true"]{background:rgba(255,245,232,.92);color:var(--accent-ink)}
+#emoPop{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 24px));box-sizing:border-box;border-radius:22px;background:rgba(36,24,18,.9);box-shadow:0 14px 40px rgba(20,10,4,.3);overflow:hidden}
+#emoPop .strip{display:flex;align-items:stretch;gap:2px;padding:6px 8px 4px;overflow-x:auto;scrollbar-width:none;overscroll-behavior:contain}
+#emoPop .strip::-webkit-scrollbar{display:none}
+#emoPop .grp{display:flex;flex-direction:column;align-items:center;flex:none}
+#emoPop .cap{font-size:10.5px;color:var(--ink-dim);line-height:1;padding-top:2px}
+#emoPop .row{display:flex}
+#emoPop .row button{width:44px;height:44px;border:0;border-radius:50%;background:transparent;font-size:25px;line-height:1;display:grid;place-items:center;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+#emoPop .row button:hover,#emoPop .row button:focus-visible{background:rgba(255,245,232,.1)}
+#emoPop .sep{width:1px;flex:none;margin:12px 3px 6px;background:rgba(255,232,206,.18)}
+.tag .bub.emo{font-size:30px;line-height:1;padding:9px 10px;border-radius:18px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;animation:emoPop .35s ease-out}
+@keyframes emoPop{0%{transform:translateY(8px) scale(.6);opacity:0}60%{transform:translateY(-2px) scale(1.08);opacity:1}100%{transform:none}}
 #floorMenu{position:absolute;left:max(12px,calc(50% - 260px));bottom:calc(86px + env(safe-area-inset-bottom,0px));width:218px;box-sizing:border-box;padding:6px;border-radius:18px;background:rgba(36,24,18,.9);box-shadow:0 14px 40px rgba(20,10,4,.35);display:flex;flex-direction:column;gap:2px}
 #floorMenu button{height:48px;border:0;border-radius:12px;padding:0 10px 0 8px;background:transparent;display:flex;align-items:center;gap:10px;text-align:left;color:var(--ink)}
 #floorMenu button .fb{background:rgba(255,245,232,.1);color:var(--ink)}
@@ -187,10 +200,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     <button type="button" role="menuitemradio" data-f="1" aria-checked="false"><span class="fb">2F</span><span class="fn">오션뷰 라운지</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button type="button" role="menuitemradio" data-f="0" aria-checked="true"><span class="fb">1F</span><span class="fn">카운터 · 바다 데크</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
+  <div id="emoPop" class="panel" role="dialog" aria-label="이모지 보내기" hidden><div class="strip"><div class="grp" role="group" aria-label="기분"><span class="cap">기분</span><div class="row"><button type="button" data-e="❤️" aria-label="좋아 ❤️">❤️</button><button type="button" data-e="😭" aria-label="슬퍼 😭">😭</button><button type="button" data-e="🤬" aria-label="화나 🤬">🤬</button></div></div><span class="sep" aria-hidden="true"></span><div class="grp" role="group" aria-label="리액션"><span class="cap">리액션</span><div class="row"><button type="button" data-e="👌" aria-label="오케이 👌">👌</button><button type="button" data-e="👅" aria-label="메롱 👅">👅</button><button type="button" data-e="📸" aria-label="찰칵 📸">📸</button><button type="button" data-e="🚬" aria-label="잠깐 쉼 🚬">🚬</button></div></div><span class="sep" aria-hidden="true"></span><div class="grp" role="group" aria-label="해변가"><span class="cap">해변가</span><div class="row"><button type="button" data-e="🐬" aria-label="돌고래 🐬">🐬</button><button type="button" data-e="🐱" aria-label="고양이 🐱">🐱</button><button type="button" data-e="🎇" aria-label="불꽃 🎇">🎇</button></div></div></div></div>
   <nav id="bar" class="panel" aria-label="층 이동과 행동">
     <button id="floorChip" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="floorMenu" aria-label="지금 1층, 층 바꾸기"><span class="fb" id="chipF">1F</span><span id="chipName">카운터</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 7.5l3-3 3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="bWave" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 12V6.2a1.4 1.4 0 0 1 2.8 0V11M11.3 10.5V4.8a1.4 1.4 0 0 1 2.8 0v5.7M14.1 10.6V6a1.4 1.4 0 0 1 2.8 0v6.5M8.5 11.3l-.9-1.4a1.4 1.4 0 0 0-2.4 1.5l2.5 4.4a6 6 0 0 0 5.2 3h.5a4.6 4.6 0 0 0 4.6-4.6V9.4a1.4 1.4 0 0 0-2.8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>손 흔들기</button>
-    <button id="bMenu" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8.6 1.4 0 2.3M11 3.5c-.6.8.6 1.4 0 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>메뉴 주문</button>
+    <button id="bEmo" class="act" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="emoPop"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 13.6a4 4 0 0 0 6.8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.3" cy="10" r="1" fill="currentColor"/><circle cx="14.7" cy="10" r="1" fill="currentColor"/></svg>이모지</button>
+    <button id="bMenu" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8.6 1.4 0 2.3M11 3.5c-.6.8.6 1.4 0 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>메뉴</button>
     <button id="bStand" class="act" type="button" hidden>일어서기</button>
   </nav>
 </div>
@@ -1312,7 +1327,7 @@ const tagLayer = $('#tags');
 function ensureTag(a){ if (a.tag) return a.tag; const el = document.createElement('div'); el.className = 'tag'; const bub = document.createElement('div'); bub.className = 'bub'; bub.hidden = true; const nm = document.createElement('div'); nm.className = 'nm'; nm.hidden = true; el.append(bub, nm); tagLayer.appendChild(el); a.tag = { el, bub, nm, shown: true }; return a.tag; }
 function removeTag(a){ if (a && a.tag){ a.tag.el.remove(); a.tag = null; } }
 function setLabel(a, text, color){ const t = ensureTag(a); t.nm.textContent = ''; const i = document.createElement('i'); i.style.background = color || '#fff5e8'; t.nm.append(i, document.createTextNode(text)); t.nm.hidden = false; }
-function say(a, text, dur = 6500){ const t = ensureTag(a); t.bub.textContent = text; t.bub.hidden = false; t.bub.style.opacity = 1; a.bubbleUntil = performance.now() + dur; }
+function say(a, text, dur = 6500, emo = false){ const t = ensureTag(a); t.bub.classList.toggle('emo', emo); if (emo){ t.bub.style.animation = 'none'; void t.bub.offsetWidth; t.bub.style.animation = ''; } t.bub.textContent = text; t.bub.hidden = false; t.bub.style.opacity = 1; a.bubbleUntil = performance.now() + dur; }
 const projV = new THREE.Vector3();
 function placeTag(a, obj, h, visible, now){
   const t = a.tag; if (!t) return;
@@ -1595,11 +1610,16 @@ let toastT = 0;
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2600); }
 
 /* ---------- actions ---------- */
-function standUp(){ if (!me || me.seat < 0) return; const s = seats[me.seat]; s.occ = false; me.seat = -1; me.pos.set(s.x + Math.sin(s.rot) * .6, FL[s.f] || 0, s.z + Math.cos(s.rot) * .6); const [x, z] = resolve(ctrl.floor, me.pos.x, me.pos.z); me.pos.x = x; me.pos.z = z; $('#bStand').hidden = true; pushPresence(true); }
-function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.occ = true; $('#bStand').hidden = false; pushPresence(true); }
+function standUp(){ if (!me || me.seat < 0) return; const s = seats[me.seat]; s.occ = false; me.seat = -1; me.pos.set(s.x + Math.sin(s.rot) * .6, FL[s.f] || 0, s.z + Math.cos(s.rot) * .6); const [x, z] = resolve(ctrl.floor, me.pos.x, me.pos.z); me.pos.x = x; me.pos.z = z; $('#bStand').hidden = true; $('#bWave').hidden = false; pushPresence(true); }
+function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.occ = true; $('#bStand').hidden = false; $('#bWave').hidden = true; pushPresence(true); }
 $('#bStand').onclick = () => standUp();
 $('#bWave').onclick = () => { if (!me) return; me.waveUntil = performance.now() + 2200; myWave = Date.now(); pushPresence(true); };
-let myWave = 0;
+let myWave = 0, myEmo = '', myEmoT = 0;
+const EMOJIS = [...document.querySelectorAll('#emoPop [data-e]')].map(b => b.dataset.e);
+function setEmoOpen(open){ if (open){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); cancelJoy(); } $('#emoPop').hidden = !open; $('#bEmo').setAttribute('aria-expanded', open); joy.el.style.visibility = open ? 'hidden' : ''; }
+$('#bEmo').addEventListener('click', e => { e.stopPropagation(); setEmoOpen($('#emoPop').hidden); });
+$('#emoPop').addEventListener('pointerdown', e => e.stopPropagation());
+$('#emoPop').addEventListener('click', e => { const b = e.target instanceof Element && e.target.closest('[data-e]'); if (!b || !me) return; myEmo = b.dataset.e; myEmoT = Date.now(); say(me, myEmo, 3200, true); pushPresence(true); setEmoOpen(false); });
 
 // menu
 const ml = $('#menuList');
@@ -1693,7 +1713,7 @@ function pushPresence(force){ presenceDirty = true; if (force) lastSent = 0; }
 function sendPresence(now){
   if (!room || !me || !presenceDirty || now - lastSent < 110) return; presenceDirty = false; lastSent = now;
   const r2 = v => Math.round(v * 100) / 100;
-  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, pt: myPet, pc: myPetCat, mv: me.moving ? 1 : 0 }).catch(() => {});
+  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, em: myEmo, et: myEmoT, pt: myPet, pc: myPetCat, mv: me.moving ? 1 : 0 }).catch(() => {});
 }
 const num = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(v, a, b) : d;
 function handlePeers(list){
@@ -1716,6 +1736,7 @@ function handlePeers(list){
     setItem(r.a, num(pr.i, -1, ITEMS.length - 1, -1) | 0);
     const w = num(pr.w, 0, 1e15, 0); if (w && w !== r.w){ if (r.w) r.a.waveUntil = performance.now() + 2200; r.w = w; }
     const pt = num(pr.pt, 0, 1e15, 0); if (pt && pt !== r.pt){ if (r.pt || Date.now() - pt < 3000){ r.a.petUntil = performance.now() + 3600; const cat = cats[num(pr.pc, 0, cats.length - 1, 0) | 0]; if (r.f === 1 && Math.hypot(r.tgt.x - cat.pos.x, r.tgt.z - cat.pos.z) < 2) catPetted(cat); } r.pt = pt; }
+    const et = num(pr.et, 0, 1e15, 0); if (et && et !== r.et){ if (Date.now() - et < 5000 && EMOJIS.includes(pr.em)) say(r.a, pr.em, 3200, true); r.et = et; }
     const st = num(pr.st, 0, 1e15, 0); if (st && st !== r.st){ const fresh = Date.now() - st < 8000; r.st = st; if (typeof pr.say === 'string' && fresh) say(r.a, pr.say.replace(/[\u0000-\u001f]/g, '').slice(0, 60)); }
   }
   for (const [k, r] of remotes){ if (!seen.has(k)){ scene.remove(r.a.g); removeTag(r.a); if (r.seat >= 0 && seats[r.seat]) seats[r.seat].occRemote = false; remotes.delete(k); } }
@@ -1745,19 +1766,20 @@ function renderPeople(){
   ul.scrollTop = keep;
   $('#peopleFade').hidden = rows.length <= 3;
 }
-function setFloorMenuOpen(open){ if (open){ setPeopleOpen(false); setSoundOpen(false); cancelJoy(); } $('#floorMenu').hidden = !open; $('#floorChip').setAttribute('aria-expanded', open); joy.el.style.visibility = open ? 'hidden' : ''; }
+function setFloorMenuOpen(open){ if (open){ setPeopleOpen(false); setSoundOpen(false); if (!$('#emoPop').hidden) setEmoOpen(false); cancelJoy(); } $('#floorMenu').hidden = !open; $('#floorChip').setAttribute('aria-expanded', open); joy.el.style.visibility = open ? 'hidden' : ''; }
 $('#floorChip').addEventListener('click', e => { e.stopPropagation(); setFloorMenuOpen($('#floorMenu').hidden); });
 $('#floorMenu').addEventListener('pointerdown', e => e.stopPropagation());
-function setPeopleOpen(open){ if (open){ setSoundOpen(false); setFloorMenuOpen(false); } $('#people').hidden = !open; $('#who').setAttribute('aria-expanded', open); if (open) renderPeople(); }
-function setSoundOpen(open){ if (open){ setPeopleOpen(false); setFloorMenuOpen(false); } $('#soundPop').hidden = !open; $('#soundBtn').setAttribute('aria-expanded', open); if (open) renderSound(); }
+function setPeopleOpen(open){ if (open){ setSoundOpen(false); setFloorMenuOpen(false); if (!$('#emoPop').hidden) setEmoOpen(false); } $('#people').hidden = !open; $('#who').setAttribute('aria-expanded', open); if (open) renderPeople(); }
+function setSoundOpen(open){ if (open){ setPeopleOpen(false); setFloorMenuOpen(false); if (!$('#emoPop').hidden) setEmoOpen(false); } $('#soundPop').hidden = !open; $('#soundBtn').setAttribute('aria-expanded', open); if (open) renderSound(); }
 $('#who').addEventListener('click', e => { e.stopPropagation(); setPeopleOpen($('#people').hidden); });
 $('#soundBtn').addEventListener('click', e => { e.stopPropagation(); setSoundOpen($('#soundPop').hidden); });
 ['#people', '#soundPop'].forEach(id => $(id).addEventListener('pointerdown', e => e.stopPropagation()));
 document.addEventListener('pointerdown', e => { const t = e.target, inEl = sel => t instanceof Element && t.closest(sel);
   if (!$('#people').hidden && !inEl('#who')) setPeopleOpen(false);
   if (!$('#soundPop').hidden && !inEl('#soundBtn')) setSoundOpen(false);
-  if (!$('#floorMenu').hidden && !inEl('#floorChip')) setFloorMenuOpen(false); });
-addEventListener('keydown', e => { if (e.key === 'Escape'){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); } });
+  if (!$('#floorMenu').hidden && !inEl('#floorChip')) setFloorMenuOpen(false);
+  if (!$('#emoPop').hidden && !inEl('#bEmo')) setEmoOpen(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape'){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); setEmoOpen(false); } });
 // Supabase Realtime adapter with the same two calls the page uses: presence(state) and onPeers(cb).
 // Presence carries only name + look (slow-changing); position/actions go over Broadcast, throttled.
 function makeSupabaseRoom(cfg){
