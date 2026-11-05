@@ -50,7 +50,23 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .brand .cup{font-size:15px;line-height:1}
 .brand b{font-family:var(--font-display);font-weight:700;font-size:15px}
 .brand small{font-size:12px;letter-spacing:.12em;color:var(--ink-dim)}
-#who{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:7px;height:36px;padding:0 12px 0 11px;border-radius:99px;font-size:13.5px}
+.topr{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:6px}
+#soundBtn{width:36px;height:36px;border-radius:50%;padding:0;display:grid;place-items:center;color:var(--ink)}
+#soundBtn[aria-expanded="true"]{background:rgba(255,245,232,.92);border-color:rgba(255,232,206,.6);color:var(--accent-ink)}
+#soundPop{position:absolute;top:calc(60px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));width:250px;box-sizing:border-box;padding:14px 14px 12px;border-radius:16px;background:rgba(36,24,18,.9);box-shadow:0 14px 40px rgba(20,10,4,.35);display:flex;flex-direction:column;gap:14px}
+#soundPop .row{display:flex;flex-direction:column;gap:6px}
+#soundPop .head{display:flex;align-items:center;gap:8px}
+#soundPop .mute{width:30px;height:30px;border-radius:9px;border:0;padding:0;display:grid;place-items:center;background:rgba(255,245,232,.08)}
+#soundPop .mute[aria-pressed="true"]{background:rgba(255,245,232,.03);opacity:.55}
+#soundPop label{flex:1;font-size:14px}
+#soundPop .pct{font-size:12.5px;color:var(--ink-dim);font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.vol{-webkit-appearance:none;appearance:none;width:100%;height:22px;margin:0;background:transparent;cursor:pointer;background-size:100% 6px;background-position:center;background-repeat:no-repeat;border-radius:99px;touch-action:none}
+.vol::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:transparent}
+.vol::-moz-range-track{height:6px;border-radius:99px;background:transparent}
+.vol::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border-radius:50%;background:#fff5e8;border:0;box-shadow:0 2px 8px rgba(20,10,4,.4)}
+.vol::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff5e8;border:0;box-shadow:0 2px 8px rgba(20,10,4,.4)}
+.vol:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+#who{position:relative;display:flex;align-items:center;gap:7px;height:36px;padding:0 12px 0 11px;border-radius:99px;font-size:13.5px}
 #who[aria-expanded="true"]{background:rgba(255,245,232,.92);border-color:rgba(255,232,206,.6);color:var(--accent-ink)}
 #who .dot{width:8px;height:8px;border-radius:50%;background:var(--sea);box-shadow:0 0 0 3px rgba(143,208,207,.22)}
 #who[aria-expanded="true"] .dot{background:#3e9e9b;box-shadow:none}
@@ -136,7 +152,26 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 <div id="hud" hidden>
   <header class="brand panel"><span class="cup" aria-hidden="true">☕</span><b>해변가</b><small>CAFE</small></header>
-  <button id="who" class="panel" type="button" aria-expanded="false" aria-controls="people" aria-label="접속 중인 사람 보기"><i class="dot"></i><b id="count">1명</b><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div class="topr">
+    <button id="soundBtn" class="panel" type="button" aria-expanded="false" aria-controls="soundPop" aria-label="소리 크기 조절"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+    <button id="who" class="panel" type="button" aria-expanded="false" aria-controls="people" aria-label="접속 중인 사람 보기"><i class="dot"></i><b id="count">1명</b><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div id="soundPop" class="panel" role="dialog" aria-label="소리 크기" hidden>
+    <div class="row">
+      <div class="head">
+        <button class="mute" id="waveMute" type="button" aria-pressed="false" aria-label="파도 소리 끄기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 14c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2M2 18.5c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" fill="none" stroke="#8fd0cf" stroke-width="1.8" stroke-linecap="round"/><path d="M5 8.5C7 5 11 4 14 6" fill="none" stroke="#8fd0cf" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <label for="waveVol">파도 소리</label><span class="pct" id="wavePct">70%</span>
+      </div>
+      <input id="waveVol" class="vol" type="range" min="0" max="100" value="70">
+    </div>
+    <div class="row">
+      <div class="head">
+        <button class="mute" id="musicMute" type="button" aria-pressed="false" aria-label="음악 끄기"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V5.5l10-2v12" fill="none" stroke="#f3b37c" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.5" fill="none" stroke="#f3b37c" stroke-width="1.8"/><circle cx="16.5" cy="15.5" r="2.5" fill="none" stroke="#f3b37c" stroke-width="1.8"/></svg></button>
+        <label for="musicVol">음악</label><span class="pct" id="musicPct">40%</span>
+      </div>
+      <input id="musicVol" class="vol" type="range" min="0" max="100" value="40">
+    </div>
+  </div>
   <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
   <nav class="floors panel" aria-label="층 이동">
     <button data-f="2"><b>3F</b><span>루프탑 테라스</span></button>
@@ -148,8 +183,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <button id="bWave" type="button">손 흔들기</button>
       <button id="bMenu" type="button">메뉴 주문</button>
       <button id="bStand" type="button" hidden>일어서기</button>
-      <button id="bMusic" type="button" aria-pressed="true">음악</button>
-      <button id="bSound" type="button" aria-pressed="true">파도 소리</button>
     </div>
   </div>
   <div class="hint">바닥을 눌러 걷기 · WASD로 이동 · 계단 쪽으로 걸어가면 오르내리기 · 드래그로 둘러보기 · 의자와 소파를 눌러 앉기 · 2층 고양이를 눌러 쓰다듬기 · 턴테이블과 3층 망원경도 눌러보세요</div>
@@ -1404,7 +1437,27 @@ $('#scopeExit').onclick = () => { cam.mode = 'follow'; $('#scope').hidden = true
 document.querySelectorAll('.floors button').forEach(b => b.onclick = () => goFloor(+b.dataset.f));
 
 /* ---------- sound: waves + soft lo-fi ---------- */
-let AC = null, master, wavesG, musicG, musicOn = true, soundOn = true, musicTimer = 0;
+let AC = null, master, wavesG, musicG, musicOn = true, musicTimer = 0;
+// Volume levels (0–100) and mutes, remembered on this device
+const vol = (() => { const d = { wave: 70, music: 40, waveOff: false, musicOff: false }; try { const v = JSON.parse(store.get('bj-vol') || 'null'); if (v && typeof v === 'object') ['wave', 'music'].forEach(k => { if (Number.isFinite(v[k])) d[k] = clamp(v[k] | 0, 0, 100); d[k + 'Off'] = !!v[k + 'Off']; }); } catch (e) {} return d; })();
+const WAVE_MAX = .8, MUSIC_MAX = .5;
+const level = k => vol[k + 'Off'] ? 0 : vol[k] / 100;
+function applyVolumes(){ musicOn = level('music') > 0; if (!AC) return; wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, .25); musicG.gain.setTargetAtTime(MUSIC_MAX * level('music'), AC.currentTime, .25); }
+function renderSound(){
+  ['wave', 'music'].forEach(k => {
+    const off = vol[k + 'Off'], v = vol[k], p = off ? 0 : v, color = k === 'wave' ? '#8fd0cf' : '#f3b37c', name = k === 'wave' ? '파도 소리' : '음악';
+    const input = $('#' + k + 'Vol'); input.value = v; input.style.backgroundImage = `linear-gradient(90deg, ${color} ${p}%, rgba(255,245,232,.16) ${p}%)`;
+    $('#' + k + 'Pct').textContent = off ? '꺼짐' : v + '%';
+    const m = $('#' + k + 'Mute'); m.setAttribute('aria-pressed', off); m.setAttribute('aria-label', off ? `${name} 켜기` : `${name} 끄기`);
+  });
+}
+function saveVol(){ store.set('bj-vol', JSON.stringify(vol)); }
+['wave', 'music'].forEach(k => {
+  $('#' + k + 'Vol').addEventListener('input', e => { vol[k] = +e.target.value; vol[k + 'Off'] = false; applyVolumes(); renderSound(); });
+  $('#' + k + 'Vol').addEventListener('change', saveVol);
+  $('#' + k + 'Mute').addEventListener('click', () => { vol[k + 'Off'] = !vol[k + 'Off']; if (!vol[k + 'Off'] && vol[k] === 0) vol[k] = k === 'wave' ? 70 : 40; applyVolumes(); renderSound(); saveVol(); });
+});
+renderSound(); musicOn = level('music') > 0;
 function initAudio(){
   if (AC) return; const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
   AC = new Ctx(); master = AC.createGain(); master.gain.value = .9; master.connect(AC.destination);
@@ -1417,9 +1470,9 @@ function initAudio(){
   const swell = AC.createGain(); swell.gain.value = .5;
   const lfo = AC.createOscillator(); lfo.frequency.value = .085; const lfoG = AC.createGain(); lfoG.gain.value = .38; lfo.connect(lfoG); lfoG.connect(swell.gain); lfo.start();
   src.connect(lp); lp.connect(swell); swell.connect(wavesG); wavesG.connect(master); src.start();
-  wavesG.gain.setTargetAtTime(.55, AC.currentTime, 1.5);
+  wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, 1.5);
   // music bus with soft delay
-  musicG = AC.createGain(); musicG.gain.value = musicOn ? .22 : 0;
+  musicG = AC.createGain(); musicG.gain.value = MUSIC_MAX * level('music');
   const mlp = AC.createBiquadFilter(); mlp.type = 'lowpass'; mlp.frequency.value = 1800;
   const delay = AC.createDelay(); delay.delayTime.value = .42; const fb = AC.createGain(); fb.gain.value = .32; delay.connect(fb); fb.connect(delay);
   musicG.connect(mlp); mlp.connect(master); musicG.connect(delay); delay.connect(mlp);
@@ -1446,9 +1499,8 @@ function scheduleMusic(){
     }
   }, 250);
 }
-function toggleMusic(force){ musicOn = typeof force === 'boolean' ? force : !musicOn; if (AC) musicG.gain.setTargetAtTime(musicOn ? .22 : 0, AC.currentTime, .4); $('#bMusic').setAttribute('aria-pressed', musicOn); $('#bMusic').textContent = musicOn ? '음악' : '음악 꺼짐'; toast(musicOn ? '턴테이블에서 로파이가 흘러나와요' : '음악을 멈췄어요'); }
-$('#bMusic').onclick = () => toggleMusic();
-$('#bSound').onclick = () => { soundOn = !soundOn; if (AC) wavesG.gain.setTargetAtTime(soundOn ? .55 : 0, AC.currentTime, .5); $('#bSound').setAttribute('aria-pressed', soundOn); $('#bSound').textContent = soundOn ? '파도 소리' : '파도 꺼짐'; };
+// the turntable on 2F mutes / unmutes the music
+function toggleMusic(){ const on = !(level('music') > 0); vol.musicOff = !on; if (on && vol.music === 0) vol.music = 40; applyVolumes(); renderSound(); saveVol(); toast(on ? '턴테이블에서 로파이가 흘러나와요' : '음악을 멈췄어요'); }
 
 /* ---------- room (real people) ---------- */
 let room = null; const remotes = new Map(); let lastSent = 0, presenceDirty = false;
@@ -1508,11 +1560,15 @@ function renderPeople(){
   ul.scrollTop = keep;
   $('#peopleFade').hidden = rows.length <= 3;
 }
-function setPeopleOpen(open){ $('#people').hidden = !open; $('#who').setAttribute('aria-expanded', open); if (open) renderPeople(); }
+function setPeopleOpen(open){ if (open) setSoundOpen(false); $('#people').hidden = !open; $('#who').setAttribute('aria-expanded', open); if (open) renderPeople(); }
+function setSoundOpen(open){ if (open) setPeopleOpen(false); $('#soundPop').hidden = !open; $('#soundBtn').setAttribute('aria-expanded', open); if (open) renderSound(); }
 $('#who').addEventListener('click', e => { e.stopPropagation(); setPeopleOpen($('#people').hidden); });
-$('#people').addEventListener('pointerdown', e => e.stopPropagation());
-document.addEventListener('pointerdown', e => { const t = e.target; if (!$('#people').hidden && !(t instanceof Element && t.closest('#who'))) setPeopleOpen(false); });
-addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#people').hidden) setPeopleOpen(false); });
+$('#soundBtn').addEventListener('click', e => { e.stopPropagation(); setSoundOpen($('#soundPop').hidden); });
+['#people', '#soundPop'].forEach(id => $(id).addEventListener('pointerdown', e => e.stopPropagation()));
+document.addEventListener('pointerdown', e => { const t = e.target, inEl = sel => t instanceof Element && t.closest(sel);
+  if (!$('#people').hidden && !inEl('#who')) setPeopleOpen(false);
+  if (!$('#soundPop').hidden && !inEl('#soundBtn')) setSoundOpen(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape'){ setPeopleOpen(false); setSoundOpen(false); } });
 // Supabase Realtime adapter with the same two calls the page uses: presence(state) and onPeers(cb).
 // Presence carries only name + look (slow-changing); position/actions go over Broadcast, throttled.
 function makeSupabaseRoom(cfg){
