@@ -1074,18 +1074,8 @@ strand([-11.9,-7.9],[11.9,-7.9],.5); strand([-11.9,0],[11.9,0],.9);
   const f = 0, y = 0;
   // counter
   const cg = grp(floors[f], -6.5, y, 4.7);
-  box(7, 1.0, .9, mat.woodLight, cg, 0, 0, 0);
-  for (let i = -3.4; i <= 3.4; i += .14) box(.06, .9, .02, mat.wood, cg, i, .05, -.46);
-  box(7.2, .06, 1.05, mat.terrazzo, cg, 0, 1.0, -.03);
-  // espresso machine
-  const em = grp(cg, .4, 1.06, .1);
-  box(.9, .48, .5, mat.steel, em, 0, 0, 0); box(.9, .06, .5, mat.black, em, 0, .48, 0);
-  [-.25, .25].forEach(x => { cyl(.05, .05, .1, mat.black, em, x, .18, -.28, 10); cyl(.045, .04, .08, M('#f4ecdf'), em, x, .0, -.3, 10); });
-  for (let i = 0; i < 6; i++) cyl(.04, .035, .07, M(['#f4ecdf','#3f5570'][i % 2]), em, -.4 + i * .16, .54, .1, 8);
-  // grinder
-  const gr = grp(cg, -.7, 1.06, .15); cyl(.1, .12, .35, mat.black, gr, 0, 0, 0, 12); mesh(new THREE.ConeGeometry(.14, .25, 12), M('#6b4a32', { transparent: true, opacity: .8 }), gr, 0, .48, 0);
   // pastry case
-  const pc = grp(cg, 2.45, 1.06, -.02);
+  const pc = grp(cg, 2.1, 1.06, -.02); pc.scale.x = .9;
   { const caseGlass = new THREE.MeshStandardMaterial({ color: C('#e9f4f2'), roughness: .05, metalness: .1, transparent: true, opacity: .28, depthWrite: false, side: THREE.DoubleSide });
     box(1.7, .08, .86, mat.woodDark, pc, 0, 0, 0);                      // plinth on the counter top
     box(1.7, .05, .86, mat.woodDark, pc, 0, .62, 0);                    // lid
@@ -1099,17 +1089,26 @@ strand([-11.9,-7.9],[11.9,-7.9],.5); strand([-11.9,0],[11.9,0],.9);
     for (let i = 0; i < 4; i++){ const x = -.6 + i * .4; cyl(.07, .075, .03, M('#f4ecdf'), pc, x, .08, -.18, 14); const cake = cyl(.06, .06, .08, M(['#f3c9d2', '#6b4a32', '#f5e2b8', '#a8c49a'][i]), pc, x, .11, -.18, 14); sph(.018, M('#d9433d'), pc, x, .2, -.18, 8); }
     for (let i = 0; i < 5; i++){ const m = cyl(.05, .05, .045, M(['#f2b8c6', '#b9d7a1', '#f5d27a', '#c7b8e8', '#f0c9a0'][i]), pc, -.64 + i * .32, .365, 0, 14); }
   }
-  // register & cups
-  box(.35, .25, .3, mat.black, cg, -2.6, 1.06, 0);
-  for (let i = 0; i < 4; i++) cyl(.05, .04, .1, mat.cream, cg, -1.7 + i * .13, 1.06, -.25, 10);
   act(cg, { type: 'counter' });
-  obR(f, -10.2, -2.8, 4.1, 5.3);
+  obR(f, -9.45, -3.55, 4.15, 5.25);
+  // counter + back bar + coffee things: supplied model (models/counter.glb), scaled to a 1.06 m counter top
+  { const ready = gl => {
+      const root = gl.scene, wrap = new THREE.Group(); wrap.add(root); root.rotation.y = Math.PI / 2;
+      root.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+      wrap.updateMatrixWorld(true);
+      const front = root.getObjectByName('Cube') || root, fb = new THREE.Box3().setFromObject(front), k = 1.06 / fb.getSize(new THREE.Vector3()).y;
+      wrap.scale.setScalar(k); wrap.updateMatrixWorld(true);
+      const b2 = new THREE.Box3().setFromObject(front), c = b2.getCenter(new THREE.Vector3());
+      wrap.position.set(-6.5 - c.x, y - b2.min.y, 4.7 - c.z);
+      floors[f].add(wrap); act(wrap, { type: 'counter' });
+    };
+    if (THREE.GLTFLoader){ const ld = new THREE.GLTFLoader(); ld.load('models/counter.glb', ready, undefined, () => {
+      fetch('models/counter.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), ch => ch.charCodeAt(0)); ld.parse(bin.buffer, 'models/', ready, () => {}); }).catch(() => {}); }); } }
   // back bar shelves
   const bb = grp(floors[f], -6.5, y, 7.55);
-  box(7, .9, .5, mat.woodDark, bb, 0, 0, 0);
   [1.6, 2.2].forEach(h => box(7, .05, .3, mat.wood, bb, 0, h, .05));
   for (let i = 0; i < 26; i++){ const h = rand(.18, .3); cyl(.05, .05, h, M(['#e9dccb','#8a6a4a','#cfe0dc','#d9a85b','#3e5a50'][i % 5], i % 3 ? {} : { transparent: true, opacity: .7 }), bb, -3.2 + i * .25, i % 2 ? 1.65 : 2.25, .05, 10); }
-  obR(f, -10.2, -2.8, 7.2, 8);
+  obR(f, -9.6, -3.55, 6.3, 8);
   // big menu board fixed to the back wall above the shelves (part of the wall, so it hides with it)
   { const wall = walls[0].mesh, mb = new THREE.Group(); mb.position.set(-6.5, 3.3 - (H - .35) / 2, -.14); mb.rotation.y = Math.PI; wall.add(mb);
     box(3.5, 1.8, .06, mat.wood, mb, 0, -.9, -.02);
