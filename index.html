@@ -1755,12 +1755,12 @@ $('#scopeExit').onclick = () => { cam.mode = 'follow'; $('#scope').hidden = true
 document.querySelectorAll('#floorMenu button').forEach(b => b.onclick = () => { setFloorMenuOpen(false); goFloor(+b.dataset.f); });
 
 /* ---------- sound: waves + soft lo-fi ---------- */
-let AC = null, master, wavesG, musicG, musicOn = true, musicTimer = 0;
+let AC = null, master, wavesG, musicG, tickG, musicOn = true, musicTimer = 0;
 // Volume levels (0–100) and mutes, remembered on this device
 const vol = (() => { const d = { wave: 100, music: 100, waveOff: false, musicOff: false }; try { const v = JSON.parse(store.get('bj-vol') || 'null'); if (v && typeof v === 'object') ['wave', 'music'].forEach(k => { if (Number.isFinite(v[k])) d[k] = clamp(v[k] | 0, 0, 100); d[k + 'Off'] = !!v[k + 'Off']; }); } catch (e) {} return d; })();
 const WAVE_MAX = .7, MUSIC_MAX = .4;
 const level = k => vol[k + 'Off'] ? 0 : vol[k] / 100;
-function applyVolumes(){ musicOn = level('music') > 0; if (!AC) return; wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, .25); musicG.gain.setTargetAtTime(MUSIC_MAX * level('music'), AC.currentTime, .25); fireworks.setVolume(level('wave')); }
+function applyVolumes(){ musicOn = level('music') > 0; if (!AC) return; wavesG.gain.setTargetAtTime(WAVE_MAX * level('wave'), AC.currentTime, .25); musicG.gain.setTargetAtTime(MUSIC_MAX * level('music'), AC.currentTime, .25); tickG.gain.setTargetAtTime(.06 * MUSIC_MAX * level('music'), AC.currentTime, .25); fireworks.setVolume(level('wave')); }
 function renderSound(){
   ['wave', 'music'].forEach(k => {
     const off = vol[k + 'Off'], v = vol[k], p = off ? 0 : v, color = k === 'wave' ? '#8fd0cf' : '#f3b37c', name = k === 'wave' ? '파도 소리' : '음악';
@@ -1796,8 +1796,10 @@ function initAudio(){
   const delay = AC.createDelay(); delay.delayTime.value = .42; const fb = AC.createGain(); fb.gain.value = .32; delay.connect(fb); fb.connect(delay);
   musicG.connect(mlp); mlp.connect(master); musicG.connect(delay); delay.connect(mlp);
   // vinyl crackle
-  const cb = AC.createBuffer(1, AC.sampleRate * 3, AC.sampleRate); const cd = cb.getChannelData(0); for (let i = 0; i < cd.length; i++) cd[i] = Math.random() < .0009 ? (Math.random() * 2 - 1) * .6 : (Math.random() * 2 - 1) * .006;
-  const cs = AC.createBufferSource(); cs.buffer = cb; cs.loop = true; const cg = AC.createGain(); cg.gain.value = .25; const chp = AC.createBiquadFilter(); chp.type = 'highpass'; chp.frequency.value = 1200; cs.connect(chp); chp.connect(cg); cg.connect(musicG); cs.start();
+  // only a rare, soft tick (kept out of the echo) so it reads as a record without sounding like static
+  const cb = AC.createBuffer(1, AC.sampleRate * 3, AC.sampleRate); const cd = cb.getChannelData(0); for (let i = 0; i < cd.length; i++) cd[i] = Math.random() < .00025 ? (Math.random() * 2 - 1) * .5 : 0;
+  const cs = AC.createBufferSource(); cs.buffer = cb; cs.loop = true; const cg = tickG = AC.createGain(); cg.gain.value = .06 * MUSIC_MAX * level('music'); const chp = AC.createBiquadFilter(); chp.type = 'highpass'; chp.frequency.value = 1200; const clp = AC.createBiquadFilter(); clp.type = 'lowpass'; clp.frequency.value = 3200;
+  cs.connect(chp); chp.connect(clp); clp.connect(cg); cg.connect(mlp); cs.start();
   scheduleMusic();
 }
 const CHORDS = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59, 62]];
