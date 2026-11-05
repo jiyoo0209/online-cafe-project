@@ -58,6 +58,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .brand b{font-family:var(--font-display);font-weight:700;font-size:15px}
 .brand small{font-size:12px;letter-spacing:.12em;color:var(--ink-dim)}
 .topr{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:6px}
+#camBtn{width:36px;height:36px;border-radius:50%;padding:0;display:grid;place-items:center;color:var(--ink)}
 #soundBtn{width:36px;height:36px;border-radius:50%;padding:0;display:grid;place-items:center;color:var(--ink)}
 #soundBtn[aria-expanded="true"]{background:rgba(255,245,232,.92);border-color:rgba(255,232,206,.6);color:var(--accent-ink)}
 #soundPop{position:absolute;top:calc(60px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));width:250px;box-sizing:border-box;padding:14px 14px 12px;border-radius:16px;background:rgba(36,24,18,.9);box-shadow:0 14px 40px rgba(20,10,4,.35);display:flex;flex-direction:column;gap:14px}
@@ -152,6 +153,41 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .menucard .close{margin-top:12px;width:100%;border:1px solid rgba(255,255,255,.14);background:transparent;border-radius:10px;padding:9px;color:#f6efe0}
 
 /* Scope view */
+#photo{position:fixed;inset:0;pointer-events:none}
+#photo > *{pointer-events:auto}
+#photo .vf,#photo .flash{pointer-events:none}
+#photo .vf{position:absolute;left:22px;right:22px;top:calc(92px + env(safe-area-inset-top,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+#photo .c{position:absolute;width:26px;height:26px;border:0 solid rgba(255,245,232,.9)}
+#photo .tl{left:0;top:0;border-width:2px 0 0 2px;border-radius:6px 0 0 0}#photo .tr{right:0;top:0;border-width:2px 2px 0 0;border-radius:0 6px 0 0}
+#photo .bl{left:0;bottom:0;border-width:0 0 2px 2px;border-radius:0 0 0 6px}#photo .br{right:0;bottom:0;border-width:0 2px 2px 0;border-radius:0 0 6px 0}
+#photo .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,245,232,.28),rgba(255,245,232,.28)),linear-gradient(rgba(255,245,232,.28),rgba(255,245,232,.28)),linear-gradient(rgba(255,245,232,.28),rgba(255,245,232,.28)),linear-gradient(rgba(255,245,232,.28),rgba(255,245,232,.28));background-size:1px 100%,1px 100%,100% 1px,100% 1px;background-position:33.33% 0,66.66% 0,0 33.33%,0 66.66%;background-repeat:no-repeat}
+#photo.nogrid .grid{display:none}
+#photo .top{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));top:calc(16px + env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+#photo .top > *{pointer-events:auto}
+#photo .lab{padding:7px 12px;border-radius:12px;font-size:13px}
+#photo .round{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+#photo .opts{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(104px + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
+#photo .opts button{height:34px;padding:0 14px;border-radius:99px;color:var(--ink);font-size:12.5px}
+#photo .opts button[aria-pressed="true"]{background:rgba(255,245,232,.92);color:var(--accent-ink)}
+#shutter{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));width:72px;height:72px;padding:0;border-radius:50%;border:4px solid #fff5e8;background:rgba(255,245,232,.25);display:grid;place-items:center}
+#shutter span{width:54px;height:54px;border-radius:50%;background:#fff5e8;transition:transform .12s}
+#shutter:active span{transform:scale(.9)}
+#photo .flash{position:absolute;inset:0;background:#fff;opacity:0}
+#photo .flash.on{animation:camFlash .45s ease-out}
+@keyframes camFlash{0%{opacity:.95}100%{opacity:0}}
+#shot{position:fixed;inset:0;background:rgba(22,14,10,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+#shot[hidden]{display:none}
+#shot p{margin:0;font-size:14px;color:var(--ink)}
+#shot .pic{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+#shot img{display:block;max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+#shot img.plain{border-radius:14px}
+#shot .kind{display:flex;padding:3px;border-radius:12px;background:rgba(255,245,232,.08)}
+#shot .kind button{height:32px;padding:0 14px;border:0;border-radius:9px;background:transparent;color:var(--ink);font-size:12.5px}
+#shot .kind button[aria-checked="true"]{background:rgba(255,245,232,.92);color:var(--accent-ink)}
+#shot .acts{width:min(420px,100%);display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#shot .acts button{height:50px;border:0;border-radius:14px;background:rgba(255,245,232,.12);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px}
+#shot .acts .pri{background:var(--accent);color:var(--accent-ink)}
+#shot .acts .ghost{grid-column:1 / -1;height:42px;background:transparent;font-size:13px;color:var(--ink-dim)}
 #scope{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 min(36vw,36vh),rgba(6,4,3,.96) calc(min(36vw,36vh) + 2px))}
 #scope button{pointer-events:auto;position:absolute;right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);border-radius:50%;backdrop-filter:blur(12px)}
 #scope p{position:absolute;top:calc(26px + env(safe-area-inset-top,0px));left:64px;right:64px;word-break:keep-all;text-align:center;color:var(--ink-dim);font-size:13px;margin:0}
@@ -175,6 +211,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="hud" hidden>
   <header class="brand panel"><span class="cup" aria-hidden="true">☕</span><b>해변가</b><small>CAFE</small></header>
   <div class="topr">
+    <button id="camBtn" class="panel" type="button" aria-label="사진 찍기"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5a2 2 0 0 1 2-2h1.8l1.4-2h5.6l1.4 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.6" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
     <button id="soundBtn" class="panel" type="button" aria-expanded="false" aria-controls="soundPop" aria-label="소리 크기 조절"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
     <button id="who" class="panel" type="button" aria-expanded="false" aria-controls="people" aria-label="접속 중인 사람 보기"><i class="dot"></i><b id="count">1명</b><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -245,6 +282,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="scope" hidden>
   <p>망원경으로 수평선을 보는 중 · 드래그로 둘러보기</p>
   <button id="scopeExit" type="button" aria-label="망원경 닫기"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+</div>
+<div id="photo" hidden>
+  <div class="vf" aria-hidden="true"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="grid"></div></div>
+  <div class="top"><span class="panel lab">사진 모드 · 드래그로 구도 잡기</span><button id="photoExit" class="panel round" type="button" aria-label="사진 모드 닫기"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="opts"><button id="optTags" class="panel" type="button" aria-pressed="true">이름표</button><button id="optGrid" class="panel" type="button" aria-pressed="true">격자</button></div>
+  <button id="shutter" type="button" aria-label="사진 찍기"><span></span></button>
+  <div class="flash"></div>
+</div>
+<div id="shot" role="dialog" aria-label="찍은 사진" hidden>
+  <p>사진을 찍었어요</p>
+  <div class="pic"><img id="shotImg" alt="방금 찍은 사진"></div>
+  <div class="kind" role="radiogroup" aria-label="사진 모양"><button type="button" role="radio" data-k="polaroid" aria-checked="true">폴라로이드</button><button type="button" role="radio" data-k="plain" aria-checked="false">원본</button></div>
+  <div class="acts"><button id="shotSave" class="pri" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>저장하기</button><button id="shotShare" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 7.5L12 3.5l4 4M6 11v7a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>공유하기</button><button id="shotAgain" class="ghost" type="button">다시 찍기</button></div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -1614,6 +1664,70 @@ function standUp(){ if (!me || me.seat < 0) return; const s = seats[me.seat]; s.
 function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.occ = true; $('#bStand').hidden = false; $('#bWave').hidden = true; pushPresence(true); }
 $('#bStand').onclick = () => standUp();
 $('#bWave').onclick = () => { if (!me) return; me.waveUntil = performance.now() + 2200; myWave = Date.now(); pushPresence(true); };
+// photo mode: frame the shot, capture the 3D view plus name tags/bubbles, then save or share
+const photo = { on: false, tags: true, grid: true, plain: null, polaroid: null, kind: 'polaroid', url: '' };
+function openPhoto(){ if (!me) return; setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); setEmoOpen(false); photo.on = true; $('#photo').hidden = false; $('#hud').hidden = true; cancelJoy(); joy.el.hidden = true; }
+function closePhoto(){ photo.on = false; $('#photo').hidden = true; $('#shot').hidden = true; $('#hud').hidden = false; joy.el.hidden = !isTouch; }
+$('#camBtn').addEventListener('click', e => { e.stopPropagation(); openPhoto(); });
+$('#photoExit').onclick = closePhoto;
+$('#optTags').onclick = () => { photo.tags = !photo.tags; $('#optTags').setAttribute('aria-pressed', photo.tags); };
+$('#optGrid').onclick = () => { photo.grid = !photo.grid; $('#optGrid').setAttribute('aria-pressed', photo.grid); $('#photo').classList.toggle('nogrid', !photo.grid); };
+function pillPath(g, x, y, w, h, r){ roundRect(g, x, y, w, h, Math.min(r, h / 2, w / 2)); }
+function drawTags(g, k){
+  if (!photo.tags || tagLayer.hidden) return;
+  const css = getComputedStyle(document.body).fontFamily;
+  for (const el of tagLayer.children){
+    if (el.style.display === 'none') continue;
+    for (const part of el.children){
+      if (part.hidden) continue; const b = part.getBoundingClientRect(); if (!b.width) continue;
+      const x = b.left * k, y = b.top * k, w = b.width * k, h = b.height * k;
+      if (part.classList.contains('nm')){
+        g.fillStyle = 'rgba(30,20,14,.6)'; pillPath(g, x, y, w, h, h / 2); g.fill();
+        const dot = part.querySelector('i'); if (dot){ const db = dot.getBoundingClientRect(); g.fillStyle = dot.style.background || '#fff5e8'; g.beginPath(); g.arc((db.left + db.width / 2) * k, (db.top + db.height / 2) * k, db.width / 2 * k, 0, Math.PI * 2); g.fill(); }
+        g.fillStyle = '#fff5e8'; g.font = `600 ${12 * k}px ${css}`; g.textBaseline = 'middle'; g.textAlign = 'right'; g.fillText(part.textContent, x + w - 9 * k, y + h / 2 + k);
+      } else {
+        g.globalAlpha = +(part.style.opacity || 1); g.fillStyle = 'rgba(255,250,242,.97)'; pillPath(g, x, y, w, h, (part.classList.contains('emo') ? 18 : 15) * k); g.fill();
+        g.beginPath(); g.moveTo(x + w / 2 - 6 * k, y + h - 1); g.lineTo(x + w / 2 + 6 * k, y + h - 1); g.lineTo(x + w / 2, y + h + 6 * k); g.closePath(); g.fill();
+        const emo = part.classList.contains('emo'); g.fillStyle = '#3a2618'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.font = emo ? `${30 * k}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif` : `${14 * k}px ${css}`;
+        g.fillText(part.textContent, x + w / 2, y + h / 2 + (emo ? 2 * k : 0), w - 16 * k); g.globalAlpha = 1;
+      }
+    }
+  }
+}
+function capture(){
+  renderer.render(scene, camera);
+  const src = renderer.domElement, W = src.width, Hh = src.height, k = W / innerWidth;
+  const plain = document.createElement('canvas'); plain.width = W; plain.height = Hh; const g = plain.getContext('2d');
+  g.drawImage(src, 0, 0); drawTags(g, k);
+  // polaroid: cream card, photo cropped to 4:5, cafe name + date + floor underneath
+  const pw = Math.round(Math.min(W, Hh * .8)), ph = Math.round(pw * 1.25), m = Math.round(pw * .045), cap = Math.round(pw * .17);
+  const pol = document.createElement('canvas'); pol.width = pw + m * 2; pol.height = Math.min(ph, Hh) + m + cap; const q = pol.getContext('2d');
+  const ch = Math.min(ph, Hh), cw = Math.min(pw, W), sx = (W - cw) / 2, sy = (Hh - ch) / 2;
+  q.fillStyle = '#fbf6ee'; q.fillRect(0, 0, pol.width, pol.height); q.drawImage(plain, sx, sy, cw, ch, m, m, pw, ch);
+  const d = new Date(Date.now() + 9 * 3600e3), date = `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')}`;
+  const fl = ['카운터', '라운지', '루프탑'][ctrl.floor] || '';
+  q.textBaseline = 'middle'; q.fillStyle = '#3a2618'; q.font = `700 ${Math.round(cap * .3)}px "Gowun Batang", serif`; q.textAlign = 'left'; q.fillText('☕ 해변가 CAFE', m * 1.3, m + ch + cap / 2);
+  q.fillStyle = '#8a6a4a'; q.font = `${Math.round(cap * .2)}px ${getComputedStyle(document.body).fontFamily}`; q.textAlign = 'right'; q.fillText(`${date} · ${fl}`, pol.width - m * 1.3, m + ch + cap / 2 + 2);
+  return { plain, polaroid: pol };
+}
+function showShot(){ const c = photo.kind === 'plain' ? photo.plain : photo.polaroid; const img = $('#shotImg'); img.src = c.toDataURL('image/jpeg', .92); img.classList.toggle('plain', photo.kind === 'plain'); document.querySelectorAll('#shot .kind button').forEach(b => b.setAttribute('aria-checked', b.dataset.k === photo.kind)); }
+$('#shutter').onclick = () => {
+  const r = capture(); photo.plain = r.plain; photo.polaroid = r.polaroid;
+  const f = $('#photo .flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  setTimeout(() => { showShot(); $('#shot').hidden = false; }, 380);
+};
+document.querySelectorAll('#shot .kind button').forEach(b => b.onclick = () => { photo.kind = b.dataset.k; showShot(); });
+function shotBlob(){ const c = photo.kind === 'plain' ? photo.plain : photo.polaroid; return new Promise(res => c.toBlob(res, 'image/jpeg', .92)); }
+const shotName = () => { const d = new Date(Date.now() + 9 * 3600e3); return `haebyeonga-${d.toISOString().slice(0, 19).replace(/[-:T]/g, '')}.jpg`; };
+function download(blob){ const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = shotName(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); }
+$('#shotSave').onclick = async () => { const blob = await shotBlob(); if (!blob) return; download(blob); toast('사진을 저장했어요'); };
+$('#shotShare').onclick = async () => {
+  const blob = await shotBlob(); if (!blob) return; const file = new File([blob], shotName(), { type: 'image/jpeg' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })){ try { await navigator.share({ files: [file], title: '해변가 카페' }); } catch (e) {} }
+  else { download(blob); toast('이 브라우저는 바로 공유가 안 돼서 저장했어요'); }
+};
+$('#shotAgain').onclick = () => { $('#shot').hidden = true; };
 let myWave = 0, myEmo = '', myEmoT = 0;
 const EMOJIS = [...document.querySelectorAll('#emoPop [data-e]')].map(b => b.dataset.e);
 function setEmoOpen(open){ if (open){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); cancelJoy(); } $('#emoPop').hidden = !open; $('#bEmo').setAttribute('aria-expanded', open); joy.el.style.visibility = open ? 'hidden' : ''; }
@@ -1779,7 +1893,7 @@ document.addEventListener('pointerdown', e => { const t = e.target, inEl = sel =
   if (!$('#soundPop').hidden && !inEl('#soundBtn')) setSoundOpen(false);
   if (!$('#floorMenu').hidden && !inEl('#floorChip')) setFloorMenuOpen(false);
   if (!$('#emoPop').hidden && !inEl('#bEmo')) setEmoOpen(false); });
-addEventListener('keydown', e => { if (e.key === 'Escape'){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); setEmoOpen(false); } });
+addEventListener('keydown', e => { if (e.key === 'Escape' && photo.on){ if (!$('#shot').hidden) $('#shot').hidden = true; else closePhoto(); return; } if (e.key === 'Escape'){ setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); setEmoOpen(false); } });
 // Supabase Realtime adapter with the same two calls the page uses: presence(state) and onPeers(cb).
 // Presence carries only name + look (slow-changing); position/actions go over Broadcast, throttled.
 function makeSupabaseRoom(cfg){
@@ -1970,7 +2084,7 @@ function frame(){
   walls.forEach(w => { w.mesh.visible = ((camera.position.x - w.px) * w.nx + (camera.position.z - w.pz) * w.nz) < 0; });
 
   // 2D name tags and bubbles
-  tagLayer.hidden = !entered || cam.mode === 'scope';
+  tagLayer.hidden = !entered || cam.mode === 'scope' || (photo.on && !photo.tags);
   if (!tagLayer.hidden){
     if (me) placeTag(me, me.g, 1.5 * me.L.size, true, now);
     for (const r of remotes.values()) placeTag(r.a, r.a.g, 1.5 * r.a.L.size, r.a.g.visible, now);
