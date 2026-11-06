@@ -136,13 +136,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #preview{width:120px;height:140px;flex:none;border-radius:12px;background:radial-gradient(circle at 50% 70%,rgba(243,179,124,.28),rgba(255,240,222,.04) 70%);border:1px solid var(--line)}
 .lookside{display:flex;flex-direction:column;gap:10px;min-width:0}
 .lookside p{margin:0;font-size:13px;line-height:1.55;color:var(--ink)}
-.hairpick{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;margin-top:4px}
-.hp-l{font-size:11.5px;letter-spacing:.06em;color:var(--ink-dim)}
-.hp-row{display:flex;flex-wrap:wrap;gap:5px}
-.hp-row button{border:1px solid var(--line);background:rgba(255,240,222,.06);border-radius:99px;padding:5px 9px;font-size:12px;line-height:1.2}
-.hp-row button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.hp-row .sw{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid rgba(255,240,222,.25)}
-.hp-row .sw[aria-pressed="true"]{border-color:#fff5e8;box-shadow:0 0 0 2px var(--accent)}
 #reroll{align-self:flex-start;border:1px solid var(--line);background:rgba(255,240,222,.08);border-radius:99px;padding:7px 14px;font-size:13px}
 #enter{border:0;border-radius:12px;padding:13px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;letter-spacing:.02em}
 .card .meta{font-size:12px;color:var(--ink-dim);display:flex;justify-content:space-between}
@@ -270,10 +263,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <p id="lookDesc"></p>
           <button id="reroll" type="button">다른 모습 뽑기</button>
         </div>
-      </div>
-      <div class="hairpick">
-        <span class="hp-l">헤어</span><div class="hp-row" id="hairStyles"></div>
-        <span class="hp-l">머리색</span><div class="hp-row" id="hairColors"></div>
       </div>
     </div>
     <button id="enter" type="button">카페 들어가기</button>
@@ -1311,7 +1300,7 @@ function lookFrom(seed){
     glasses: r() < .26, scarf: r() < .13, scarfC: pick(LOOK.top), phones: r() < .1, phonesC: pick(LOOK.top), size: .92 + r() * .13, wide: .9 + r() * .2, happy: r() < .22, freckles: r() < .15 };
   L.shorts = !L.skirt && r() < .22;
   if (L.style === 5 && L.hat < 0) L.hat = 0;
-  // chibi: hairstyle and hair colour are the seed's low bits, so the entry card can choose them
+  // chibi: hairstyle and hair colour come from the seed (random with 다른 모습 뽑기)
   L.style = seed & 7; L.hairIdx = ((seed >>> 3) & 15) % HAIR_COLORS.length; L.hair = HAIR_COLORS[L.hairIdx][1]; L.size = .96 + r() * .08;
   return L;
 }
@@ -1394,7 +1383,6 @@ const HAIR_KEYS = ['twin', 'bob', 'fluffy', 'sidetail', 'wavy', 'braid', 'bunear
 const HAIR_NAMES = ['트윈테일', '긴 생머리', '레이어드 컷', '웨이브 양갈래', '긴 웨이브', '옆 땋은 머리', '단발', '낮은 양묶음'];
 const HAIR_COLORS = [['흑갈색', '#2b2220'], ['다크 브라운', '#4a2e22'], ['초코', '#5e3a29'], ['밤색', '#7a4b32'], ['캐러멜', '#a8714a'], ['금발', '#d9b77a'],
   ['애쉬 그레이', '#a9a4a2'], ['와인', '#8a3b45'], ['핑크', '#e7a0b5'], ['하늘', '#9ab6e2'], ['라벤더', '#b49ad8'], ['민트', '#9cc9b7']];
-const withHair = (seed, st, hc) => ((((seed >>> 7) << 7) | (hc << 3) | st) >>> 0) || 128;
 const CHIBI_S = .83;     // model units → metres (about the height of the old avatar)
 const CB = (() => {
   const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -2121,11 +2109,7 @@ const HAT_NAMES = ['비니', '버킷햇', '베레모', '볼캡'];
 // [옷 붙일 때 참고용] 예전 모습 설명(옷·모자·안경) — 지금은 헤어만 보여줌
 function lookText(L){ const t = [STYLE_NAMES[L.style]]; if (L.hat >= 0) t.push(HAT_NAMES[L.hat]); if (L.glasses) t.push('동그란 안경'); if (L.phones) t.push('헤드폰'); if (L.scarf) t.push('목도리'); t.push(L.skirt ? '치마' : L.shorts ? '반바지' : '긴바지'); t.push(L.longSleeve ? '긴팔' : '반팔'); return t.join(' · '); }
 function hairText(L){ return `${HAIR_NAMES[L.style]} · ${HAIR_COLORS[L.hairIdx][0]} 머리`; }
-// hairstyle and colour pickers: they rewrite the seed's low bits, so everyone sees the same choice
-HAIR_NAMES.forEach((nm, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = nm; b.onclick = () => { const L = lookFrom(mySeed); mySeed = withHair(mySeed, i, L.hairIdx); showPreview(); }; $('#hairStyles').append(b); });
-HAIR_COLORS.forEach(([nm, hex], i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'sw'; b.style.background = hex; b.title = nm; b.setAttribute('aria-label', nm + ' 머리'); b.onclick = () => { mySeed = withHair(mySeed, mySeed & 7, i); showPreview(); }; $('#hairColors').append(b); });
-function showPreview(){ if (pv.a) pv.scene.remove(pv.a.g); pv.a = makeAvatar(mySeed); pv.scene.add(pv.a.g); const L = pv.a.L; $('#lookDesc').textContent = hairText(L);
-  [...$('#hairStyles').children].forEach((b, i) => b.setAttribute('aria-pressed', i === L.style)); [...$('#hairColors').children].forEach((b, i) => b.setAttribute('aria-pressed', i === L.hairIdx)); }
+function showPreview(){ if (pv.a) pv.scene.remove(pv.a.g); pv.a = makeAvatar(mySeed); pv.scene.add(pv.a.g); const L = pv.a.L; $('#lookDesc').textContent = hairText(L); }
 showPreview();
 $('#reroll').onclick = () => { mySeed = newSeed(); showPreview(); };
 $('#nick').value = myName;
