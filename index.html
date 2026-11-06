@@ -200,6 +200,67 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 @media (max-width:720px){
 }
+#coin{position:absolute;right:0;top:44px;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 7px;border-radius:99px;font-size:13.5px;font-weight:700}
+#coin i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a6,#e8b13f 60%,#b57d1c);color:#7a4e0c;font-style:normal;font-size:11px;font-weight:900}
+#coin.up{animation:coinUp .9s ease}
+@keyframes coinUp{0%{box-shadow:0 0 0 0 rgba(246,207,106,0)}30%{box-shadow:0 0 0 3px rgba(246,207,106,.8),0 0 24px rgba(246,207,106,.6)}100%{box-shadow:0 0 0 0 rgba(246,207,106,0)}}
+#coinPlus{position:absolute;right:8px;top:38px;font-weight:800;color:#f6cf6a;font-size:14px;text-shadow:0 2px 6px rgba(0,0,0,.4);opacity:0;pointer-events:none}
+#coinPlus.on{animation:plusUp 1.4s ease forwards}
+@keyframes plusUp{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+#bar .act.dig{background:linear-gradient(180deg,#f6c08c,#ec9f5f);color:var(--accent-ink);font-weight:700}
+#digRing{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));width:118px;height:118px;margin-left:-59px;display:grid;place-items:center;pointer-events:none;z-index:6}
+#digRing svg{position:absolute;inset:0;transform:rotate(-90deg)}
+#digRing .in{width:84px;height:84px;border-radius:50%;background:rgba(36,24,18,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--ink-dim)}
+#digRing .in b{font-size:22px;line-height:1.1;color:var(--ink)}
+.sheetCard{background:var(--panel-strong);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.45);padding:20px 18px 16px;color:var(--ink)}
+#catch{position:fixed;left:50%;top:50%;transform:translate(-50%,-56%);width:min(330px,calc(100vw - 48px));text-align:center;z-index:9;animation:pop .32s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:translate(-50%,-56%) scale(.85);opacity:0}100%{transform:translate(-50%,-56%) scale(1);opacity:1}}
+#catch .big{width:92px;height:92px;margin:4px auto 8px;border-radius:28px;display:grid;place-items:center;font-size:54px;background:radial-gradient(circle at 50% 40%,rgba(255,215,160,.32),rgba(255,215,160,.04) 70%)}
+#catch h3{margin:0 0 4px;font-family:var(--font-display);font-size:21px}
+#catch .line{margin:0;color:var(--ink-dim);font-size:13px}
+#catch .earn{margin:12px auto 0;display:flex;justify-content:center;gap:7px;align-items:center;font-size:19px;font-weight:800;color:#f6cf6a}
+#catch .earn i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a6,#e8b13f 60%,#b57d1c);color:#7a4e0c;font-style:normal;font-size:11px}
+#catch .today{margin:12px 0 0;font-size:12.5px;color:var(--ink-dim)}#catch .today b{color:#f6cf6a}
+.sheetCard .btns{display:flex;gap:8px;margin-top:14px}
+.sheetCard .btns button{flex:1;height:44px;border:0;border-radius:13px;font-size:14px;background:rgba(255,240,222,.1)}
+.sheetCard .btns .pri{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700}
+.pill.r1{background:rgba(255,245,232,.12);color:#e9dccb}.pill.r2{background:rgba(120,190,170,.22);color:#a6e3cf}.pill.r3{background:rgba(150,140,230,.25);color:#c9c1ff}.pill.r4{background:linear-gradient(90deg,#ffe28a,#e9a93a);color:#5a3405}
+#dex{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,6,4,.45);z-index:10;padding:0 16px}
+#dex .sheetCard{width:min(360px,100%);max-height:calc(100vh - 60px);overflow:auto}
+#dex h2{margin:0;font-family:var(--font-display);font-size:23px}#dex .sub{margin:4px 0 0;color:var(--ink-dim);font-size:12.5px}
+#dexList{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+#dexList li{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:13px;background:rgba(255,240,222,.06)}
+#dexList .e{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:22px;background:rgba(255,240,222,.08)}
+#dexList .t{flex:1;min-width:0}#dexList .t b{display:block;font-size:14px}#dexList .t small{color:var(--ink-dim);font-size:11.5px}#dexList .t .pill{padding:1px 7px;font-size:10.5px}
+#dexList .p{font-weight:700;font-size:13.5px;color:#f6cf6a;white-space:nowrap}
+#dexList li.lock{opacity:.55}#dexList li.lock .e{filter:grayscale(1) brightness(.6)}
+.sheetCard .wallet,.menucard .wallet{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.22);font-size:13.5px}
+.sheetCard .wallet b,.menucard .wallet b{color:#f6cf6a;font-size:15px}
+#dex .close{margin-top:10px;width:100%;border:1px solid rgba(255,255,255,.14);background:transparent;border-radius:10px;padding:9px}
+.menucard .gap{margin:8px 0 0;padding:9px 12px;border-radius:12px;background:rgba(246,207,106,.1);font-size:12.5px;color:#f8dfa5}
+.menucard li button .need{display:none}
+.menucard li button.poor{opacity:.6}.menucard li button.poor .price{display:none}.menucard li button.poor .need{display:block;font-size:12.5px;color:rgba(246,239,224,.7);white-space:nowrap;align-self:center}
+.tag .nm.v{background:rgba(30,20,14,.72);box-shadow:0 0 0 1.5px rgba(246,207,106,.85),0 0 14px rgba(246,207,106,.45);padding-left:4px}
+.tag .nm .vip,#vipBox .vip{display:inline-flex;align-items:center;padding:1px 6px;border-radius:99px;background:linear-gradient(180deg,#ffe28a,#e9a93a);color:#5a3405;font-weight:900;font-size:10px;letter-spacing:.03em}
+#vipBox{padding:2px 2px 8px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+#vipBox h3{margin:2px 4px 6px;font-size:13px;font-weight:700}
+#vipBox ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#vipBox li{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:9px;background:rgba(255,240,222,.05);font-size:13px}
+#vipBox li.empty{color:var(--ink-dim);font-size:12px;justify-content:center}
+#vipBox .no{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:11px;flex:none}
+#vipBox .g1 .no{background:linear-gradient(180deg,#ffe28a,#e0a12c);color:#5a3405}#vipBox .g2 .no{background:linear-gradient(180deg,#f2f2f6,#b9bccb);color:#3b3d48}#vipBox .g3 .no{background:linear-gradient(180deg,#f3c39a,#c27a45);color:#4a2510}
+#vipBox .vn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#vipBox .vt{color:#f6cf6a;font-weight:700;font-size:12px}
+#vipBox .vsub{margin:6px 4px 0;font-size:11.5px;color:var(--ink-dim)}
+#vipFx{position:fixed;inset:0;z-index:20;background:rgba(10,6,14,.45)}
+#vipFx canvas{position:absolute;inset:0;width:100%;height:100%}
+#vipFx .vipPop{position:absolute;left:50%;top:50%;transform:translate(-50%,-45%);width:min(330px,calc(100vw - 56px));border-radius:26px;padding:26px 20px 18px;text-align:center;background:linear-gradient(180deg,rgba(64,40,22,.96),rgba(36,22,14,.96));border:1.5px solid rgba(246,207,106,.7);box-shadow:0 0 0 6px rgba(246,207,106,.12),0 0 60px rgba(246,207,106,.35),0 30px 70px rgba(0,0,0,.5);animation:vipIn .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes vipIn{0%{transform:translate(-50%,-45%) scale(.6);opacity:0}100%{transform:translate(-50%,-45%) scale(1);opacity:1}}
+#vipFx .crown{font-size:56px;line-height:1;margin-top:-62px;filter:drop-shadow(0 6px 14px rgba(246,190,80,.6))}
+#vipFx .badge{display:inline-flex;margin:12px 0 10px;padding:7px 16px;border-radius:99px;background:linear-gradient(180deg,#ffe9a0,#e9a93a);color:#5a3405;font-weight:900;font-size:16px;box-shadow:0 0 26px rgba(246,207,106,.7)}
+#vipFx h3{margin:0;font-family:var(--font-display);font-size:23px}
+#vipFx p{margin:8px 0 0;color:var(--ink-dim);font-size:13px;line-height:1.55}
+#vipFx button{margin-top:14px;width:100%;height:44px;border:0;border-radius:13px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14.5px}
 @media (prefers-reduced-motion:reduce){.dot{animation:none}#toast{transition:none}}
 </style>
 <style>body{margin:0;font-size:14px}</style>
@@ -213,6 +274,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="hud" hidden>
   <header class="brand panel"><span class="cup" aria-hidden="true">☕</span><b>해변가</b><small>CAFE</small></header>
   <div class="topr">
+    <button id="coin" class="panel" type="button" aria-label="내 지갑 · 해루질 도감"><i>₩</i><b id="coinAmt">-</b><span id="coinPlus" aria-hidden="true"></span></button>
     <button id="camBtn" class="panel" type="button" aria-label="사진 찍기"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5a2 2 0 0 1 2-2h1.8l1.4-2h5.6l1.4 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.6" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
     <button id="soundBtn" class="panel" type="button" aria-expanded="false" aria-controls="soundPop" aria-label="소리 크기 조절"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.8a7.4 7.4 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
     <button id="who" class="panel" type="button" aria-expanded="false" aria-controls="people" aria-label="접속 중인 사람 보기"><i class="dot"></i><b id="count">1명</b><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -233,7 +295,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <input id="musicVol" class="vol" type="range" min="0" max="100" value="100">
     </div>
   </div>
-  <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
+  <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><div id="vipBox"></div><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
   <div id="floorMenu" class="panel" role="menu" aria-label="층 선택" hidden>
     <button type="button" role="menuitemradio" data-f="2" aria-checked="false"><span class="fb">3F</span><span class="fn">루프탑 테라스</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button type="button" role="menuitemradio" data-f="1" aria-checked="false"><span class="fb">2F</span><span class="fn">오션뷰 라운지</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -242,6 +304,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <div id="emoPop" class="panel" role="dialog" aria-label="이모지 보내기" hidden><div class="strip"><div class="grp" role="group" aria-label="기분"><span class="cap">기분</span><div class="row"><button type="button" data-e="❤️" aria-label="좋아 ❤️">❤️</button><button type="button" data-e="😭" aria-label="슬퍼 😭">😭</button><button type="button" data-e="🤬" aria-label="화나 🤬">🤬</button></div></div><span class="sep" aria-hidden="true"></span><div class="grp" role="group" aria-label="리액션"><span class="cap">리액션</span><div class="row"><button type="button" data-e="👌" aria-label="오케이 👌">👌</button><button type="button" data-e="👅" aria-label="메롱 👅">👅</button><button type="button" data-e="📸" aria-label="찰칵 📸">📸</button><button type="button" data-e="🚬" aria-label="잠깐 쉼 🚬">🚬</button></div></div><span class="sep" aria-hidden="true"></span><div class="grp" role="group" aria-label="해변가"><span class="cap">해변가</span><div class="row"><button type="button" data-e="🐬" aria-label="돌고래 🐬">🐬</button><button type="button" data-e="🐱" aria-label="고양이 🐱">🐱</button><button type="button" data-e="🎇" aria-label="불꽃 🎇">🎇</button></div></div></div></div>
   <nav id="bar" class="panel" aria-label="층 이동과 행동">
     <button id="floorChip" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="floorMenu" aria-label="지금 1층, 층 바꾸기"><span class="fb" id="chipF">1F</span><span id="chipName">카운터</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 7.5l3-3 3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button id="bDig" class="act dig" type="button" hidden><span aria-hidden="true">⛏</span>해루질</button>
     <button id="bWave" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 12V6.2a1.4 1.4 0 0 1 2.8 0V11M11.3 10.5V4.8a1.4 1.4 0 0 1 2.8 0v5.7M14.1 10.6V6a1.4 1.4 0 0 1 2.8 0v6.5M8.5 11.3l-.9-1.4a1.4 1.4 0 0 0-2.4 1.5l2.5 4.4a6 6 0 0 0 5.2 3h.5a4.6 4.6 0 0 0 4.6-4.6V9.4a1.4 1.4 0 0 0-2.8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>손 흔들기</button>
     <button id="bEmo" class="act" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="emoPop"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 13.6a4 4 0 0 0 6.8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.3" cy="10" r="1" fill="currentColor"/><circle cx="14.7" cy="10" r="1" fill="currentColor"/></svg>이모지</button>
     <button id="bMenu" class="act" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8.6 1.4 0 2.3M11 3.5c-.6.8.6 1.4 0 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>메뉴</button>
@@ -275,11 +338,28 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="menu" hidden>
   <div class="menucard">
     <h2>오늘의 메뉴</h2>
-    <p class="sub">주문하면 바리스타가 직접 가져다 드려요</p>
+    <p class="sub">해루질로 번 돈으로 주문해요 · 바리스타가 가져다 드려요</p>
     <ul id="menuList"></ul>
+    <div class="wallet"><span>내 지갑</span><b id="menuWallet">-</b></div>
+    <p class="gap" id="menuGap" hidden></p>
     <button class="close" id="menuClose" type="button">닫기</button>
   </div>
 </div>
+
+<div id="digRing" hidden aria-live="polite"><svg width="118" height="118" viewBox="0 0 118 118" aria-hidden="true"><circle cx="59" cy="59" r="52" fill="none" stroke="rgba(255,245,232,.18)" stroke-width="8"/><circle class="arc" cx="59" cy="59" r="52" fill="none" stroke="#f3b37c" stroke-width="8" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"/></svg><div class="in"><b>⛏</b>캐는 중…</div></div>
+<div id="catch" class="sheetCard" role="dialog" aria-label="해루질 결과" hidden>
+  <span class="pill r1">흔해요</span><div class="big"></div><h3></h3><p class="line"></p>
+  <div class="earn"><i>₩</i><span class="earnAmt"></span></div>
+  <div class="btns"><button id="catchDex" type="button">도감 보기</button><button id="catchMore" class="pri" type="button">계속 캐기</button></div>
+  <p class="today"></p>
+</div>
+<div id="dex" hidden><div class="sheetCard" role="dialog" aria-label="해루질 도감">
+  <h2>해루질 도감</h2><p class="sub">해변 물가의 반짝이는 숨구멍을 캐면 나와요 · 잡는 순간 지갑으로</p>
+  <ul id="dexList"></ul>
+  <div class="wallet"><span>내 지갑</span><b id="dexWallet">-</b></div>
+  <button class="close" id="dexClose" type="button">닫기</button>
+</div></div>
+<div id="vipFx" hidden><canvas></canvas><div class="vipPop" role="dialog" aria-label="VIP 획득"><div class="crown">👑</div><div class="badge">👑 VIP</div><h3>VIP 칭호를 획득했어요!</h3><p>이번 주 카페에서 가장 많이 쓴 3명에 들었어요.<br>이제 이름표에 왕관이 붙어요 ✨</p><button id="vipOk" type="button">고마워요!</button></div></div>
 
 <div id="scope" hidden>
   <p>망원경으로 수평선을 보는 중 · 드래그로 둘러보기</p>
@@ -872,6 +952,7 @@ const fireworks = (() => {
   let fxG = null;
   return {
     setVolume(v){ if (fxG) fxG.gain.setTargetAtTime(v, AC.currentTime, .2); },
+    pop(){ if (!fxG) return; const t0 = AC.currentTime; whoosh(t0, .45, .7); boom(t0 + .45, .9); crackle(t0 + 1.1, .7); whoosh(t0 + .6, .45, .5); boom(t0 + 1.05, .7); boom(t0 + 1.7, .55); },
     initAudio(v){ fxG = AC.createGain(); fxG.gain.value = v; fxG.connect(master); },
     tick(t){ // t: seconds into the current show, or -1 when no show is on
       n = 0;
@@ -994,6 +1075,8 @@ box(6, .12, .8, mat.deck, floors[0], 0, -.34, -12.6); box(6, .12, .8, mat.deck, 
 // deck edge planters
 [[-8, -12], [8, -12]].forEach(([x, z]) => { box(6, .45, .5, mat.woodDark, floors[0], x, 0, z); for (let i = 0; i < 9; i++) sph(rand(.15, .26), i % 3 ? mat.leaf : M(['#f2c7d3','#fff3e1','#f5d27a'][i % 3]), floors[0], x - 2.6 + i * .65, .55, z, 8); });
 obR(0, -11.2, -4.9, -12.3, -11.7); obR(0, 4.9, 11.2, -12.3, -11.7);
+obR(0, -30, -11.2, -12.3, -11.7); obR(0, 11.2, 30, -12.3, -11.7);
+[[-15.5, -12.6, .45], [15.8, -13.8, .45], [-19.5, -17.5, .6], [21, -16.8, .7], [6.5, -17.5, .65]].forEach(([x, z, r]) => obstacles.push({ f: 0, t: 'c', x, z, r }));
 
 // Floor slabs (with stair holes)
 // slab pieces share world-aligned plank UVs so the boards line up across the stair openings
@@ -1440,9 +1523,9 @@ const CB = (() => {
       let tot = 0; cand.forEach(c => { c.w = 1 / Math.pow(c.d + .012, 4); tot += c.w; });
       cand.forEach((c, k) => { si[i * 4 + k] = names.indexOf(c.b); sw[i * 4 + k] = c.w / tot; }); }
     geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)); geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4)); };
-  let G = null; const waiting = [], hairMats = new Map(), skinMats = new Map(), clothMats = new Map();
+  let G = null, loaded = false; const waiting = [], hairMats = new Map(), skinMats = new Map(), clothMats = new Map();
   const ready = gl => { if (G) return; G = {}; gl.scene.traverse(o => { if (o.isMesh){ const g = o.geometry; g.computeVertexNormals(); G[o.name] = g; if (o.name === 'face'){ const m = o.material; G.faceMat = new THREE.MeshStandardMaterial({ map: m.map, transparent: true, alphaTest: .05, depthWrite: false, roughness: .7, polygonOffset: true, polygonOffsetFactor: -2 }); if (m.map){ m.map.encoding = THREE.sRGBEncoding; m.map.anisotropy = 4; } } } });
-    smooth(G.body); skin(G.body); makeShells(); let left = 2; const go = () => { if (--left === 0) waiting.splice(0).forEach(f => f()); }; loadOutfits(go); loadMaleHair(go); };
+    smooth(G.body); skin(G.body); makeShells(); let left = 2; const go = () => { if (--left === 0){ loaded = true; waiting.splice(0).forEach(f => f()); } }; loadOutfits(go); loadMaleHair(go); };
   // socks, shoes and a hidden under-layer are offset copies of the body surface, so they bend with the same bones
   function makeShells(){ const g = G.body, P = g.attributes.position, N = g.attributes.normal, idx = g.index.array, p = new THREE.Vector3();
     const shell = (test, d) => { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = P.getY(i) + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
@@ -1468,8 +1551,8 @@ const CB = (() => {
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ const y = P.getY(idx[t + q]); if (!(y > .085 && y < .625)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
       const s = new THREE.BufferGeometry(); s.setAttribute('position', new THREE.BufferAttribute(pos, 3)); s.setAttribute('normal', N); s.setAttribute('skinIndex', g.attributes.skinIndex); s.setAttribute('skinWeight', g.attributes.skinWeight); s.setIndex(keep); G.outfit_pants = s; } }
-  function loadMaleHair(done){ let left = MALE_HAIRS.length + 1; const fin = () => { if (--left === 0) done(); };
-    [...MALE_HAIRS, 'scalp_braid'].forEach(k => { const url = 'chars/' + (k.startsWith('scalp') ? k : 'hair_' + k) + '.glb', ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G[k.startsWith('scalp') ? k : 'hair_' + k] = m.geometry; fin(); };
+  function loadMaleHair(done){ let left = MALE_HAIRS.length + 2; const fin = () => { if (--left === 0) done(); };
+    [...MALE_HAIRS, 'scalp_braid', 'trowel'].forEach(k => { const url = 'chars/' + (k.startsWith('scalp') || k === 'trowel' ? k : 'hair_' + k) + '.glb', ok = gl => { if (k === 'trowel'){ G.trowel = gl.scene; return fin(); } let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G[k.startsWith('scalp') ? k : 'hair_' + k] = m.geometry; fin(); };
       if (!THREE.GLTFLoader) return fin(); const ld = new THREE.GLTFLoader(); ld.load(url, ok, undefined, () => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
   // skirts and the dress also have a seated shape (<key>_sit.glb, same vertices) that only follows the hips
@@ -1500,6 +1583,7 @@ const CB = (() => {
     m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvP = position;');
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('void main() {', 'void main() { vec3 p = vP; float e = 1.27 + .10 * exp(-pow((p.x - .02) / .09, 2.)) - .03 * min(1., abs(p.x) / .22) - .1 * smoothstep(.19, .3, abs(p.x)); if (p.z > .02 && abs(p.x) < .4 && p.y < e) discard;'); };
     m.customProgramCacheKey = () => 'bangsA'; bangMats.set(hex, m); return m; };
+  const trowelMats = { handle: new THREE.MeshStandardMaterial({ color: C('#9a6238'), roughness: .55 }), blade: new THREE.MeshStandardMaterial({ color: C('#b8bec4'), roughness: .3, metalness: .75 }) };
   const eyeMats = new Map(), faceMatFor = i => { if (!i) return G.faceMat; if (eyeMats.has(i)) return eyeMats.get(i);
     const m = G.faceMat.clone(), t = new THREE.TextureLoader().load('chars/eyes/' + EYE_COLORS[i][0] + '.png'); t.encoding = THREE.sRGBEncoding; t.flipY = false; t.anisotropy = 4; m.map = t; eyeMats.set(i, m); return m; };
   const matFor = (map, hex, o) => { if (!map.has(hex)) map.set(hex, new THREE.MeshStandardMaterial(Object.assign({ color: C(hex) }, o))); return map.get(hex); };
@@ -1513,6 +1597,8 @@ const CB = (() => {
     const onHead = (geo, m, cast) => { const o = new THREE.Mesh(geo, m); o.position.copy(J.head).negate(); o.castShadow = cast; B.head.add(o); return o; };
     if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, faceMatFor(a.L.eye), false).renderOrder = 1;
     B['hand.L'].add(a.holder); a.holder.position.set(.05, .01, .045);
+    // 해루질 trowel: floats just in front of the right hand's fingertips, shown only while digging
+    if (G.trowel){ const tw = G.trowel.clone(); tw.traverse(o => { if (o.isMesh){ o.geometry.computeVertexNormals(); o.material = o.name === 'blade' ? trowelMats.blade : trowelMats.handle; o.castShadow = true; } }); tw.visible = false; B['hand.R'].add(tw); a.trowel = tw; }
     a.g.add(body); a.B = B;
     // outfit
     const L = a.L, dc = DRESS_COLORS[L.outfitC], cloth = hex => matFor(clothMats, hex, { roughness: .9, side: THREE.DoubleSide, skinning: true });
@@ -1522,7 +1608,7 @@ const CB = (() => {
     else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.top === 'tank') wear(G.straps_tank, cloth(TOP_COLORS[L.topC][1])); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
     wear(G.socks, matFor(clothMats, '#fbf6f0', { roughness: .85, skinning: true })); wear(G.shoes, matFor(clothMats, L.dress ? dc[2] : SHOE_COLORS[L.shoeC], { roughness: .45, skinning: true }));
   };
-  return { J, whenReady: f => { if (G) f(); else waiting.push(f); }, dress };
+  return { J, whenReady: f => { if (loaded) f(); else waiting.push(f); }, dress };
 })();
 function makeAvatar(seed, o = {}){
   const L = lookFrom(seed);
@@ -1539,7 +1625,7 @@ function roundRect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo
 const tagLayer = $('#tags');
 function ensureTag(a){ if (a.tag) return a.tag; const el = document.createElement('div'); el.className = 'tag'; const bub = document.createElement('div'); bub.className = 'bub'; bub.hidden = true; const nm = document.createElement('div'); nm.className = 'nm'; nm.hidden = true; el.append(bub, nm); tagLayer.appendChild(el); a.tag = { el, bub, nm, shown: true }; return a.tag; }
 function removeTag(a){ if (a && a.tag){ a.tag.el.remove(); a.tag = null; } }
-function setLabel(a, text, color){ const t = ensureTag(a); t.nm.textContent = ''; const i = document.createElement('i'); i.style.background = color || '#fff5e8'; t.nm.append(i, document.createTextNode(text)); t.nm.hidden = false; }
+function setLabel(a, text, color){ const t = ensureTag(a); t.nm.textContent = ''; const i = document.createElement('i'); i.style.background = color || '#fff5e8'; t.nm.append(i, document.createTextNode(text)); t.nm.hidden = false; if (a.vipRank) setVipTag(a, a.vipRank); }
 function say(a, text, dur = 6500, emo = false){ const t = ensureTag(a); t.bub.classList.toggle('emo', emo); if (emo){ t.bub.style.animation = 'none'; void t.bub.offsetWidth; t.bub.style.animation = ''; } t.bub.textContent = text; t.bub.hidden = false; t.bub.style.opacity = 1; a.bubbleUntil = performance.now() + dur; }
 const projV = new THREE.Vector3();
 function placeTag(a, obj, h, visible, now){
@@ -1601,8 +1687,9 @@ function poseAvatar(a, dt, t){
   const B = a.B; if (!B) return;
   const J = CB.J, R = (n, x = 0, y = 0, z = 0) => B[n].rotation.set(x, y, z);
   for (const k in B) B[k].rotation.set(0, 0, 0); B.hips.position.copy(J.hips);
-  if (a.sitSwap){ const pet = now < a.petUntil, sat = !!seat && !lounge && !pet; const lay = !!seat && lounge && !pet; a.sitSwap[0].visible = !sat && !pet && !lay; a.sitSwap[1].visible = sat; a.sitSwap[2].visible = pet; a.sitSwap[3].visible = lay; }
-  const petting = now < a.petUntil, ph = a.phase, s = Math.sin(ph), co = Math.cos(ph), br = Math.sin(t * 2 + a.phase * .3);
+  const dig = now < (a.digUntil || 0); if (a.trowel) a.trowel.visible = dig;
+  if (a.sitSwap){ const pet = now < a.petUntil || dig, sat = !!seat && !lounge && !pet; const lay = !!seat && lounge && !pet; a.sitSwap[0].visible = !sat && !pet && !lay; a.sitSwap[1].visible = sat; a.sitSwap[2].visible = pet; a.sitSwap[3].visible = lay; }
+  const petting = now < a.petUntil || dig, ph = a.phase, s = Math.sin(ph), co = Math.cos(ph), br = Math.sin(t * 2 + a.phase * .3);
   let uaL = [0, 0, -1.22], uaR = [0, 0, 1.22], faL = [0, 0, 0], faR = [0, 0, 0];
   if (petting){
     B.hips.position.y = J.hips.y - .19;
@@ -1767,12 +1854,16 @@ const newSeed = () => (Math.random() * 2147483647) | 0;
 let mySeed = (() => { const v = parseInt(store.get('bj-seed'), 10); return Number.isFinite(v) && v > 0 ? v : newSeed(); })();
 let myName = store.get('bj-name') || ['파도소리', '윤슬', '노을빛', '모래알', '갈매기', '바닷바람', '라떼한잔'][(Math.random() * 7) | 0] + ((Math.random() * 90 + 10) | 0);
 let me = null; // avatar
-const ctrl = { floor: 0, target: null, pendingSeat: -1, path: [], stuck: 0, petWait: 0, stairCool: 0 };
+const ctrl = { floor: 0, target: null, pendingSeat: -1, pendingDig: -1, path: [], stuck: 0, petWait: 0, stairCool: 0 };
 
 /* ---------- collision ---------- */
+const BEACH_Z = -12.15, BEACH_B = [-24, 24, -19.6, 7.5];
+const onBeachAt = (f, z) => f === 0 && z < BEACH_Z;
+const groundY = (f, x, z) => onBeachAt(f, z) ? Math.max(sandY(x, z), -.32) + .03 : FL[f];
 const BOUNDS = [[-11.5, 11.5, -11.9, 7.5], [-11.4, 11.4, -7.6, 7.5], [-11.6, 11.6, -7.7, 7.7]];
 function resolve(f, x, z, r = .32){
-  const b = BOUNDS[f]; x = clamp(x, b[0], b[1]); z = clamp(z, b[2], b[3]);
+  // past the deck edge (only reachable down the front steps) is the beach
+  const b = f === 0 && z < BOUNDS[0][2] ? BEACH_B : BOUNDS[f]; x = clamp(x, b[0], b[1]); z = clamp(z, b[2], b[3]);
   for (const o of obstacles){
     if (o.f !== f) continue;
     if (o.t === 'c'){ const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), m = o.r + r; if (d < m && d > 1e-4){ x = o.x + dx / d * m; z = o.z + dz / d * m; } }
@@ -1865,8 +1956,8 @@ function onTap(x, y){
   const hit = hits.find(h => h.distance < fd + 1.2);
   if (hit){ const a = hit.object.userData.act; if (handleAct(a, hit.point)) return; }
   if (!hitFloor || ctrl.path.length) return;
-  const b = BOUNDS[ctrl.floor]; if (fp.x < b[0] - 1 || fp.x > b[1] + 1 || fp.z < b[2] - 1 || fp.z > b[3] + 1) return;
-  standUp(); ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; ctrl.target = new THREE.Vector3(clamp(fp.x, b[0], b[1]), floorY, clamp(fp.z, b[2], b[3])); ctrl.stuck = 0;
+  const beach = ctrl.floor === 0 && fp.z < BEACH_Z, b = beach ? BEACH_B : BOUNDS[ctrl.floor]; if (fp.x < b[0] - 1 || fp.x > b[1] + 1 || fp.z < b[2] - (beach ? 40 : 1) || fp.z > b[3] + 1) return;
+  standUp(); ctrl.pendingSeat = -1; ctrl.pendingDig = -1; ctrl.petWait = 0; me.petUntil = 0; ctrl.target = new THREE.Vector3(clamp(fp.x, b[0], b[1]), floorY, clamp(fp.z, b[2], b[3])); ctrl.stuck = 0;
   ripple(ctrl.target);
 }
 function handleAct(a, pt){
@@ -1879,6 +1970,7 @@ function handleAct(a, pt){
   }
   if (a.type === 'stair'){ goFloor(ctrl.floor === a.a ? a.b : ctrl.floor === a.b ? a.a : a.b); return true; }
   if (a.type === 'counter'){ openMenu(); return true; }
+  if (a.type === 'dig'){ goDig(a.i); return true; }
   if (a.type === 'record'){ toggleMusic(); return true; }
   if (a.type === 'scope'){ enterScope(); return true; }
   if (a.type === 'cat'){ goPetCat(a.i | 0); return true; }
@@ -1989,16 +2081,174 @@ $('#emoPop').addEventListener('click', e => { const b = e.target instanceof Elem
 
 // menu
 const ml = $('#menuList');
-ITEMS.forEach((it, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<span>${it.name}<em>${it.desc}</em></span><span class="price">₩${it.price}</span>`; b.onclick = () => order(i); li.appendChild(b); ml.appendChild(li); });
-function openMenu(){ if (!entered) return; cancelJoy(); $('#menu').hidden = false; }
+ITEMS.forEach((it, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<span>${it.name}<em>${it.desc}</em></span><span class="price">₩${it.price}</span><span class="need"></span>`; b.onclick = () => order(i); li.appendChild(b); ml.appendChild(li); });
+function openMenu(){ if (!entered) return; cancelJoy(); renderMenuMoney(); $('#menu').hidden = false; }
 $('#bMenu').onclick = openMenu; $('#menuClose').onclick = () => $('#menu').hidden = true;
 $('#menu').addEventListener('click', e => { if (e.target.id === 'menu') $('#menu').hidden = true; });
-function order(i){
+async function order(i){
+  if (W.busy) return; W.busy = true; const ok = await pay(i); W.busy = false; if (!ok) return;
   $('#menu').hidden = true; toast(`${ITEMS[i].name} 주문 완료 · 금방 가져다 드릴게요`);
   setTimeout(() => { if (!me) return; setItem(me, i); toast(`${ITEMS[i].name} 나왔어요`); pushPresence(true);
     // finished after 3 minutes: the cup or pastry leaves the hand (only if it's still this order)
     clearTimeout(me.itemDone); me.itemDone = setTimeout(() => { if (me && me.item === i){ setItem(me, -1); pushPresence(true); } }, 180000); }, 2600);
 }
+
+/* ---------- 해루질 · wallet · weekly VIP ---------- */
+// Money lives on the server (Supabase functions hold the odds and the prices); without it (the Claude preview) a local wallet stands in.
+const CATCH = {
+  clam:    { name: '바지락', e: '🐚', price: 300,   r: 1, line: '모래 속에서 쏙' },
+  oyster:  { name: '굴',     e: '🦪', price: 500,   r: 1, line: '바위 틈에 붙어 있었어요' },
+  whelk:   { name: '고둥',   e: '🐌', price: 700,   r: 1, line: '돌돌 말린 껍데기' },
+  shrimp:  { name: '새우',   e: '🦐', price: 1000,  r: 2, line: '팔딱팔딱 튀어요' },
+  crab:    { name: '꽃게',   e: '🦀', price: 1500,  r: 2, line: '집게를 조심조심… 바구니에 쏙' },
+  octopus: { name: '낙지',   e: '🐙', price: 3000,  r: 3, line: '갯벌 깊이 숨어 있던 걸 잡았어요' },
+  pearl:   { name: '진주',   e: '🫧', price: 10000, r: 4, line: '조개 속에서 반짝!' },
+};
+const RARITY = ['', '흔함', '가끔', '희귀', '아주 희귀'];
+const DIG_MS = 2000, SPOT_REST = 45000;
+// the colour that stands for someone in name tags and the people list: dress or top colour
+const wearColor = L => L.dress ? DRESS_COLORS[L.outfitC][1] : TOP_COLORS[L.topC][1];
+const won = n => n.toLocaleString('ko-KR') + '원';
+const priceOf = i => parseInt(String(ITEMS[i].price).replace(/[^0-9]/g, ''), 10) || 0;
+let myDig = 0, mySay = '', mySayT = 0;
+const W = { sb: null, token: '', bal: null, local: false, vip: 0, top: [], mine: 0, third: null, rank: null, week: '', busy: false, digging: false, beach: false, seaToast: 0 };
+W.token = store.get('bj-token') || ((crypto.randomUUID && crypto.randomUUID()) || 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))); store.set('bj-token', W.token);
+const dex = (() => { try { return JSON.parse(store.get('bj-dex') || '{}') || {}; } catch (e) { return {}; } })();
+const rpc = (fn, args) => W.sb.rpc(fn, args).then(({ data, error }) => { if (error) throw error; return data; });
+const localBal = v => { if (v != null) store.set('bj-wallet', String(v)); const n = parseInt(store.get('bj-wallet'), 10); return Number.isFinite(n) ? n : 3000; };
+function rollLocal(){ const r = Math.random(); return r < .45 ? 'clam' : r < .67 ? 'oyster' : r < .81 ? 'whelk' : r < .9 ? 'shrimp' : r < .96 ? 'crab' : r < .99 ? 'octopus' : 'pearl'; }
+
+function setBal(v, gain){
+  W.bal = v; $('#coinAmt').textContent = won(v);
+  if (gain){ const c = $('#coin'); c.classList.remove('up'); void c.offsetWidth; c.classList.add('up'); const f = $('#coinPlus'); f.textContent = (gain > 0 ? '+' : '') + gain.toLocaleString('ko-KR'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+  renderMenuMoney();
+}
+async function walletInit(){
+  const cfg = window.CAFE_REALTIME;
+  if (cfg && cfg.url && window.supabase && window.supabase.createClient){ try { W.sb = W.sb || window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false, autoRefreshToken: false } }); const d = await rpc('wallet_get', { p_token: W.token, p_name: myName }); setBal(d.balance); vipRefresh(); setInterval(vipRefresh, 30000); return; } catch (e) { W.sb = null; } }
+  W.local = true; setBal(localBal());
+}
+
+// --- dig spots: little mounds with a breathing hole, bubbles and a glint along the wet sand
+const spots = [];
+{ const sandM = M('#d9c098', { roughness: 1 }), holeM = new THREE.MeshBasicMaterial({ color: C('#3b2d20') }), bubM = new THREE.MeshStandardMaterial({ color: C('#ffffff'), roughness: .1, transparent: true, opacity: .85 }), hitM = new THREE.MeshBasicMaterial({ visible: false });
+  const sc = document.createElement('canvas'); sc.width = sc.height = 64; { const g = sc.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,240,1)'); gr.addColorStop(.25, 'rgba(255,240,190,.55)'); gr.addColorStop(1, 'rgba(255,230,160,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2; g.beginPath(); g.moveTo(32, 6); g.lineTo(32, 58); g.moveTo(6, 32); g.lineTo(58, 32); g.stroke(); }
+  const sparkM = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(sc), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+  const moundG = new THREE.SphereGeometry(.22, 16, 8); moundG.scale(1, .18, 1);
+  [[-17, -18.6], [-14.2, -19.1], [-11.6, -18.2], [-8.8, -19.2], [-6, -18.4], [-3.2, -19.2], [-.4, -18.6], [2.6, -19.3], [4.4, -18.4], [8.8, -18.9], [11.4, -19.3], [14, -18.3], [16.8, -19]].forEach(([x, z], i) => {
+    const g = grp(world, x, Math.max(sandY(x, z), -.32), z); const m = mesh(moundG, sandM, g, 0, 0, 0, false); m.receiveShadow = true;
+    const h = mesh(new THREE.CircleGeometry(.035, 12), holeM, g, 0, .042, 0, false); h.rotation.x = -Math.PI / 2;
+    const bubs = [0, 1, 2].map(k => mesh(new THREE.SphereGeometry(.016 + k * .005, 8, 6), bubM, g, (k - 1) * .03, .05, (k % 2) * .03, false));
+    const sp = new THREE.Sprite(sparkM); sp.position.y = .2; sp.scale.setScalar(.34); g.add(sp);
+    const hit = mesh(new THREE.SphereGeometry(.5, 8, 6), hitM, g, 0, .2, 0, false); act(hit, { type: 'dig', i });
+    spots.push({ g, x, z, bubs, sp, restUntil: 0, ph: i * 1.7 });
+  });
+}
+function spotsTick(t, now){
+  for (const s of spots){ const on = now >= s.restUntil; if (s.g.visible !== on) s.g.visible = on; if (!on) continue;
+    s.sp.material.opacity = 1; s.sp.scale.setScalar(.26 + .12 * Math.max(0, Math.sin(t * 2.6 + s.ph))); s.bubs.forEach((b, k) => { const u = (t * .7 + k * .33 + s.ph) % 1; b.position.y = .05 + u * .12; b.scale.setScalar(1 - u * .6); }); }
+}
+const nearSpot = (x, z, max) => { let best = -1, bd = max; spots.forEach((s, i) => { if (performance.now() < s.restUntil) return; const d = Math.hypot(s.x - x, s.z - z); if (d < bd){ bd = d; best = i; } }); return best; };
+function goDig(i){
+  const s = spots[i]; if (!s || !me) return; if (performance.now() < s.restUntil){ toast('여긴 방금 캤어요 · 다른 숨구멍을 찾아봐요'); return; }
+  if (ctrl.floor !== 0){ toast('해변은 1층 데크 앞 계단으로 내려가요'); return; }
+  if (Math.hypot(s.x - me.pos.x, s.z - me.pos.z) < 1.0){ startDig(i); return; }
+  standUp(); ctrl.pendingSeat = -1; ctrl.pendingDig = i; ctrl.target = new THREE.Vector3(s.x, 0, Math.min(s.z + .55, BEACH_B[3])); ctrl.stuck = 0;
+}
+$('#bDig').onclick = () => { if (!me) return; const i = nearSpot(me.pos.x, me.pos.z, 1.2); if (i >= 0) return startDig(i); const j = nearSpot(me.pos.x, me.pos.z, 9); if (j >= 0) goDig(j); else toast('✨ 반짝이는 숨구멍 근처에서 캐요'); };
+function startDig(i){
+  const s = spots[i]; if (!s || W.digging || !me || W.bal == null) return; if (performance.now() < s.restUntil) return;
+  W.digging = true; ctrl.target = null; me.moving = false; me.rot = Math.atan2(s.x - me.pos.x, s.z - me.pos.z);
+  me.digUntil = performance.now() + DIG_MS; myDig = Date.now(); pushPresence(true);
+  const ring = $('#digRing'), arc = ring.querySelector('.arc'); ring.hidden = false; arc.style.transition = 'none'; arc.style.strokeDashoffset = 327; void arc.getBoundingClientRect(); arc.style.transition = `stroke-dashoffset ${DIG_MS}ms linear`; arc.style.strokeDashoffset = 0;
+  const req = W.local ? Promise.resolve((() => { const k = rollLocal(), b = localBal() + CATCH[k].price; localBal(b); return { kind: k, amount: CATCH[k].price, balance: b }; })()) : rpc('wallet_earn', { p_token: W.token }).catch(() => ({ error: 'net' }));
+  setTimeout(async () => {
+    const d = await req; ring.hidden = true; W.digging = false; me.digUntil = 0;
+    if (!d || d.error){ toast(d && d.error === 'tooFast' ? '조금만 천천히 캐요' : '바다가 잠깐 바빠요 · 다시 캐 볼까요?'); return; }
+    s.restUntil = performance.now() + SPOT_REST; const c = CATCH[d.kind];
+    dex[d.kind] = (dex[d.kind] || 0) + 1; store.set('bj-dex', JSON.stringify(dex)); W.today = (W.today || 0) + d.amount;
+    setBal(d.balance, d.amount); showCatch(d.kind, d.amount);
+    if (c.r >= 3){ mySay = `${c.e} ${c.name} 잡았다!`; mySayT = Date.now(); say(me, mySay, 4500); pushPresence(true); }
+  }, DIG_MS);
+}
+function showCatch(k, amt){
+  const c = CATCH[k], el = $('#catch'); el.querySelector('.pill').className = 'pill r' + c.r; el.querySelector('.pill').textContent = c.r >= 3 ? RARITY[c.r] + '!' : RARITY[c.r] === '흔함' ? '흔해요' : '가끔 나와요';
+  el.querySelector('.big').textContent = c.e; el.querySelector('h3').textContent = `${c.name}${/[가-힣]$/.test(c.name) && (c.name.charCodeAt(c.name.length - 1) - 44032) % 28 ? '을' : '를'} 잡았어요!`;
+  el.querySelector('.line').textContent = c.line; el.querySelector('.earnAmt').textContent = '+' + won(amt);
+  const coffee = W.today >= 4000 ? ` · ${W.today >= priceOf(0) ? '커피 한 잔 가능 ☕' : '빵 하나 가능 🥐'}` : '';
+  el.querySelector('.today').innerHTML = `오늘 해루질로 <b>${won(W.today)}</b> 벌었어요${coffee}`;
+  el.hidden = false; clearTimeout(W.catchT); W.catchT = setTimeout(() => { el.hidden = true; }, 4200);
+}
+$('#catchMore').onclick = () => { $('#catch').hidden = true; clearTimeout(W.catchT); };
+$('#catchDex').onclick = () => { $('#catch').hidden = true; openDex(); };
+function openDex(){
+  const ul = $('#dexList'); ul.textContent = '';
+  Object.entries(CATCH).forEach(([k, c]) => { const n = dex[k] || 0, li = document.createElement('li'); if (!n) li.className = 'lock';
+    li.innerHTML = `<span class="e">${c.e}</span><span class="t"><b>${c.name}</b><small><span class="pill r${c.r}">${RARITY[c.r]}</span> · ${n ? n + '번 잡음' : (c.r === 4 ? '???' : '아직 못 잡았어요')}</small></span><span class="p">${won(c.price)}</span>`; ul.appendChild(li); });
+  $('#dexWallet').textContent = W.bal == null ? '-' : won(W.bal); $('#dex').hidden = false; cancelJoy();
+}
+$('#coin').onclick = openDex; $('#dexClose').onclick = () => $('#dex').hidden = true;
+$('#dex').addEventListener('click', e => { if (e.target.id === 'dex') $('#dex').hidden = true; });
+
+// --- beach UI: chip says 해변, the wave button becomes 해루질
+function beachTick(){
+  const on = !!me && onBeachAt(ctrl.floor, me.pos.z - .15); if (on === W.beach) return; W.beach = on;
+  $('#bDig').hidden = !on; $('#bWave').hidden = on || me.seat >= 0;
+  if (on){ $('#chipF').textContent = '해변'; $('#chipName').textContent = '모래사장'; if (!W.beachHi){ W.beachHi = 1; toast('✨ 반짝이는 숨구멍을 눌러 해루질해요'); } }
+  else { $('#chipF').textContent = `${visFloor + 1}F`; $('#chipName').textContent = ['카운터', '라운지', '루프탑'][visFloor] || ''; }
+}
+
+// --- menu: prices come out of the wallet
+function renderMenuMoney(){
+  [...$('#menuList').querySelectorAll('button')].forEach((b, i) => { const need = W.bal == null ? 0 : priceOf(i) - W.bal; b.classList.toggle('poor', need > 0); b.querySelector('.need').textContent = need > 0 ? `${won(need)} 부족` : ''; });
+  $('#menuWallet').textContent = W.bal == null ? '-' : won(W.bal);
+  const g = $('#menuGap'); if (!W.local && W.third != null && W.vip === 0){ const gap = W.third - W.mine + 1; g.innerHTML = `👑 VIP 3위까지 <b>${won(Math.max(1, gap))}</b> 남았어요`; g.hidden = false; } else if (!W.local && W.vip){ g.innerHTML = `👑 지금 이번 주 VIP ${W.vip}위예요`; g.hidden = false; } else g.hidden = true;
+}
+async function pay(i){
+  const price = priceOf(i); if (W.bal == null) return false;
+  if (W.bal < price){ toast(`${won(price - W.bal)} 부족해요 · 해변에서 해루질로 벌어 와요 🐚`); return false; }
+  if (W.local){ setBal(localBal(W.bal - price), -price); return true; }
+  try { const d = await rpc('wallet_spend', { p_token: W.token, p_item: i, p_name: myName }); if (d.error){ if (d.balance != null) setBal(d.balance); toast(d.error === 'poor' ? '잔액이 모자라요' : '주문이 안 됐어요'); return false; } setBal(d.balance, -price); vipRefresh(); return true; }
+  catch (e) { toast('주문이 안 됐어요 · 잠시 후 다시 해 주세요'); return false; }
+}
+
+// --- weekly VIP: top 3 spenders
+async function vipRefresh(){
+  if (!W.sb) return; let d; try { d = await rpc('vip_status', { p_token: W.token }); } catch (e) { return; }
+  W.top = Array.isArray(d.top) ? d.top : []; W.mine = d.mine || 0; W.third = W.top.length >= 3 ? W.top[2].total : 0; W.rank = d.rank; W.week = d.week || '';
+  const rank = d.rank && d.rank <= 3 ? d.rank : 0, was = W.vip; W.vip = rank;
+  if (me) setVipTag(me, rank);
+  if (rank && !was && store.get('bj-vip-week') !== W.week){ store.set('bj-vip-week', W.week); celebrate(rank); }
+  if (rank !== was) pushPresence(true);
+  for (const r of remotes.values()){ const ok = r.vp && W.top.some(e => e.rank === r.vp && e.name === r.name); if (!ok && r.vp){ r.vp = 0; setVipTag(r.a, 0); } }
+  renderVip(); renderMenuMoney();
+}
+function setVipTag(a, rank){
+  if (!a) return; a.vipRank = rank; const t = ensureTag(a); t.nm.classList.toggle('v', !!rank); let b = t.nm.querySelector('.vip');
+  if (rank && !b){ b = document.createElement('span'); b.className = 'vip'; b.textContent = '👑 VIP'; t.nm.prepend(b); } else if (!rank && b) b.remove();
+}
+function renderVip(){
+  const box = $('#vipBox'); if (!box) return;
+  if (W.local){ box.innerHTML = '<p class="vsub">VIP 순위는 해변가 카페 사이트에서 집계돼요</p>'; return; }
+  const rows = W.top.map(e => `<li class="g${e.rank}"><span class="no">${e.rank}</span><span class="vn">${esc(e.name)}</span><span class="vt">${won(e.total)}</span></li>`).join('') || '<li class="empty">이번 주 첫 VIP가 되어 보세요!</li>';
+  const me3 = W.vip ? `<p class="vsub">🎉 나는 이번 주 VIP ${W.vip}위</p>` : `<p class="vsub">이번 주 내가 쓴 돈 ${won(W.mine)}${W.third ? ` · 3위까지 ${won(Math.max(1, W.third - W.mine + 1))}` : ''}</p>`;
+  box.innerHTML = `<h3>👑 이번 주 VIP</h3><ol>${rows}</ol>${me3}`;
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function celebrate(rank){
+  const fx = $('#vipFx'), cv = fx.querySelector('canvas'), g = cv.getContext('2d'); fx.querySelector('.badge').textContent = `👑 VIP · ${rank}위`; fx.hidden = false; cancelJoy();
+  if (fireworks.pop) fireworks.pop();
+  const dpr = Math.min(devicePixelRatio || 1, 2); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; const P = [], HUE = [42, 330, 190, 50, 280];
+  const burst = (x, y) => { const h = HUE[(Math.random() * HUE.length) | 0]; for (let i = 0; i < 46; i++){ const a = i / 46 * Math.PI * 2, v = (2.2 + Math.random() * 2.4) * dpr; P.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, h }); } };
+  let t0 = performance.now(), last = t0, next = 0;
+  const step = now => { const dt = Math.min(50, now - last) / 16.7; last = now; const el = now - t0;
+    if (el > next && el < 2600){ burst(cv.width * (.15 + Math.random() * .7), cv.height * (.12 + Math.random() * .45)); next = el + 260 + Math.random() * 200; }
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(10,6,14,.22)'; g.fillRect(0, 0, cv.width, cv.height); g.globalCompositeOperation = 'lighter';
+    for (const p of P){ if (p.life <= 0) continue; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .045 * dt * dpr; p.vx *= .985; p.vy *= .985; p.life -= .012 * dt; g.fillStyle = `hsla(${p.h},100%,${60 + 25 * p.life}%,${p.life})`; g.beginPath(); g.arc(p.x, p.y, 2.2 * dpr, 0, 7); g.fill(); }
+    if (el < 4300 && !fx.hidden) requestAnimationFrame(step); else { fx.hidden = true; g.clearRect(0, 0, cv.width, cv.height); } };
+  requestAnimationFrame(step); clearTimeout(W.fxT); W.fxT = setTimeout(() => { fx.hidden = true; }, 4400);
+}
+$('#vipOk').onclick = () => { $('#vipFx').hidden = true; };
 
 // telescope
 const scope = { yaw: 0, pitch: 0, fov: 16 };
@@ -2083,7 +2333,7 @@ function pushPresence(force){ presenceDirty = true; if (force) lastSent = 0; }
 function sendPresence(now){
   if (!room || !me || !presenceDirty || now - lastSent < 110) return; presenceDirty = false; lastSent = now;
   const r2 = v => Math.round(v * 100) / 100;
-  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, em: myEmo, et: myEmoT, pt: myPet, pc: myPetCat, mv: me.moving ? 1 : 0 }).catch(() => {});
+  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, em: myEmo, et: myEmoT, pt: myPet, pc: myPetCat, dg: myDig, st: mySayT, say: mySay, vp: W.vip, mv: me.moving ? 1 : 0 }).catch(() => {});
 }
 const num = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(v, a, b) : d;
 function handlePeers(list){
@@ -2097,7 +2347,7 @@ function handlePeers(list){
     const name = pr.n.replace(/[\u0000-\u001f]/g, '').slice(0, 10) || '손님';
     if (!r){ r = { a: null, name: '', seed: -1, tgt: new THREE.Vector3(), w: 0, st: 0, seat: -1, f: 0, first: true }; remotes.set(p.peer, r); }
     if (r.seed !== seed){ const old = r.a; const a = makeAvatar(seed); scene.add(a.g); if (old){ a.pos.copy(old.pos); a.g.rotation.y = old.g.rotation.y; setItem(a, old.item); scene.remove(old.g); removeTag(old); } r.a = a; r.seed = seed; r.name = ''; }
-    if (r.name !== name){ r.name = name; setLabel(r.a, name, r.a.L.top); }
+    if (r.name !== name){ r.name = name; setLabel(r.a, name, wearColor(r.a.L)); }
     r.tgt.set(num(pr.x, -40, 40, 0), num(pr.y, -2, 12, 0), num(pr.z, -40, 40, 0)); r.rot = num(pr.r, -10, 10, 0); r.f = num(pr.f, 0, 2, 0) | 0; r.moving = pr.mv === 1;
     if (r.first && typeof pr.x === 'number'){ r.a.pos.copy(r.tgt); r.first = false; }
     r.a.g.userData.ready = !r.first;
@@ -2106,6 +2356,8 @@ function handlePeers(list){
     setItem(r.a, num(pr.i, -1, ITEMS.length - 1, -1) | 0);
     const w = num(pr.w, 0, 1e15, 0); if (w && w !== r.w){ if (r.w) r.a.waveUntil = performance.now() + 2200; r.w = w; }
     const pt = num(pr.pt, 0, 1e15, 0); if (pt && pt !== r.pt){ if (r.pt || Date.now() - pt < 3000){ r.a.petUntil = performance.now() + 3600; const cat = cats[num(pr.pc, 0, cats.length - 1, 0) | 0]; if (r.f === 1 && Math.hypot(r.tgt.x - cat.pos.x, r.tgt.z - cat.pos.z) < 2) catPetted(cat); } r.pt = pt; }
+    const dg = num(pr.dg, 0, 1e15, 0); if (dg && dg !== r.dg){ if (Date.now() - dg < 2500) r.a.digUntil = performance.now() + DIG_MS; r.dg = dg; }
+    { const vp = num(pr.vp, 0, 3, 0) | 0, ok = vp && W.top.some(e => e.rank === vp && e.name === r.name); if ((ok ? vp : 0) !== r.vp){ r.vp = ok ? vp : 0; setVipTag(r.a, r.vp); } }
     const et = num(pr.et, 0, 1e15, 0); if (et && et !== r.et){ if (Date.now() - et < 5000 && EMOJIS.includes(pr.em)) say(r.a, pr.em, 3200, true); r.et = et; }
     const st = num(pr.st, 0, 1e15, 0); if (st && st !== r.st){ const fresh = Date.now() - st < 8000; r.st = st; if (typeof pr.say === 'string' && fresh) say(r.a, pr.say.replace(/[\u0000-\u001f]/g, '').slice(0, 60)); }
   }
@@ -2121,10 +2373,11 @@ function updateCount(){
   if (!$('#people').hidden) renderPeople();
 }
 function renderPeople(){
+  renderVip();
   const ul = $('#peopleList'), keep = ul.scrollTop; ul.textContent = '';
   const rows = [];
-  if (entered && me) rows.push({ name: myName, color: me.L.top, f: ctrl.floor, me: true });
-  [...remotes.values()].filter(r => r.a && r.name).sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(r => rows.push({ name: r.name, color: r.a.L.top, f: r.f, me: false }));
+  if (entered && me) rows.push({ name: myName, color: wearColor(me.L), f: ctrl.floor, me: true });
+  [...remotes.values()].filter(r => r.a && r.name).sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(r => rows.push({ name: r.name, color: wearColor(r.a.L), f: r.f, me: false }));
   rows.forEach(p => {
     const li = document.createElement('li'); if (p.me) li.className = 'me';
     const av = document.createElement('span'); av.className = 'av'; av.style.background = p.color; { const c = new THREE.Color(p.color); av.style.color = (c.r * .299 + c.g * .587 + c.b * .114) < .55 ? '#fff8ee' : 'rgba(30,20,14,.82)'; } av.textContent = [...p.name][0] || '?';
@@ -2221,14 +2474,14 @@ $('#enter').onclick = enter;
 function enter(){
   if (entered) return;
   myName = ($('#nick').value.replace(/\s+/g, ' ').trim() || myName).slice(0, 10); store.set('bj-name', myName); store.set('bj-seed', String(mySeed));
-  me = makeAvatar(mySeed); scene.add(me.g); setLabel(me, myName, me.L.top);
+  me = makeAvatar(mySeed); scene.add(me.g); setLabel(me, myName, wearColor(me.L));
   me.pos.set(rand(-1, 1), 0, -10.6); me.rot = Math.PI * .02; ctrl.floor = 0; ctrl.target = new THREE.Vector3(me.pos.x * .5, 0, -5.4);
   entered = true; $('#entry').hidden = true; $('#hud').hidden = false;
   cam.mode = 'follow'; cam.theta = 0.12; cam.phi = .58; cam.dist = 13;
   initAudio(); if (AC && AC.state === 'suspended') AC.resume();
   setTimeout(() => toast(`어서오세요, ${myName}님! 해변가입니다`), 900);
   if (isTouch){ joy.el.hidden = false; setTimeout(() => toast('왼쪽 조이스틱으로 걷기 · 화면을 끌어 둘러보기'), 600); }
-  pushPresence(true); updateCount();
+  pushPresence(true); updateCount(); walletInit();
 }
 
 /* ---------- main loop ---------- */
@@ -2259,13 +2512,14 @@ function frame(){
       if (joy.id !== null && jm > .15){ kx += joy.vx; kz -= joy.vy; spMul = Math.min(1, .35 + jm * .75); }
       let dir = null;
       if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
-      else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } } else dir = tmpV.normalize(); }
+      else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } if (ctrl.pendingDig >= 0){ const k = ctrl.pendingDig; ctrl.pendingDig = -1; startDig(k); } } else dir = tmpV.normalize(); }
       if (dir && me.seat < 0 && !ctrl.target && stairFromWalk(dir)){ moved = true; me.moving = true; }
       else if (dir && me.seat < 0){
         const sp = 3.0 * dt * spMul; const ox = me.pos.x, oz = me.pos.z;
         const [nx, nz] = resolve(ctrl.floor, me.pos.x + dir.x * sp, me.pos.z + dir.z * sp);
         if ((nx - ox) * dir.x + (nz - oz) * dir.z >= 0){ me.pos.x = nx; me.pos.z = nz; }
-        me.pos.y = FL[ctrl.floor]; me.rot = Math.atan2(dir.x, dir.z);
+        me.pos.y = groundY(ctrl.floor, me.pos.x, me.pos.z); me.rot = Math.atan2(dir.x, dir.z);
+        if (onBeachAt(ctrl.floor, me.pos.z) && me.pos.z <= BEACH_B[2] + .02 && dir.z < -.3 && now > (W.seaToast || 0)){ W.seaToast = now + 5000; toast('🌊 바다는 못 들어가요 · 물가에서 해루질해요'); }
         const real = Math.hypot(me.pos.x - ox, me.pos.z - oz);
         if (real < sp * .25){ ctrl.stuck += dt; if (ctrl.stuck > .35){ if (ctrl.pendingSeat >= 0 && ctrl.target && Math.hypot(ctrl.target.x - me.pos.x, ctrl.target.z - me.pos.z) < 1.3){ sitAt(ctrl.pendingSeat); } ctrl.target = null; ctrl.pendingSeat = -1; ctrl.stuck = 0; } } else ctrl.stuck = 0;
         moved = true; me.moving = true;
@@ -2281,6 +2535,7 @@ function frame(){
     setVisibleFloor(ctrl.floor);
   } else setVisibleFloor(2);
 
+  spotsTick(t, now); beachTick();
   // remotes
   for (const r of remotes.values()){
     const a = r.a; const d = a.pos.distanceTo(r.tgt);
