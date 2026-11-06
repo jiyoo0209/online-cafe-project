@@ -141,7 +141,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .card .meta{font-size:12px;color:var(--ink-dim);display:flex;justify-content:space-between}
 
 /* Menu */
-#menu{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,6,4,.35);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#menu{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:rgba(10,6,4,.35);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .menucard{width:min(360px,100%);padding:22px;background:#23302b;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .menucard h2{margin:0 0 4px;font-family:var(--font-display);font-size:24px;color:#f6efe0}
 .menucard .sub{margin:0 0 14px;font-size:13px;color:rgba(246,239,224,.6)}
@@ -175,7 +175,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #photo .flash{position:absolute;inset:0;background:#fff;opacity:0}
 #photo .flash.on{animation:camFlash .45s ease-out}
 @keyframes camFlash{0%{opacity:.95}100%{opacity:0}}
-#shot{position:fixed;inset:0;background:rgba(22,14,10,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+#shot{position:fixed;inset:0;z-index:10;background:rgba(22,14,10,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
 #shot[hidden]{display:none}
 #shot p{margin:0;font-size:14px;color:var(--ink)}
 #shot .pic{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
@@ -1435,6 +1435,10 @@ const CB = (() => {
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ p.fromBufferAttribute(P, idx[t + q]); if (!test(p)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
       const s = new THREE.BufferGeometry(); s.setAttribute('position', new THREE.BufferAttribute(pos, 3)); s.setAttribute('normal', N); s.setAttribute('skinIndex', g.attributes.skinIndex); s.setAttribute('skinWeight', g.attributes.skinWeight); s.setIndex(keep); return s; };
     G.socks = shell(p => p.y < .2, .009); G.shoes = shell(p => p.y < .095, .024); G.under = shell(p => p.y > .58 && p.y < .8 && Math.abs(p.x) < .21, .008);
+    // under-layers in the top's colour: no skin between top and bottom, and no bare shoulders under the tank
+    const ax = p => Math.abs(p.x);
+    G.under_tshirt = shell(p => p.y > .46 && p.y < .87 && ax(p) < .2 && !(p.y > .8 && ax(p) < .085 && p.z > 0) && !(p.y > .835 && ax(p) < .075), .008);
+    G.under_tank = shell(p => p.y > .46 && p.y < .83 && ax(p) < .175 && !(p.y > .8 && ax(p) < .075 && p.z > 0), .008);
     // long pants (boys): the hips and legs pushed out, a little wider towards the hem
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ const y = P.getY(idx[t + q]); if (!(y > .085 && y < .625)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
@@ -1443,12 +1447,15 @@ const CB = (() => {
     MALE_HAIRS.forEach(k => { const url = 'chars/hair_' + k + '.glb', ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G['hair_' + k] = m.geometry; fin(); };
       if (!THREE.GLTFLoader) return fin(); const ld = new THREE.GLTFLoader(); ld.load(url, ok, undefined, () => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
-  function loadOutfits(done){ let left = OUTFITS.length; const fin = () => { if (--left === 0) done(); };
-    OUTFITS.forEach(o => { const url = 'chars/outfits/' + o.key + '.glb', ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
-        // skirt below the waist follows the hips and, lower down, partly the thigh on its side
+  // skirts and the dress also have a seated shape (<key>_sit.glb, same vertices) that only follows the hips
+  const SITTERS = ['dress', 'skirt'];
+  function loadOutfits(done){ const jobs = OUTFITS.map(o => o.key).concat(SITTERS.map(k => k + '_sit')); let left = jobs.length; const fin = () => { if (--left === 0) done(); };
+    jobs.forEach(key => { const url = 'chars/outfits/' + key + '.glb', sit = key.endsWith('_sit'), base = key.replace('_sit', ''), ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
         const P = g.attributes.position, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BI = n => names.indexOf(n);
-        if (o.key === 'dress' || o.key === 'skirt') for (let i = 0; i < P.count; i++) if (P.getY(i) < .63){ const t = Math.min(1, (.63 - P.getY(i)) / .43), w = .6 * Math.pow(t, 1.3); SI.setXYZW(i, BI('hips'), BI(P.getX(i) >= 0 ? 'thigh.L' : 'thigh.R'), 0, 0); SW.setXYZW(i, 1 - w, w, 0, 0); }
-        G['outfit_' + o.key] = g; fin(); };
+        if (sit) for (let i = 0; i < P.count; i++){ SI.setXYZW(i, BI('hips'), 0, 0, 0); SW.setXYZW(i, 1, 0, 0, 0); }
+        // standing: below the waist the skirt follows the hips, and towards the hem the thigh on its side
+        else if (SITTERS.includes(base)) for (let i = 0; i < P.count; i++) if (P.getY(i) < .6){ const t = Math.min(1, (.6 - P.getY(i)) / (base === 'skirt' ? .1 : .15)), w = t * t * (3 - 2 * t); SI.setXYZW(i, BI('hips'), BI(P.getX(i) >= 0 ? 'thigh.L' : 'thigh.R'), 0, 0); SW.setXYZW(i, 1 - w, w, 0, 0); }
+        G['outfit_' + key] = g; fin(); };
       if (!THREE.GLTFLoader) return fin(); const ld = new THREE.GLTFLoader(); ld.load(url, ok, undefined, () => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
   // vertices at the same spot share one normal, so the body shades smoothly instead of showing facet lines
@@ -1474,9 +1481,10 @@ const CB = (() => {
     a.g.add(body); a.B = B;
     // outfit
     const L = a.L, dc = DRESS_COLORS[L.outfitC], cloth = hex => matFor(clothMats, hex, { roughness: .9, side: THREE.DoubleSide, skinning: true });
-    const wear = (geo, m) => { if (!geo) return; const o = new THREE.SkinnedMesh(geo, m); o.bind(body.skeleton, body.bindMatrix); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; a.g.add(o); };
-    if (L.dress){ const cm = cloth(dc[1]); wear(G.outfit_dress, cm); wear(G.under, cm); }
-    else { wear(G['outfit_' + L.top], cloth(TOP_COLORS[L.topC][1])); wear(G['outfit_' + L.bottom], cloth(BOTTOM_COLORS[L.botC][1])); }
+    const wear = (geo, m) => { if (!geo) return null; const o = new THREE.SkinnedMesh(geo, m); o.bind(body.skeleton, body.bindMatrix); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; a.g.add(o); return o; };
+    const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m); if (st && si){ si.visible = false; a.sitSwap = [st, si]; } };
+    if (L.dress){ const cm = cloth(dc[1]); skirt('dress', cm); wear(G.under, cm); }
+    else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
     wear(G.socks, matFor(clothMats, '#fbf6f0', { roughness: .85, skinning: true })); wear(G.shoes, matFor(clothMats, L.dress ? dc[2] : SHOE_COLORS[L.shoeC], { roughness: .45, skinning: true }));
   };
   return { J, whenReady: f => { if (G) f(); else waiting.push(f); }, dress };
@@ -1558,6 +1566,7 @@ function poseAvatar(a, dt, t){
   const B = a.B; if (!B) return;
   const J = CB.J, R = (n, x = 0, y = 0, z = 0) => B[n].rotation.set(x, y, z);
   for (const k in B) B[k].rotation.set(0, 0, 0); B.hips.position.copy(J.hips);
+  if (a.sitSwap){ const sat = !!seat && !lounge && now >= a.petUntil; a.sitSwap[0].visible = !sat; a.sitSwap[1].visible = sat; }
   const petting = now < a.petUntil, ph = a.phase, s = Math.sin(ph), co = Math.cos(ph), br = Math.sin(t * 2 + a.phase * .3);
   let uaL = [0, 0, -1.22], uaR = [0, 0, 1.22], faL = [0, 0, 0], faR = [0, 0, 0];
   if (petting){
@@ -1926,8 +1935,12 @@ function download(blob){ const url = URL.createObjectURL(blob), a = document.cre
 $('#shotSave').onclick = async () => { const blob = await shotBlob(); if (!blob) return; download(blob); toast('사진을 저장했어요'); };
 $('#shotShare').onclick = async () => {
   const blob = await shotBlob(); if (!blob) return; const file = new File([blob], shotName(), { type: 'image/jpeg' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })){ try { await navigator.share({ files: [file], title: '해변가 카페' }); } catch (e) {} }
-  else { download(blob); toast('이 브라우저는 바로 공유가 안 돼서 저장했어요'); }
+  const phone = matchMedia('(pointer: coarse)').matches;
+  if (phone && navigator.canShare && navigator.canShare({ files: [file] })){ try { await navigator.share({ files: [file] }); } catch (e) { if (e && e.name !== 'AbortError'){ download(blob); toast('공유가 안 돼서 사진을 저장했어요'); } } return; }
+  // computers: the system share sheet often doesn't pass the photo on, so copy it (paste into any chat) and save a copy too
+  try { const c = photo.kind === 'plain' ? photo.plain : photo.polaroid, png = await new Promise(res => c.toBlob(res, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]); download(blob); toast('사진을 복사했어요 — 카톡·메신저 창에 붙여넣기(Ctrl+V) 하면 돼요'); }
+  catch (e) { download(blob); toast('사진을 저장했어요 — 저장된 파일을 보내 주세요'); }
 };
 $('#shotAgain').onclick = () => { $('#shot').hidden = true; };
 let myWave = 0, myEmo = '', myEmoT = 0;
@@ -1940,7 +1953,7 @@ $('#emoPop').addEventListener('click', e => { const b = e.target instanceof Elem
 // menu
 const ml = $('#menuList');
 ITEMS.forEach((it, i) => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<span>${it.name}<em>${it.desc}</em></span><span class="price">₩${it.price}</span>`; b.onclick = () => order(i); li.appendChild(b); ml.appendChild(li); });
-function openMenu(){ if (!entered) return; $('#menu').hidden = false; }
+function openMenu(){ if (!entered) return; cancelJoy(); $('#menu').hidden = false; }
 $('#bMenu').onclick = openMenu; $('#menuClose').onclick = () => $('#menu').hidden = true;
 $('#menu').addEventListener('click', e => { if (e.target.id === 'menu') $('#menu').hidden = true; });
 function order(i){
