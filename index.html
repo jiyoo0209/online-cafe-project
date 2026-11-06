@@ -1962,7 +1962,9 @@ $('#bMenu').onclick = openMenu; $('#menuClose').onclick = () => $('#menu').hidde
 $('#menu').addEventListener('click', e => { if (e.target.id === 'menu') $('#menu').hidden = true; });
 function order(i){
   $('#menu').hidden = true; toast(`${ITEMS[i].name} 주문 완료 · 금방 가져다 드릴게요`);
-  setTimeout(() => { if (!me) return; setItem(me, i); toast(`${ITEMS[i].name} 나왔어요`); pushPresence(true); }, 2600);
+  setTimeout(() => { if (!me) return; setItem(me, i); toast(`${ITEMS[i].name} 나왔어요`); pushPresence(true);
+    // finished after 3 minutes: the cup or pastry leaves the hand (only if it's still this order)
+    clearTimeout(me.itemDone); me.itemDone = setTimeout(() => { if (me && me.item === i){ setItem(me, -1); pushPresence(true); } }, 180000); }, 2600);
 }
 
 // telescope
