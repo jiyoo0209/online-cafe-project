@@ -187,6 +187,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #shot .acts{width:min(420px,100%);display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #shot .acts button{height:50px;border:0;border-radius:14px;background:rgba(255,245,232,.12);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px}
 #shot .acts .pri{background:var(--accent);color:var(--accent-ink)}
+#shot .acts button[hidden]{display:none}
+#shot .acts.solo .pri{grid-column:1 / -1}
 #shot .acts .ghost{grid-column:1 / -1;height:42px;background:transparent;font-size:13px;color:var(--ink-dim)}
 #scope{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 min(36vw,36vh),rgba(6,4,3,.96) calc(min(36vw,36vh) + 2px))}
 #scope button{pointer-events:auto;position:absolute;right:calc(16px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);border-radius:50%;backdrop-filter:blur(12px)}
@@ -1933,6 +1935,8 @@ function shotBlob(){ const c = photo.kind === 'plain' ? photo.plain : photo.pola
 const shotName = () => { const d = new Date(Date.now() + 9 * 3600e3); return `haebyeonga-${d.toISOString().slice(0, 19).replace(/[-:T]/g, '')}.jpg`; };
 function download(blob){ const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = shotName(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); }
 $('#shotSave').onclick = async () => { const blob = await shotBlob(); if (!blob) return; download(blob); toast('사진을 저장했어요'); };
+// share only where the phone's share sheet can take a photo; computers just get the save button
+{ const f = new File([new Blob([''], { type: 'image/jpeg' })], 'x.jpg', { type: 'image/jpeg' }); $('#shotShare').hidden = !(matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [f] })); $('#shot .acts').classList.toggle('solo', $('#shotShare').hidden); }
 $('#shotShare').onclick = async () => {
   const blob = await shotBlob(); if (!blob) return; const file = new File([blob], shotName(), { type: 'image/jpeg' });
   const phone = matchMedia('(pointer: coarse)').matches;
