@@ -1440,6 +1440,8 @@ const CB = (() => {
     // under-layers in the top's colour: no skin between top and bottom, and no bare shoulders under the tank
     const ax = p => Math.abs(p.x);
     G.under_tshirt = shell(p => p.y > .46 && p.y < .87 && ax(p) < .2 && !(p.y > .8 && ax(p) < .085 && p.z > 0) && !(p.y > .835 && ax(p) < .075), .008);
+    // briefs under skirts and the dress, in the same colour: hips and the top of the thighs, cut high on the legs
+    G.briefs = shell(p => p.y < .6 && (p.y > .47 || (p.y > .395 && ax(p) < .055 + (p.y - .395) * 1.4)) && !(ax(p) > .12 && p.y > .67), .006);
     G.under_tank = shell(p => p.y > .46 && p.y < .83 && ax(p) < .175 && !(p.y > .8 && ax(p) < .075 && p.z > 0), .008);
     // long pants (boys): the hips and legs pushed out, a little wider towards the hem
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
@@ -1451,10 +1453,10 @@ const CB = (() => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
   // skirts and the dress also have a seated shape (<key>_sit.glb, same vertices) that only follows the hips
   const SITTERS = ['dress', 'skirt'];
-  function loadOutfits(done){ const jobs = OUTFITS.map(o => o.key).concat(SITTERS.map(k => k + '_sit')); let left = jobs.length; const fin = () => { if (--left === 0) done(); };
-    jobs.forEach(key => { const url = 'chars/outfits/' + key + '.glb', sit = key.endsWith('_sit'), base = key.replace('_sit', ''), ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
+  function loadOutfits(done){ const jobs = OUTFITS.map(o => o.key).concat(SITTERS.map(k => k + '_sit'), SITTERS.map(k => k + '_crouch')); let left = jobs.length; const fin = () => { if (--left === 0) done(); };
+    jobs.forEach(key => { const url = 'chars/outfits/' + key + '.glb', sit = key.endsWith('_sit') || key.endsWith('_crouch'), base = key.replace(/_(sit|crouch)$/, ''), ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
         const P = g.attributes.position, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BI = n => names.indexOf(n);
-        if (sit) for (let i = 0; i < P.count; i++){ SI.setXYZW(i, BI('hips'), 0, 0, 0); SW.setXYZW(i, 1, 0, 0, 0); }
+        if (sit) for (let i = 0; i < P.count; i++){ if (P.getY(i) < .6){ SI.setXYZW(i, BI('hips'), 0, 0, 0); SW.setXYZW(i, 1, 0, 0, 0); } }
         // standing: below the waist the skirt follows the hips, and towards the hem the thigh on its side
         else if (SITTERS.includes(base)) for (let i = 0; i < P.count; i++) if (P.getY(i) < .6){ const t = Math.min(1, (.6 - P.getY(i)) / (base === 'skirt' ? .1 : .15)), w = t * t * (3 - 2 * t); SI.setXYZW(i, BI('hips'), BI(P.getX(i) >= 0 ? 'thigh.L' : 'thigh.R'), 0, 0); SW.setXYZW(i, 1 - w, w, 0, 0); }
         G['outfit_' + key] = g; fin(); };
@@ -1484,7 +1486,7 @@ const CB = (() => {
     // outfit
     const L = a.L, dc = DRESS_COLORS[L.outfitC], cloth = hex => matFor(clothMats, hex, { roughness: .9, side: THREE.DoubleSide, skinning: true });
     const wear = (geo, m) => { if (!geo) return null; const o = new THREE.SkinnedMesh(geo, m); o.bind(body.skeleton, body.bindMatrix); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; a.g.add(o); return o; };
-    const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m); if (st && si){ si.visible = false; a.sitSwap = [st, si]; } };
+    const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m), cr = wear(G['outfit_' + key + '_crouch'], m); wear(G.briefs, m); if (st && si && cr){ si.visible = cr.visible = false; a.sitSwap = [st, si, cr]; } };
     if (L.dress){ const cm = cloth(dc[1]); skirt('dress', cm); wear(G.under, cm); }
     else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
     wear(G.socks, matFor(clothMats, '#fbf6f0', { roughness: .85, skinning: true })); wear(G.shoes, matFor(clothMats, L.dress ? dc[2] : SHOE_COLORS[L.shoeC], { roughness: .45, skinning: true }));
@@ -1568,7 +1570,7 @@ function poseAvatar(a, dt, t){
   const B = a.B; if (!B) return;
   const J = CB.J, R = (n, x = 0, y = 0, z = 0) => B[n].rotation.set(x, y, z);
   for (const k in B) B[k].rotation.set(0, 0, 0); B.hips.position.copy(J.hips);
-  if (a.sitSwap){ const sat = !!seat && !lounge && now >= a.petUntil; a.sitSwap[0].visible = !sat; a.sitSwap[1].visible = sat; }
+  if (a.sitSwap){ const pet = now < a.petUntil, sat = !!seat && !lounge && !pet; a.sitSwap[0].visible = !sat && !pet; a.sitSwap[1].visible = sat; a.sitSwap[2].visible = pet; }
   const petting = now < a.petUntil, ph = a.phase, s = Math.sin(ph), co = Math.cos(ph), br = Math.sin(t * 2 + a.phase * .3);
   let uaL = [0, 0, -1.22], uaR = [0, 0, 1.22], faL = [0, 0, 0], faR = [0, 0, 0];
   if (petting){
