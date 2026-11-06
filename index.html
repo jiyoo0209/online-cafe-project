@@ -1447,14 +1447,14 @@ const CB = (() => {
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ const y = P.getY(idx[t + q]); if (!(y > .085 && y < .625)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
       const s = new THREE.BufferGeometry(); s.setAttribute('position', new THREE.BufferAttribute(pos, 3)); s.setAttribute('normal', N); s.setAttribute('skinIndex', g.attributes.skinIndex); s.setAttribute('skinWeight', g.attributes.skinWeight); s.setIndex(keep); G.outfit_pants = s; } }
-  function loadMaleHair(done){ let left = MALE_HAIRS.length; const fin = () => { if (--left === 0) done(); };
-    MALE_HAIRS.forEach(k => { const url = 'chars/hair_' + k + '.glb', ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G['hair_' + k] = m.geometry; fin(); };
+  function loadMaleHair(done){ let left = MALE_HAIRS.length + 1; const fin = () => { if (--left === 0) done(); };
+    [...MALE_HAIRS, 'scalp_braid'].forEach(k => { const url = 'chars/' + (k.startsWith('scalp') ? k : 'hair_' + k) + '.glb', ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G[k.startsWith('scalp') ? k : 'hair_' + k] = m.geometry; fin(); };
       if (!THREE.GLTFLoader) return fin(); const ld = new THREE.GLTFLoader(); ld.load(url, ok, undefined, () => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
   // skirts and the dress also have a seated shape (<key>_sit.glb, same vertices) that only follows the hips
   const SITTERS = ['dress', 'skirt'];
-  function loadOutfits(done){ const jobs = OUTFITS.map(o => o.key).concat(SITTERS.map(k => k + '_sit'), SITTERS.map(k => k + '_crouch')); let left = jobs.length; const fin = () => { if (--left === 0) done(); };
-    jobs.forEach(key => { const url = 'chars/outfits/' + key + '.glb', sit = key.endsWith('_sit') || key.endsWith('_crouch'), base = key.replace(/_(sit|crouch)$/, ''), ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
+  function loadOutfits(done){ const jobs = OUTFITS.map(o => o.key).concat(SITTERS.map(k => k + '_sit'), SITTERS.map(k => k + '_crouch'), SITTERS.map(k => k + '_lounge')); let left = jobs.length; const fin = () => { if (--left === 0) done(); };
+    jobs.forEach(key => { const url = 'chars/outfits/' + key + '.glb', sit = /_(sit|crouch|lounge)$/.test(key), base = key.replace(/_(sit|crouch|lounge)$/, ''), ok = gl => { let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); const g = m.geometry; g.computeVertexNormals(); skin(g);
         const P = g.attributes.position, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BI = n => names.indexOf(n);
         if (sit) for (let i = 0; i < P.count; i++){ if (P.getY(i) < .6){ SI.setXYZW(i, BI('hips'), 0, 0, 0); SW.setXYZW(i, 1, 0, 0, 0); } }
         // standing: below the waist the skirt follows the hips, and towards the hem the thigh on its side
@@ -1471,6 +1471,12 @@ const CB = (() => {
     for (let i = 0; i < P.count; i++){ const v = acc.get(key(i)).clone().normalize(); N.setXYZ(i, v.x, v.y, v.z); } N.needsUpdate = true; }
   if (THREE.GLTFLoader){ const ld = new THREE.GLTFLoader(); ld.load('chars/chibi.glb', ready, undefined, () => {
     fetch('chars/chibi.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ready, () => {}); }).catch(() => {}); }); }
+  // the braid's forehead layer ends in rounded curtain bangs: centre parting up, longer towards the temples (cut per pixel)
+  const bangMats = new Map(), bangsMat = hex => { if (bangMats.has(hex)) return bangMats.get(hex);
+    const m = new THREE.MeshStandardMaterial({ color: C(hex), roughness: .6, side: THREE.DoubleSide });
+    m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvP = position;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('void main() {', 'void main() { vec3 p = vP; float e = 1.27 + .10 * exp(-pow((p.x - .02) / .09, 2.)) - .03 * min(1., abs(p.x) / .22) - .1 * smoothstep(.19, .3, abs(p.x)); if (p.z > .02 && abs(p.x) < .4 && p.y < e) discard;'); };
+    m.customProgramCacheKey = () => 'bangsA'; bangMats.set(hex, m); return m; };
   const matFor = (map, hex, o) => { if (!map.has(hex)) map.set(hex, new THREE.MeshStandardMaterial(Object.assign({ color: C(hex) }, o))); return map.get(hex); };
   // put the body, hair, scalp and face on an avatar (now, or as soon as chars/chibi.glb has loaded)
   const dress = a => {
@@ -1480,13 +1486,13 @@ const CB = (() => {
     body.add(B.hips); body.bind(new THREE.Skeleton(names.map(nm => B[nm]))); body.castShadow = true; body.receiveShadow = true; body.frustumCulled = false;
     const hm = matFor(hairMats, a.L.hair, { roughness: .6, side: THREE.DoubleSide }), key = HAIR_KEYS[a.L.style];
     const onHead = (geo, m, cast) => { const o = new THREE.Mesh(geo, m); o.position.copy(J.head).negate(); o.castShadow = cast; B.head.add(o); return o; };
-    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' ? G.scalpLo : G.scalp, hm, false); onHead(G.face, G.faceMat, false).renderOrder = 1;
+    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, G.faceMat, false).renderOrder = 1;
     B['hand.L'].add(a.holder); a.holder.position.set(.05, .01, .045);
     a.g.add(body); a.B = B;
     // outfit
     const L = a.L, dc = DRESS_COLORS[L.outfitC], cloth = hex => matFor(clothMats, hex, { roughness: .9, side: THREE.DoubleSide, skinning: true });
     const wear = (geo, m) => { if (!geo) return null; const o = new THREE.SkinnedMesh(geo, m); o.bind(body.skeleton, body.bindMatrix); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; a.g.add(o); return o; };
-    const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m), cr = wear(G['outfit_' + key + '_crouch'], m); wear(G.briefs, m); if (st && si && cr){ si.visible = cr.visible = false; a.sitSwap = [st, si, cr]; } };
+    const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m), cr = wear(G['outfit_' + key + '_crouch'], m), lo = wear(G['outfit_' + key + '_lounge'], m); wear(G.briefs, m); if (st && si && cr && lo){ si.visible = cr.visible = lo.visible = false; a.sitSwap = [st, si, cr, lo]; } };
     if (L.dress){ const cm = cloth(dc[1]); skirt('dress', cm); wear(G.under, cm); }
     else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
     wear(G.socks, matFor(clothMats, '#fbf6f0', { roughness: .85, skinning: true })); wear(G.shoes, matFor(clothMats, L.dress ? dc[2] : SHOE_COLORS[L.shoeC], { roughness: .45, skinning: true }));
@@ -1570,7 +1576,7 @@ function poseAvatar(a, dt, t){
   const B = a.B; if (!B) return;
   const J = CB.J, R = (n, x = 0, y = 0, z = 0) => B[n].rotation.set(x, y, z);
   for (const k in B) B[k].rotation.set(0, 0, 0); B.hips.position.copy(J.hips);
-  if (a.sitSwap){ const pet = now < a.petUntil, sat = !!seat && !lounge && !pet; a.sitSwap[0].visible = !sat && !pet; a.sitSwap[1].visible = sat; a.sitSwap[2].visible = pet; }
+  if (a.sitSwap){ const pet = now < a.petUntil, sat = !!seat && !lounge && !pet; const lay = !!seat && lounge && !pet; a.sitSwap[0].visible = !sat && !pet && !lay; a.sitSwap[1].visible = sat; a.sitSwap[2].visible = pet; a.sitSwap[3].visible = lay; }
   const petting = now < a.petUntil, ph = a.phase, s = Math.sin(ph), co = Math.cos(ph), br = Math.sin(t * 2 + a.phase * .3);
   let uaL = [0, 0, -1.22], uaR = [0, 0, 1.22], faL = [0, 0, 0], faR = [0, 0, 0];
   if (petting){
