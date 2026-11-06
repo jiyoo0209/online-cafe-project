@@ -1442,8 +1442,16 @@ const CB = (() => {
     G.under_tshirt = shell(p => p.y > .46 && p.y < .87 && ax(p) < .2 && !(p.y > .8 && ax(p) < .085 && p.z > 0) && !(p.y > .835 && ax(p) < .075), .008);
     // briefs under skirts and the dress, in the same colour: hips and the top of the thighs, cut high on the legs
     G.briefs = shell(p => p.y < .6 && (p.y > .47 || (p.y > .395 && ax(p) < .055 + (p.y - .395) * 1.4)) && !(ax(p) > .12 && p.y > .67), .006);
-    // under the tank: the body up to the neckline, plus two straps over the shoulders
-    G.under_tank = shell(p => p.y > .46 && ((p.y < .835 && ax(p) < .175 && !(p.y > .815 && ax(p) < .07 && p.z > 0)) || (ax(p) > .08 && ax(p) < .13 && p.y >= .835 && p.y < .96)), .008);
+    G.under_tank = shell(p => p.y > .46 && p.y < .83 && ax(p) < .175 && !(p.y > .8 && ax(p) < .075 && p.z > 0), .008);
+    // tank straps: a ribbon traced over each shoulder (rays from inside the torso, first surface hit), from the front neckline to the back
+    { const bm = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })), rc = new THREE.Raycaster(), sp = [], si = [], SX = .112, W = .022, OFF = .011, NS = 24;
+      for (const sg of [-1, 1]){ const c = new THREE.Vector3(sg * SX, .76, 0), rows = [];
+        for (let k = 0; k <= NS; k++){ const th = -.15 + (Math.PI + .3) * k / NS, d = new THREE.Vector3(0, Math.sin(th), Math.cos(th)).normalize();
+          rc.set(c, d); const h = rc.intersectObject(bm)[0]; if (!h) continue; const nr = h.face.normal.clone(); if (nr.dot(d) < 0) nr.negate(); rows.push(h.point.clone().addScaledVector(nr, OFF)); }
+        for (let it = 0; it < 3; it++) for (let k = 1; k < rows.length - 1; k++) rows[k].lerp(rows[k - 1].clone().add(rows[k + 1]).multiplyScalar(.5), .5);
+        const base = sp.length / 3; rows.forEach(r => sp.push(r.x - W, r.y, r.z, r.x + W, r.y, r.z));
+        for (let k = 0; k < rows.length - 1; k++){ const a = base + k * 2; si.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+      const st = new THREE.BufferGeometry(); st.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); st.setIndex(si); st.computeVertexNormals(); skin(st); G.straps_tank = st; }
     // long pants (boys): the hips and legs pushed out, a little wider towards the hem
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ const y = P.getY(idx[t + q]); if (!(y > .085 && y < .625)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
@@ -1497,7 +1505,7 @@ const CB = (() => {
     const wear = (geo, m) => { if (!geo) return null; const o = new THREE.SkinnedMesh(geo, m); o.bind(body.skeleton, body.bindMatrix); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; a.g.add(o); return o; };
     const skirt = (key, m) => { const st = wear(G['outfit_' + key], m), si = wear(G['outfit_' + key + '_sit'], m), cr = wear(G['outfit_' + key + '_crouch'], m), lo = wear(G['outfit_' + key + '_lounge'], m); wear(G.briefs, m); if (st && si && cr && lo){ si.visible = cr.visible = lo.visible = false; a.sitSwap = [st, si, cr, lo]; } };
     if (L.dress){ const cm = cloth(dc[1]); skirt('dress', cm); wear(G.under, cm); }
-    else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
+    else { const tm = cloth(TOP_COLORS[L.topC][1]), bm = cloth(BOTTOM_COLORS[L.botC][1]); wear(G['outfit_' + L.top], tm); wear(G['under_' + L.top], tm); if (L.top === 'tank') wear(G.straps_tank, cloth(TOP_COLORS[L.topC][1])); if (L.bottom === 'skirt') skirt('skirt', bm); else wear(G['outfit_' + L.bottom], bm); }
     wear(G.socks, matFor(clothMats, '#fbf6f0', { roughness: .85, skinning: true })); wear(G.shoes, matFor(clothMats, L.dress ? dc[2] : SHOE_COLORS[L.shoeC], { roughness: .45, skinning: true }));
   };
   return { J, whenReady: f => { if (G) f(); else waiting.push(f); }, dress };
