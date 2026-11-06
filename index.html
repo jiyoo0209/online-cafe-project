@@ -1308,7 +1308,7 @@ function lookFrom(seed){
   L.dress = !L.male && r() < .4; L.outfitC = (r() * DRESS_COLORS.length) | 0;
   L.top = r() < .55 ? 'tshirt' : 'tank'; L.bottom = L.male ? (r() < .55 ? 'pants' : 'short') : (r() < .55 ? 'skirt' : 'short');
   L.topC = (r() * TOP_COLORS.length) | 0; L.botC = (r() * BOTTOM_COLORS.length) | 0; L.shoeC = (r() * SHOE_COLORS.length) | 0;
-  L.outfit = L.dress ? 0 : OUTFIT_KEY[L.top]; L.hairIdx = ((seed >>> 3) & 15) % HAIR_COLORS.length; L.hair = HAIR_COLORS[L.hairIdx][1]; L.size = .96 + r() * .08;
+  L.outfit = L.dress ? 0 : OUTFIT_KEY[L.top]; L.eye = (r() * EYE_COLORS.length) | 0; L.hairIdx = ((seed >>> 3) & 15) % HAIR_COLORS.length; L.hair = HAIR_COLORS[L.hairIdx][1]; L.size = .96 + r() * .08;
   return L;
 }
 const HIP = .44;
@@ -1399,6 +1399,8 @@ const BOTTOM_COLORS = [['데님', '#3f5570'], ['연청', '#7f9bb5'], ['베이지
 const SHOE_COLORS = ['#4a3b33', '#f4efe6', '#2a2a2a', '#c96f5a', '#7d9fd6', '#d9b45a'];
 const DRESS_COLORS = [['더스티 핑크', '#c9a6bb', '#b98aa4'], ['라벤더', '#b3a2db', '#8f7cc0'], ['민트', '#a7d6c3', '#6fae98'], ['하늘', '#a9c6ee', '#7d9fd6'],
   ['레몬', '#f2dc8e', '#d9b45a'], ['피치', '#f3b39c', '#d98a72'], ['아이보리', '#f4efe6', '#c9b7a6'], ['네이비', '#3f5570', '#2b3a52']];
+// eye colours: the same face drawing with the iris recoloured (chars/eyes/<key>.png)
+const EYE_COLORS = [['blue', '블루'], ['brown', '브라운'], ['green', '그린'], ['amber', '앰버'], ['violet', '바이올렛'], ['pink', '핑크'], ['gray', '그레이'], ['teal', '틸']];
 const CHIBI_S = .83;     // model units → metres (about the height of the old avatar)
 const CB = (() => {
   const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -1488,6 +1490,8 @@ const CB = (() => {
     m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvP = position;');
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('void main() {', 'void main() { vec3 p = vP; float e = 1.27 + .10 * exp(-pow((p.x - .02) / .09, 2.)) - .03 * min(1., abs(p.x) / .22) - .1 * smoothstep(.19, .3, abs(p.x)); if (p.z > .02 && abs(p.x) < .4 && p.y < e) discard;'); };
     m.customProgramCacheKey = () => 'bangsA'; bangMats.set(hex, m); return m; };
+  const eyeMats = new Map(), faceMatFor = i => { if (!i) return G.faceMat; if (eyeMats.has(i)) return eyeMats.get(i);
+    const m = G.faceMat.clone(), t = new THREE.TextureLoader().load('chars/eyes/' + EYE_COLORS[i][0] + '.png'); t.encoding = THREE.sRGBEncoding; t.flipY = false; t.anisotropy = 4; m.map = t; eyeMats.set(i, m); return m; };
   const matFor = (map, hex, o) => { if (!map.has(hex)) map.set(hex, new THREE.MeshStandardMaterial(Object.assign({ color: C(hex) }, o))); return map.get(hex); };
   // put the body, hair, scalp and face on an avatar (now, or as soon as chars/chibi.glb has loaded)
   const dress = a => {
@@ -1497,7 +1501,7 @@ const CB = (() => {
     body.add(B.hips); body.bind(new THREE.Skeleton(names.map(nm => B[nm]))); body.castShadow = true; body.receiveShadow = true; body.frustumCulled = false;
     const hm = matFor(hairMats, a.L.hair, { roughness: .6, side: THREE.DoubleSide }), key = HAIR_KEYS[a.L.style];
     const onHead = (geo, m, cast) => { const o = new THREE.Mesh(geo, m); o.position.copy(J.head).negate(); o.castShadow = cast; B.head.add(o); return o; };
-    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, G.faceMat, false).renderOrder = 1;
+    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, faceMatFor(a.L.eye), false).renderOrder = 1;
     B['hand.L'].add(a.holder); a.holder.position.set(.05, .01, .045);
     a.g.add(body); a.B = B;
     // outfit
@@ -2197,7 +2201,7 @@ const HAT_NAMES = ['비니', '버킷햇', '베레모', '볼캡'];
 function lookText(L){ const t = [STYLE_NAMES[L.style]]; if (L.hat >= 0) t.push(HAT_NAMES[L.hat]); if (L.glasses) t.push('동그란 안경'); if (L.phones) t.push('헤드폰'); if (L.scarf) t.push('목도리'); t.push(L.skirt ? '치마' : L.shorts ? '반바지' : '긴바지'); t.push(L.longSleeve ? '긴팔' : '반팔'); return t.join(' · '); }
 function hairText(L){ const BN = { pants: '긴바지', short: '반바지', skirt: '플리츠 치마' }, TN = { tshirt: '티셔츠', tank: '나시' };
   const wear = L.dress ? `${DRESS_COLORS[L.outfitC][0]} 드레스` : `${TOP_COLORS[L.topC][0]} ${TN[L.top]} · ${BOTTOM_COLORS[L.botC][0]} ${BN[L.bottom]}`;
-  return `${HAIR_NAMES[L.style]} · ${HAIR_COLORS[L.hairIdx][0]} 머리 · ${wear}`; }
+  return `${HAIR_NAMES[L.style]} · ${HAIR_COLORS[L.hairIdx][0]} 머리 · ${EYE_COLORS[L.eye][1]} 눈 · ${wear}`; }
 function showPreview(){ if (pv.a) pv.scene.remove(pv.a.g); pv.a = makeAvatar(mySeed); pv.scene.add(pv.a.g); const L = pv.a.L; $('#lookDesc').textContent = hairText(L); }
 showPreview();
 $('#reroll').onclick = () => { mySeed = newSeed(); showPreview(); };
