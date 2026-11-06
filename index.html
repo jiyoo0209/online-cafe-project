@@ -1061,15 +1061,25 @@ railLine(2, 6.45, -.4, 6.45, 5.7); railLine(2, 9.15, -.4, 9.15, 5.7); railLine(2
 // Floor 3 perimeter glass railing + posts for string lights
 railLine(2, -12.1, -8.15, 12.1, -8.15, 1.05); railLine(2, -12.1, 8.15, 12.1, 8.15, 1.05);
 railLine(2, -12.1, -8.15, -12.1, 8.15, 1.05); railLine(2, 12.1, -8.15, 12.1, 8.15, 1.05);
-const posts = [[-11.9,-7.9],[0,-7.9],[11.9,-7.9],[-11.9,7.9],[0,7.9],[11.9,7.9],[-11.9,0],[11.9,0]];
-posts.forEach(([x, z]) => cyl(.05, .06, 3.3, mat.woodDark, floors[2], x, FL[2], z, 8));
-
-// String lights (catenary)
-const stringPts = [];
-function strand(a, b, sag = .55){ const [x0, z0] = a, [x1, z1] = b, n = Math.max(6, Math.round(Math.hypot(x1 - x0, z1 - z0) / .55)); for (let i = 0; i <= n; i++){ const t = i / n; stringPts.push(new THREE.Vector3(x0 + (x1 - x0) * t, FL[2] + 3.2 - Math.sin(t * Math.PI) * sag, z0 + (z1 - z0) * t)); } }
-strand([-11.9,-7.9],[0,7.9],.8); strand([0,-7.9],[-11.9,7.9],.8); strand([0,-7.9],[11.9,7.9],.8); strand([11.9,-7.9],[0,7.9],.8);
-strand([-11.9,-7.9],[11.9,-7.9],.5); strand([-11.9,0],[11.9,0],.9);
-{ const im = new THREE.InstancedMesh(new THREE.SphereGeometry(.055, 8, 6), stringBulb, stringPts.length); const m4 = new THREE.Matrix4(); stringPts.forEach((p, i) => { m4.makeTranslation(p.x, p.y, p.z); im.setMatrixAt(i, m4); }); floors[2].add(im);}
+// tidy festoon: slim black posts with a brass cap at the corners and mid-sides, one loop of lights round the edge
+const posts = [[-11.9,-7.9],[0,-7.9],[11.9,-7.9],[-11.9,7.9],[0,7.9],[11.9,7.9]];
+const postMat = M('#2a2522', { roughness: .5, metalness: .3 });
+posts.forEach(([x, z]) => { cyl(.035, .045, 3.25, postMat, floors[2], x, FL[2], z, 10); cyl(.06, .06, .05, mat.brass, floors[2], x, FL[2] + 3.25, z, 12); });
+const stringPts = [], wirePts = [];
+function strand(a, b, sag = .35, gap = 1.05){ const [x0, z0] = a, [x1, z1] = b, L = Math.hypot(x1 - x0, z1 - z0), n = Math.max(4, Math.round(L / gap)), w = [];
+  for (let i = 0; i <= 40; i++){ const t = i / 40; w.push(new THREE.Vector3(x0 + (x1 - x0) * t, FL[2] + 3.22 - Math.sin(t * Math.PI) * sag, z0 + (z1 - z0) * t)); }
+  wirePts.push(w); for (let i = 1; i < n; i++){ const t = i / n; stringPts.push(new THREE.Vector3(x0 + (x1 - x0) * t, FL[2] + 3.22 - Math.sin(t * Math.PI) * sag - .06, z0 + (z1 - z0) * t)); } }
+strand([-11.9,-7.9],[0,-7.9]); strand([0,-7.9],[11.9,-7.9]); strand([-11.9,7.9],[0,7.9]); strand([0,7.9],[11.9,7.9]);
+strand([-11.9,-7.9],[-11.9,7.9],.5); strand([11.9,-7.9],[11.9,7.9],.5);
+{ const wm = new THREE.LineBasicMaterial({ color: C('#1c1714') }); wirePts.forEach(w => floors[2].add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(w), wm)));
+  // bulb: a short dark socket and a pear-shaped warm glass bulb, plus a soft halo sprite
+  const bulbG = new THREE.SphereGeometry(.07, 12, 10); bulbG.scale(1, 1.25, 1);
+  const sock = new THREE.InstancedMesh(new THREE.CylinderGeometry(.028, .028, .07, 8), postMat, stringPts.length), im = new THREE.InstancedMesh(bulbG, stringBulb, stringPts.length), m4 = new THREE.Matrix4();
+  stringPts.forEach((p, i) => { m4.makeTranslation(p.x, p.y + .07, p.z); sock.setMatrixAt(i, m4); m4.makeTranslation(p.x, p.y - .03, p.z); im.setMatrixAt(i, m4); });
+  floors[2].add(sock, im);
+  const hc = document.createElement('canvas'); hc.width = hc.height = 64; const hg = hc.getContext('2d'), gr = hg.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,214,150,.55)'); gr.addColorStop(.35, 'rgba(255,190,110,.18)'); gr.addColorStop(1, 'rgba(255,170,90,0)'); hg.fillStyle = gr; hg.fillRect(0, 0, 64, 64);
+  const halo = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(hc), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
+  window.__halos = []; stringPts.forEach(p => { const s = new THREE.Sprite(halo); s.position.set(p.x, p.y - .03, p.z); s.scale.setScalar(.75); floors[2].add(s); window.__halos.push(s); }); }
 
 /* ---------- Floor 1 · counter & sea deck ---------- */
 {
