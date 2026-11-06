@@ -1414,7 +1414,14 @@ const CB = (() => {
     geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)); geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4)); };
   let G = null; const waiting = [], hairMats = new Map(), skinMats = new Map();
   const ready = gl => { if (G) return; G = {}; gl.scene.traverse(o => { if (o.isMesh){ const g = o.geometry; g.computeVertexNormals(); G[o.name] = g; if (o.name === 'face'){ const m = o.material; G.faceMat = new THREE.MeshStandardMaterial({ map: m.map, transparent: true, alphaTest: .05, depthWrite: false, roughness: .7, polygonOffset: true, polygonOffsetFactor: -2 }); if (m.map){ m.map.encoding = THREE.sRGBEncoding; m.map.anisotropy = 4; } } } });
-    skin(G.body); waiting.splice(0).forEach(f => f()); };
+    smooth(G.body); skin(G.body); waiting.splice(0).forEach(f => f()); };
+  // vertices at the same spot share one normal, so the body shades smoothly instead of showing facet lines
+  function smooth(geo){ const P = geo.attributes.position, N = geo.attributes.normal, key = i => `${P.getX(i).toFixed(4)},${P.getY(i).toFixed(4)},${P.getZ(i).toFixed(4)}`, acc = new Map(), idx = geo.index ? geo.index.array : null, cnt = idx ? idx.length : P.count;
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), fn = new THREE.Vector3();
+    for (let t = 0; t < cnt; t += 3){ const i0 = idx ? idx[t] : t, i1 = idx ? idx[t + 1] : t + 1, i2 = idx ? idx[t + 2] : t + 2;
+      a.fromBufferAttribute(P, i0); b.fromBufferAttribute(P, i1); c.fromBufferAttribute(P, i2); fn.subVectors(c, b).cross(a.sub(b));
+      for (const i of [i0, i1, i2]){ const k = key(i); let v = acc.get(k); if (!v) acc.set(k, v = new THREE.Vector3()); v.add(fn); } }
+    for (let i = 0; i < P.count; i++){ const v = acc.get(key(i)).clone().normalize(); N.setXYZ(i, v.x, v.y, v.z); } N.needsUpdate = true; }
   if (THREE.GLTFLoader){ const ld = new THREE.GLTFLoader(); ld.load('chars/chibi.glb', ready, undefined, () => {
     fetch('chars/chibi.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ready, () => {}); }).catch(() => {}); }); }
   const matFor = (map, hex, o) => { if (!map.has(hex)) map.set(hex, new THREE.MeshStandardMaterial(Object.assign({ color: C(hex) }, o))); return map.get(hex); };
