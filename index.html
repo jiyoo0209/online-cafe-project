@@ -1233,7 +1233,7 @@ strand([-11.9,-7.9],[-11.9,7.9],.5); strand([11.9,-7.9],[11.9,7.9],.5);
     box(3.5, 1.8, .06, mat.wood, mb, 0, -.9, -.02);
     const board = mesh(new THREE.PlaneGeometry(3.3, 1.62), new THREE.MeshStandardMaterial({ map: tex.menu, roughness: .9 }), mb, 0, 0, .02, false); board.receiveShadow = false; }
   // weekly VIP board on the same wall, over the communal table
-  { const wall = walls[0].mesh, vb = new THREE.Group(); vb.position.set(3.2, 3.15 - (H - .35) / 2, -.14); vb.rotation.y = Math.PI; wall.add(vb);
+  { const wall = walls[0].mesh, vb = new THREE.Group(); vb.position.set(3.2, 2.95 - (H - .35) / 2, -.14); vb.rotation.y = Math.PI; vb.scale.setScalar(1.45); wall.add(vb);
     box(2.5, 1.72, .06, mat.wood, vb, 0, -.86, -.02);
     mesh(new THREE.PlaneGeometry(2.34, 1.56), new THREE.MeshStandardMaterial({ map: tex.vip, roughness: .85, emissive: 0xffffff, emissiveMap: tex.vip, emissiveIntensity: .18 }), vb, 0, 0, .02, false); }
   // pendants above the counter, flanking the menu board
