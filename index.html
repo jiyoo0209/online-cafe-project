@@ -609,16 +609,15 @@ function plant(f, x, z, s = 1, parent){
   if (!parent) obC(f, x, z, .3 * s);
   return g;
 }
+// monstera pots: one model (chars/monstera.glb, vertex coloured), cloned into every monstera spot
+const PLANTS = [];
+let monsteraGeo = null;
+const monsteraMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .62, side: THREE.DoubleSide });
+function putMonstera(p){ const m = new THREE.Mesh(monsteraGeo, monsteraMat); m.scale.setScalar(p.h); m.rotation.y = p.ry; m.castShadow = true; m.receiveShadow = true; p.g.add(m); }
+if (THREE.GLTFLoader){ const ld = new THREE.GLTFLoader(), got = gl => { gl.scene.traverse(o => { if (o.isMesh && !monsteraGeo){ monsteraGeo = o.geometry; monsteraGeo.computeVertexNormals(); } }); PLANTS.forEach(putMonstera); };
+  ld.load('chars/monstera.glb', got, undefined, () => fetch('chars/monstera.glb.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => ld.parse(Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)).buffer, 'chars/', got, () => {})).catch(() => {})); }
 function monstera(f, x, z, s = 1){
-  const g = grp(floors[f], x, FL[f], z);
-  cyl(.28 * s, .22 * s, .5 * s, mat.potDark, g, 0, 0, 0, 16);
-  for (let i = 0; i < 9; i++){
-    const a = i / 9 * TAU + rand(-.2, .2), len = rand(.6, 1.0) * s;
-    const stem = mesh(new THREE.CylinderGeometry(.012, .016, len, 5), mat.leafDark, g, Math.cos(a) * len * .25, .5 * s + len * .45, Math.sin(a) * len * .25);
-    stem.rotation.z = Math.cos(a) * .5; stem.rotation.x = -Math.sin(a) * .5;
-    const leaf = mesh(new THREE.CircleGeometry(.24 * s, 7), mat.leaf, g, Math.cos(a) * len * .5, .5 * s + len * .9, Math.sin(a) * len * .5);
-    leaf.material = mat.leaf; leaf.rotation.set(-Math.PI / 2 + rand(-.6, .6), 0, a); leaf.material.side = THREE.DoubleSide;
-  }
+  const g = grp(floors[f], x, FL[f], z), p = { g, h: 1.55 * s, ry: (x * 5.1 + z * 2.3) % TAU }; PLANTS.push(p); if (monsteraGeo) putMonstera(p);
   obC(f, x, z, .38 * s);
 }
 function pendant(f, x, z, drop = 1.1, parent){
