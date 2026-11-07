@@ -295,7 +295,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <input id="musicVol" class="vol" type="range" min="0" max="100" value="100">
     </div>
   </div>
-  <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><div id="vipBox"></div><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
+  <div id="people" class="panel" role="dialog" aria-label="지금 접속 중인 사람" hidden><ul id="peopleList"></ul><div class="fade" id="peopleFade"></div></div>
   <div id="floorMenu" class="panel" role="menu" aria-label="층 선택" hidden>
     <button type="button" role="menuitemradio" data-f="2" aria-checked="false"><span class="fb">3F</span><span class="fn">루프탑 테라스</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button type="button" role="menuitemradio" data-f="1" aria-checked="false"><span class="fb">2F</span><span class="fn">오션뷰 라운지</span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -457,6 +457,27 @@ tex.menu = canvasTex(1024, 512, (g, w, h) => {
   items.forEach((it, i) => { const y = 196 + i * 56, x0 = 230, x1 = w - 230; g.textAlign = 'left'; g.fillStyle = '#f3ead8'; g.fillText(it[0], x0, y); g.textAlign = 'right'; g.fillStyle = '#e8c88c'; g.fillText(it[1], x1, y);
     g.fillStyle = 'rgba(243,234,216,.22)'; const tw = g.measureText(it[1]).width; g.textAlign = 'left'; const nw = (g.font = '34px "Gowun Dodum", sans-serif', g.measureText(it[0]).width); for (let x = x0 + nw + 14; x < x1 - tw - 14; x += 12) g.fillRect(x, y - 8, 4, 3); });
   g.fillStyle = 'rgba(243,234,216,.5)'; g.font = '22px "Gowun Dodum", sans-serif'; g.textAlign = 'center'; g.fillText('해 변 가  ·  바 다 앞  카 페', w/2, h - 30);
+});
+const VIPB = { top: [], local: false };   // what the VIP wall board shows (filled by renderVip)
+tex.vip = canvasTex(768, 512, (g, w, h) => {
+  const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#2f2219'); bg.addColorStop(1, '#1f1610'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 700; i++){ g.fillStyle = `rgba(243,234,216,${Math.random() * .03})`; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  g.strokeStyle = 'rgba(232,200,140,.55)'; g.lineWidth = 3; g.strokeRect(18, 18, w - 36, h - 36);
+  g.textAlign = 'center'; g.fillStyle = '#f2cf72'; g.font = '700 54px "Gowun Batang", serif'; g.fillText('👑 WEEKLY VIP', w/2, 86);
+  g.fillStyle = '#e8c88c'; g.font = '21px "Gowun Dodum", sans-serif'; g.fillText('이번 주 카페에서 가장 많이 쓴 다섯 분', w/2, 120);
+  const top = VIPB.local ? [] : VIPB.top, MED = [['#ffe28a', '#d79a26'], ['#f4f4f8', '#aeb2c2'], ['#f3c39a', '#b8703e']];
+  for (let i = 0; i < 5; i++){ const y = 178 + i * 58, e = top[i], x0 = 92, x1 = w - 84;
+    const m = MED[i] || ['#8a7560', '#5e4c3c'], gr = g.createLinearGradient(0, y - 22, 0, y + 22); gr.addColorStop(0, m[0]); gr.addColorStop(1, m[1]);
+    g.fillStyle = gr; g.beginPath(); g.arc(x0, y - 10, 20, 0, TAU); g.fill();
+    g.fillStyle = i < 3 ? '#3a2410' : '#f3ead8'; g.font = '700 22px "Gowun Dodum", sans-serif'; g.textAlign = 'center'; g.fillText(i + 1, x0, y - 2);
+    g.font = '32px "Gowun Dodum", sans-serif'; g.textAlign = 'left';
+    if (!e){ g.fillStyle = 'rgba(243,234,216,.28)'; g.fillText(i ? '· · ·' : '첫 VIP가 되어 보세요!', x0 + 38, y); continue; }
+    let nm = String(e.name); while (g.measureText(nm).width > 300 && nm.length > 1) nm = nm.slice(0, -1); if (nm !== String(e.name)) nm += '…';
+    g.fillStyle = '#f3ead8'; g.fillText(nm, x0 + 38, y); const nw = g.measureText(nm).width;
+    const amt = e.total.toLocaleString('ko-KR') + '원'; g.textAlign = 'right'; g.fillStyle = '#f2cf72'; g.fillText(amt, x1, y); const tw = g.measureText(amt).width;
+    g.fillStyle = 'rgba(243,234,216,.22)'; for (let x = x0 + 38 + nw + 14; x < x1 - tw - 14; x += 12) g.fillRect(x, y - 8, 4, 3); }
+  g.textAlign = 'center'; g.fillStyle = 'rgba(243,234,216,.5)'; g.font = '19px "Gowun Dodum", sans-serif';
+  g.fillText(VIPB.local ? 'VIP 순위는 해변가 카페 사이트에서 집계돼요' : '매주 월요일 0시에 새로 시작해요', w/2, h - 34);
 });
 tex.sign = canvasTex(1024, 192, (g, w, h) => {
   g.fillStyle = '#5b3c27'; g.fillRect(0,0,w,h);
@@ -1211,6 +1232,10 @@ strand([-11.9,-7.9],[-11.9,7.9],.5); strand([11.9,-7.9],[11.9,7.9],.5);
   { const wall = walls[0].mesh, mb = new THREE.Group(); mb.position.set(-6.5, 3.3 - (H - .35) / 2, -.14); mb.rotation.y = Math.PI; wall.add(mb);
     box(3.5, 1.8, .06, mat.wood, mb, 0, -.9, -.02);
     const board = mesh(new THREE.PlaneGeometry(3.3, 1.62), new THREE.MeshStandardMaterial({ map: tex.menu, roughness: .9 }), mb, 0, 0, .02, false); board.receiveShadow = false; }
+  // weekly VIP board on the same wall, over the communal table
+  { const wall = walls[0].mesh, vb = new THREE.Group(); vb.position.set(3.2, 3.15 - (H - .35) / 2, -.14); vb.rotation.y = Math.PI; wall.add(vb);
+    box(2.5, 1.72, .06, mat.wood, vb, 0, -.86, -.02);
+    mesh(new THREE.PlaneGeometry(2.34, 1.56), new THREE.MeshStandardMaterial({ map: tex.vip, roughness: .85, emissive: 0xffffff, emissiveMap: tex.vip, emissiveIntensity: .18 }), vb, 0, 0, .02, false); }
   // pendants above the counter, flanking the menu board
   [-9.6, -3.4].forEach(x => pendant(f, x, 4.7, .95));
   [1.8, 3.2, 4.6].forEach(x => pendant(f, x, 1.8, 1.4));
@@ -2110,7 +2135,7 @@ const wearColor = L => L.dress ? DRESS_COLORS[L.outfitC][1] : TOP_COLORS[L.topC]
 const won = n => n.toLocaleString('ko-KR') + '원';
 const priceOf = i => parseInt(String(ITEMS[i].price).replace(/[^0-9]/g, ''), 10) || 0;
 let myDig = 0, mySay = '', mySayT = 0;
-const W = { sb: null, token: '', bal: null, local: false, vip: 0, top: [], mine: 0, third: null, rank: null, week: '', busy: false, digging: false, beach: false, seaToast: 0 };
+const W = { sb: null, token: '', bal: null, local: false, vip: 0, top: [], mine: 0, cut: null, rank: null, week: '', busy: false, digging: false, beach: false, seaToast: 0 };
 W.token = store.get('bj-token') || ((crypto.randomUUID && crypto.randomUUID()) || 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16))); store.set('bj-token', W.token);
 const dex = (() => { try { return JSON.parse(store.get('bj-dex') || '{}') || {}; } catch (e) { return {}; } })();
 const rpc = (fn, args) => W.sb.rpc(fn, args).then(({ data, error }) => { if (error) throw error; return data; });
@@ -2125,7 +2150,7 @@ function setBal(v, gain){
 async function walletInit(){
   const cfg = window.CAFE_REALTIME;
   if (cfg && cfg.url && window.supabase && window.supabase.createClient){ try { W.sb = W.sb || window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false, autoRefreshToken: false } }); const d = await rpc('wallet_get', { p_token: W.token, p_name: myName }); setBal(d.balance); vipRefresh(); setInterval(vipRefresh, 30000); return; } catch (e) { W.sb = null; } }
-  W.local = true; setBal(localBal());
+  W.local = true; setBal(localBal()); renderVip();
 }
 
 // --- dig spots: little mounds with a breathing hole, bubbles and a glint along the wet sand
@@ -2201,7 +2226,7 @@ function beachTick(){
 function renderMenuMoney(){
   [...$('#menuList').querySelectorAll('button')].forEach((b, i) => { const need = W.bal == null ? 0 : priceOf(i) - W.bal; b.classList.toggle('poor', need > 0); b.querySelector('.need').textContent = need > 0 ? `${won(need)} 부족` : ''; });
   $('#menuWallet').textContent = W.bal == null ? '-' : won(W.bal);
-  const g = $('#menuGap'); if (!W.local && W.third != null && W.vip === 0){ const gap = W.third - W.mine + 1; g.innerHTML = `👑 VIP 3위까지 <b>${won(Math.max(1, gap))}</b> 남았어요`; g.hidden = false; } else if (!W.local && W.vip){ g.innerHTML = `👑 지금 이번 주 VIP ${W.vip}위예요`; g.hidden = false; } else g.hidden = true;
+  const g = $('#menuGap'); if (!W.local && W.cut != null && W.vip === 0){ const gap = W.cut - W.mine + 1; g.innerHTML = `👑 VIP 5위까지 <b>${won(Math.max(1, gap))}</b> 남았어요`; g.hidden = false; } else if (!W.local && W.vip){ g.innerHTML = `👑 지금 이번 주 VIP ${W.vip}위예요`; g.hidden = false; } else g.hidden = true;
 }
 async function pay(i){
   const price = priceOf(i); if (W.bal == null) return false;
@@ -2211,11 +2236,11 @@ async function pay(i){
   catch (e) { toast('주문이 안 됐어요 · 잠시 후 다시 해 주세요'); return false; }
 }
 
-// --- weekly VIP: top 3 spenders
+// --- weekly VIP: top 5 spenders
 async function vipRefresh(){
   if (!W.sb) return; let d; try { d = await rpc('vip_status', { p_token: W.token }); } catch (e) { return; }
-  W.top = Array.isArray(d.top) ? d.top : []; W.mine = d.mine || 0; W.third = W.top.length >= 3 ? W.top[2].total : 0; W.rank = d.rank; W.week = d.week || '';
-  const rank = d.rank && d.rank <= 3 ? d.rank : 0, was = W.vip; W.vip = rank;
+  W.top = Array.isArray(d.top) ? d.top : []; W.mine = d.mine || 0; W.cut = W.top.length >= 5 ? W.top[4].total : 0; W.rank = d.rank; W.week = d.week || '';
+  const rank = d.rank && d.rank <= 5 ? d.rank : 0, was = W.vip; W.vip = rank;
   if (me) setVipTag(me, rank);
   if (rank && !was && store.get('bj-vip-week') !== W.week){ store.set('bj-vip-week', W.week); celebrate(rank); }
   if (rank !== was) pushPresence(true);
@@ -2226,13 +2251,7 @@ function setVipTag(a, rank){
   if (!a) return; a.vipRank = rank; const t = ensureTag(a); t.nm.classList.toggle('v', !!rank); let b = t.nm.querySelector('.vip');
   if (rank && !b){ b = document.createElement('span'); b.className = 'vip'; b.textContent = '👑 VIP'; t.nm.prepend(b); } else if (!rank && b) b.remove();
 }
-function renderVip(){
-  const box = $('#vipBox'); if (!box) return;
-  if (W.local){ box.innerHTML = '<p class="vsub">VIP 순위는 해변가 카페 사이트에서 집계돼요</p>'; return; }
-  const rows = W.top.map(e => `<li class="g${e.rank}"><span class="no">${e.rank}</span><span class="vn">${esc(e.name)}</span><span class="vt">${won(e.total)}</span></li>`).join('') || '<li class="empty">이번 주 첫 VIP가 되어 보세요!</li>';
-  const me3 = W.vip ? `<p class="vsub">🎉 나는 이번 주 VIP ${W.vip}위</p>` : `<p class="vsub">이번 주 내가 쓴 돈 ${won(W.mine)}${W.third ? ` · 3위까지 ${won(Math.max(1, W.third - W.mine + 1))}` : ''}</p>`;
-  box.innerHTML = `<h3>👑 이번 주 VIP</h3><ol>${rows}</ol>${me3}`;
-}
+function renderVip(){ VIPB.top = W.top; VIPB.local = W.local; const t = tex.vip; const cv = t.image, g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height); t.userData.draw(g, cv.width, cv.height); t.needsUpdate = true; }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function celebrate(rank){
   const fx = $('#vipFx'), cv = fx.querySelector('canvas'), g = cv.getContext('2d'); fx.querySelector('.badge').textContent = `👑 VIP · ${rank}위`; fx.hidden = false; cancelJoy();
@@ -2372,15 +2391,14 @@ function updateCount(){
   if (!$('#people').hidden) renderPeople();
 }
 function renderPeople(){
-  renderVip();
   const ul = $('#peopleList'), keep = ul.scrollTop; ul.textContent = '';
   const rows = [];
-  if (entered && me) rows.push({ name: myName, color: wearColor(me.L), f: ctrl.floor, me: true });
-  [...remotes.values()].filter(r => r.a && r.name).sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(r => rows.push({ name: r.name, color: wearColor(r.a.L), f: r.f, me: false }));
+  if (entered && me) rows.push({ name: myName, color: wearColor(me.L), f: ctrl.floor, me: true, vp: W.vip });
+  [...remotes.values()].filter(r => r.a && r.name).sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(r => rows.push({ name: r.name, color: wearColor(r.a.L), f: r.f, me: false, vp: r.vp }));
   rows.forEach(p => {
     const li = document.createElement('li'); if (p.me) li.className = 'me';
     const av = document.createElement('span'); av.className = 'av'; av.style.background = p.color; { const c = new THREE.Color(p.color); av.style.color = (c.r * .299 + c.g * .587 + c.b * .114) < .55 ? '#fff8ee' : 'rgba(30,20,14,.82)'; } av.textContent = [...p.name][0] || '?';
-    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name;
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (p.vp ? '👑 ' : '') + p.name;
     if (p.me){ const t = document.createElement('span'); t.className = 'tag-me'; t.textContent = '나'; nm.appendChild(t); }
     const fl = document.createElement('span'); fl.className = 'fl'; fl.textContent = `${(p.f | 0) + 1}F`;
     li.append(av, nm, fl); ul.appendChild(li);
@@ -2624,7 +2642,7 @@ let started = false;
 const startNow = () => {
   if (started) return; started = true;
   catWarm();
-  [tex.menu, tex.sign, tex.signGlow].forEach(t => { const cv = t.image, g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height); t.userData.draw(g, cv.width, cv.height); t.needsUpdate = true; });
+  [tex.menu, tex.sign, tex.signGlow, tex.vip].forEach(t => { const cv = t.image, g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height); t.userData.draw(g, cv.width, cv.height); t.needsUpdate = true; });
   frame();
 };
 const fontsReady = document.fonts && document.fonts.load ? Promise.race([Promise.all([document.fonts.load('700 40px "Gowun Batang"'), document.fonts.load('20px "Gowun Dodum"')]), new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
