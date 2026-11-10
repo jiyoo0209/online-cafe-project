@@ -1764,7 +1764,7 @@ function poseAvatar(a, dt, t){
   const u = a.waveK;
   if (u > .01){ const w = Math.sin(t * TAU * 2.2) * u;
     uaR = mix3(uaR, [0, .85, -.15], u); faR = mix3(faR, [0, .15, -1.2 - .4 * w], u);
-    R('hand.R', 0, 0, -.1 * u - .2 * w); B['shoulder.R'].rotation.z = -.12 * u; B.head.rotation.z += .1 * u; }
+    R('hand.R', 0, 0, -.1 * u - .2 * w); B['shoulder.R'].rotation.z = -.12 * u; }
   // selfie: right arm reaches out holding the phone and (for me) the head turns to the lens.
   // no head tilt/nod here: the face decal is rigid on the head bone but the skin under it bends with the neck, so tilting lets skin poke through and cut an eye
   const selfie = !!a.selfie && !petting, mine = a === me && cam.mode === 'selfie';
