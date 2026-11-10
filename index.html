@@ -1765,11 +1765,11 @@ function poseAvatar(a, dt, t){
   if (u > .01){ const w = Math.sin(t * TAU * 2.2) * u;
     uaR = mix3(uaR, [0, .85, -.15], u); faR = mix3(faR, [0, .15, -1.2 - .4 * w], u);
     R('hand.R', 0, 0, -.1 * u - .2 * w); B['shoulder.R'].rotation.z = -.12 * u; B.head.rotation.z += .1 * u; }
-  // selfie: right arm reaches out holding the phone, head tilts a little and (for me) turns to the lens
+  // selfie: right arm reaches out holding the phone and (for me) the head turns to the lens.
+  // no head tilt/nod here: the face decal is rigid on the head bone but the skin under it bends with the neck, so tilting lets skin poke through and cut an eye
   const selfie = !!a.selfie && !petting, mine = a === me && cam.mode === 'selfie';
   if (a.phone) a.phone.visible = selfie && !mine;
-  if (selfie){ uaR = SELFIE_POSE.ua.slice(); faR = SELFIE_POSE.fa.slice(); R('hand.R', ...SELFIE_POSE.hand); B.head.rotation.z += .1;
-    if (mine){ B.neck.rotation.y = clamp(sf.yaw * .55, -.6, .6); B.head.rotation.x -= clamp(sf.pitch, -.3, .8) * .3; } }
+  if (selfie){ uaR = SELFIE_POSE.ua.slice(); faR = SELFIE_POSE.fa.slice(); R('hand.R', ...SELFIE_POSE.hand); if (mine) B.neck.rotation.y = clamp(sf.yaw * .55, -.6, .6); }
   B['shoulder.L'].rotation.z -= .08; B['shoulder.R'].rotation.z += .08;
   R('upperArm.L', ...uaL); R('upperArm.R', ...uaR); R('foreArm.L', ...faL); R('foreArm.R', ...faR);
   // keep the cup upright whatever the arm is doing
