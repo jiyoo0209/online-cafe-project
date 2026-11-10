@@ -62,6 +62,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #fwInfo .t{display:block;margin-top:1px;color:var(--ink-dim);font-size:11.5px}#fwInfo .t em{font-style:normal;color:#f2cf72;font-weight:700}
 #fwInfo.live{background:linear-gradient(135deg,rgba(80,30,90,.85),rgba(30,20,60,.85));box-shadow:0 0 0 1px rgba(255,210,140,.5),0 0 22px rgba(255,170,90,.55);animation:fwGlow 1.6s ease-in-out infinite}
 #fwInfo.live b{color:#ffe1a0}
+#yInfo{position:absolute;top:calc(112px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:8px;padding:7px 12px 7px 9px;border-radius:12px;font:inherit;font-size:12.5px;color:var(--ink);text-align:left;cursor:pointer}
+#yInfo .ic{font-size:16px;line-height:1}#yInfo b{font-weight:700}
+#yInfo .t{display:block;margin-top:1px;color:var(--ink-dim);font-size:11.5px}#yInfo .t em{font-style:normal;color:#9fe3dc;font-weight:700}
+#yInfo.soon{box-shadow:0 0 0 1px rgba(143,208,207,.7),0 0 18px rgba(143,208,207,.45)}
+#yInfo.live{background:linear-gradient(135deg,rgba(24,70,96,.86),rgba(20,44,70,.86));box-shadow:0 0 0 1px rgba(159,227,220,.5)}#yInfo.live b{color:#cdf3ee}
 @keyframes fwGlow{50%{box-shadow:0 0 0 1px rgba(255,210,140,.8),0 0 34px rgba(255,140,200,.7)}}
 .topr{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:6px}
 #camBtn{width:36px;height:36px;border-radius:50%;padding:0;display:grid;place-items:center;color:var(--ink)}
@@ -282,6 +287,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div id="hud" hidden>
   <header class="brand panel"><span class="cup" aria-hidden="true">☕</span><b>해변가</b><small>CAFE</small></header>
   <div id="fwInfo" class="panel" aria-live="polite"><span class="ic" aria-hidden="true">🎆</span><span><b></b><span class="t"></span></span></div>
+  <button id="yInfo" class="panel" type="button" aria-live="polite"><span class="ic" aria-hidden="true">⛵</span><span><b>요트 투어</b><span class="t"></span></span></button>
   <div class="topr">
     <button id="coin" class="panel" type="button" aria-label="내 지갑 · 해루질 도감"><i>₩</i><b id="coinAmt">-</b><span id="coinPlus" aria-hidden="true"></span></button>
     <button id="camBtn" class="panel" type="button" aria-label="사진 찍기"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5a2 2 0 0 1 2-2h1.8l1.4-2h5.6l1.4 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.6" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
@@ -1356,6 +1362,103 @@ strand([-11.9,-7.9],[-11.9,7.9],.5); strand([11.9,-7.9],[11.9,7.9],.5);
   plant(f, 11.2, -4.5, 1.5); plant(f, -11.2, 7.4, 1.4); plant(f, 11.2, 7.4, 1.3); monstera(f, 5.8, -7.2, 1);
 }
 
+/* ---------- yacht tour: leaves the beach pier every 15 minutes (:00 :15 :30 :45), 5-minute loop, same voyage for everyone (driven by the clock) ---------- */
+// the pier is walkable (see resolve/groundY); boat seats are ordinary seats whose position is moved every frame
+const PIER = { x: 19.5, w: .72, z0: -15.2, zr: -16.2, z1: -28.55, y: .22 };
+const onPier = (x, z) => Math.abs(x - PIER.x) <= PIER.w + .05 && z < PIER.z0;
+const mmss = v => `${Math.floor(v / 60)}:${String(Math.floor(v % 60)).padStart(2, '0')}`;
+{ // pier: planks on posts, a ramp up from the sand, lamp and bollards at the end, sign at the start
+  const pg = grp(world, PIER.x, 0, 0), postM = M('#6e5a48', { roughness: .95 }), len = PIER.zr - PIER.z1;
+  for (let z = PIER.zr - .18; z > PIER.z1; z -= .36) box(1.7, .07, .32, mat.teak, pg, 0, PIER.y - .07, z, false);
+  [-.7, .7].forEach(x => box(.12, .16, len, postM, pg, x, PIER.y - .23, PIER.zr - len / 2, false));
+  for (let z = PIER.zr - .4; z > PIER.z1 - .1; z -= 2.4) [-.8, .8].forEach(x => cyl(.09, .11, 2.1, postM, pg, x, PIER.y - 2.0, z, 8));
+  const ramp = mesh(new THREE.BoxGeometry(1.7, .06, 1.08), mat.teak, pg, 0, .07, (PIER.z0 + PIER.zr) / 2, false); ramp.rotation.x = .26;
+  [-.72, .72].forEach(x => cyl(.1, .12, .34, mat.metal, pg, x, PIER.y, PIER.z1 + .22, 10));
+  cyl(.035, .045, 1.9, mat.metal, pg, .78, PIER.y, PIER.z1 + .6, 8); sph(.11, glowMat('#ffd58a', .3, 2.8), pg, .78, PIER.y + 1.98, PIER.z1 + .6, 12);
+  const sign = grp(world, PIER.x + 1.35, 0, -15.5, Math.PI);
+  cyl(.04, .05, 1.15, postM, sign, -.42, sandY(PIER.x + 1.35, -15.5), 0, 6); cyl(.04, .05, 1.15, postM, sign, .42, sandY(PIER.x + 1.35, -15.5), 0, 6);
+  const st = canvasTex(256, 160, (g, w, h) => { g.fillStyle = '#f7efe2'; g.fillRect(0, 0, w, h); g.strokeStyle = '#27466b'; g.lineWidth = 8; g.strokeRect(6, 6, w - 12, h - 12);
+    g.fillStyle = '#27466b'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 40px "Gowun Batang", serif'; g.fillText('⛵ 요트 투어', w / 2, 58); g.font = '24px "Gowun Dodum", sans-serif'; g.fillText('15분마다 출항 · 선착장 끝에서 타요', w / 2, 112); });
+  const board = mesh(new THREE.BoxGeometry(1.1, .68, .05), [postM, postM, postM, postM, new THREE.MeshStandardMaterial({ map: st, roughness: .8 }), postM], sign, 0, sandY(PIER.x + 1.35, -15.5) + 1.05, 0);
+  act(sign, { type: 'yacht' });
+}
+const Y = (() => {
+  const PERIOD = 900, CRUISE = 300, BACK = 32, OUT = CRUISE - BACK, RAMP = 16;
+  const berth = new THREE.Vector3(19.5, 0, -33.45), A = new THREE.Vector3(19.5, 0, -51);
+  // a wide loop out to sea and back; it ends seaward of the berth bow-out, then the yacht backs in (stern-to)
+  const route = new THREE.CatmullRomCurve3([[19.5, -33.45], [19.5, -44], [17, -62], [6, -84], [-12, -102], [-34, -108], [-52, -96], [-56, -76], [-44, -58], [-24, -47], [-2, -42], [11, -41], [17.5, -43], [19.5, -47], [19.5, -51]].map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'centripetal');
+  const trap = u => { const r = RAMP / OUT, v = 1 / (1 - r); return u < r ? .5 * v * u * u / r : u < 1 - r ? v * (u - r / 2) : 1 - .5 * v * (1 - u) * (1 - u) / r; };
+  const smooth5 = u => u * u * u * (u * (u * 6 - 15) + 10), tan = new THREE.Vector3();
+  const st = { cruising: false, docked: true, left: 0, back: 0, yaw: Math.PI, pos: berth.clone() };
+  function state(ms){
+    const ph = ((ms / 1000) % PERIOD + PERIOD) % PERIOD;
+    st.cruising = ph < CRUISE; st.docked = !st.cruising; st.left = PERIOD - ph; st.back = Math.max(0, CRUISE - ph);
+    if (ph < OUT){ const s = trap(ph / OUT); route.getPointAt(s, st.pos); route.getTangentAt(s, tan); st.yaw = Math.atan2(tan.x, tan.z); }
+    else if (ph < CRUISE){ st.pos.lerpVectors(A, berth, smooth5((ph - OUT) / BACK)); st.yaw = Math.PI; }
+    else { st.pos.copy(berth); st.yaw = Math.PI; }
+    return st;
+  }
+  // same swell as the ocean shader, so the hull rides the visible waves
+  const WV = [[.15, 1, .16, .16, 1], [-.6, .8, .29, .08, 1.6], [.9, .45, .53, .04, 2.2], [-.3, -1, 1.05, .016, 3], [.7, -.7, 1.9, .008, 3.9]].map(([x, z, f, a, s]) => { const l = Math.hypot(x, z); return [x / l, z / l, f, a, s]; });
+  const ss = (e0, e1, v) => { const k = clamp((v - e0) / (e1 - e0), 0, 1); return k * k * (3 - 2 * k); };
+  function seaH(x, z, t){ let h = 0; for (const [dx, dz, f, a, s] of WV) h += a * Math.sin((x * dx + z * dz) * f + t * s);
+    h *= .45 + .55 * ss(-18, -40, z); const sh = ss(-70, -24, z) * (1 - ss(-22.5, -20.5, z)), p = -z * .5 - t * 1.25 + Math.sin(x * .045) * 1.6; return h + Math.pow(Math.max(0, Math.sin(p)), 6) * .08 * sh; }
+
+  // ---- the yacht (local: bow +z, deck top y .76, waterline 0)
+  const g = new THREE.Group(); g.rotation.order = 'YXZ'; world.add(g);
+  const hullM = M('#f6f3ec', { roughness: .35 }), stripeM = M('#27466b', { roughness: .45 }), cushM = M('#f1e8d8', { roughness: .9 }), chromeM = M('#d9dde2', { roughness: .25, metalness: .8 });
+  const sailM = M('#fbf8f1', { roughness: .95, side: THREE.DoubleSide }), winM = M('#24323e', { roughness: .2, metalness: .3, emissive: C('#ffcf8a'), emissiveIntensity: 0 }); glow.push({ mat: winM, base: 0, night: 1.1 });
+  const HB = -.55, HT = .76, hw = z => z < 1 ? 1.42 + .16 * Math.sin((z + 4.5) / 5.5 * Math.PI / 2) : 1.58 * Math.pow(Math.max(0, (4.7 - z) / 3.7), .55);
+  const side = []; for (let i = 0; i <= 28; i++){ const z = -4.5 + i / 28 * 9.2; side.push([hw(z), z]); }
+  const outline = [...side.map(([x, z]) => [-x, z]), ...side.slice(0, -1).reverse()];
+  const shapeOf = k => new THREE.Shape(outline.map(([x, z]) => new THREE.Vector2(x * k, -z * k)));
+  const hullGeo = (y0, y1, k) => { const geo = new THREE.ExtrudeGeometry(shapeOf(k), { depth: y1 - y0, bevelEnabled: false }); geo.rotateX(-Math.PI / 2); geo.translate(0, y0, 0);
+    const p = geo.attributes.position; for (let i = 0; i < p.count; i++){ const y = p.getY(i), t = clamp((y - HB) / (HT - HB), 0, 1); p.setX(i, p.getX(i) * (.42 + .58 * Math.pow(t, .45))); const z = p.getZ(i); if (z > 1.5) p.setZ(i, 1.5 + (z - 1.5) * (.72 + .28 * t)); }
+    geo.computeVertexNormals(); return geo; };
+  mesh(hullGeo(HB, HT, 1), hullM, g); mesh(hullGeo(.4, .55, 1.012), stripeM, g);
+  { const d = new THREE.ShapeGeometry(shapeOf(.94)); d.rotateX(-Math.PI / 2); mesh(d, mat.teak, g, 0, HT + .005, 0, false); }
+  // cockpit: U bench with cushions, a small table
+  [-1, 1].forEach(sd => { box(.46, .4, 2.7, cushM, g, sd * 1.08, HT, -2.5); box(.1, .42, 2.7, hullM, g, sd * 1.34, HT + .3, -2.5); });
+  box(2.1, .4, .46, cushM, g, 0, HT, -4.05); box(2.4, .42, .1, hullM, g, 0, HT + .3, -4.32);
+  cyl(.05, .05, .55, chromeM, g, 0, HT, -2.5, 8); box(.8, .05, 1.2, mat.teak, g, 0, HT + .55, -2.5);
+  box(1.5, .22, 1.3, cushM, g, 0, HT, 3.05);
+  // cabin with a glowing window band, roof, mast, boom and sails
+  box(2.1, .78, 3.0, hullM, g, 0, HT, .75); box(2.14, .26, 2.6, winM, g, 0, HT + .32, .75, false); box(2.3, .07, 3.3, cushM, g, 0, HT + .78, .75);
+  const roof = HT + .85;
+  cyl(.055, .07, 8.6, chromeM, g, 0, roof, 1.2, 8);
+  { const boom = mesh(new THREE.CylinderGeometry(.045, .045, 4.3, 8), chromeM, g, 0, 2.8, -.95); boom.rotation.x = Math.PI / 2; }
+  const tri = (a, b, c) => { const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b, ...c], 3)); geo.computeVertexNormals(); return mesh(geo, sailM, g); };
+  tri([0, 2.85, 1.12], [0, 9.9, 1.12], [0, 2.85, -3.0]); tri([0, 8.8, 1.27], [0, 1.0, 4.55], [0, 1.95, 1.85]);
+  // rail (open at the stern for boarding), swim platform, name on the transom, flag and nav lights
+  { const pts = side.slice(2).map(([x, z]) => new THREE.Vector3(-x * .96, HT + .55, z)).concat(side.slice(2, -1).reverse().map(([x, z]) => new THREE.Vector3(x * .96, HT + .55, z)));
+    mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 140, .022, 6, false), chromeM, g, 0, 0, 0, false);
+    pts.forEach((p, i) => { if (i % 4 === 0) cyl(.016, .016, .55, chromeM, g, p.x, HT, p.z, 6, false); }); }
+  box(2.5, .07, .55, mat.teak, g, 0, .1, -4.75, false);
+  { const nt = canvasTex(320, 64, (c, w, h) => { c.clearRect(0, 0, w, h); c.fillStyle = '#27466b'; c.font = '700 40px "Gowun Batang", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('BEACHSIDE', w / 2, h / 2 + 2); });
+    const n = mesh(new THREE.PlaneGeometry(1.7, .34), new THREE.MeshStandardMaterial({ map: nt, transparent: true, roughness: .5 }), g, 0, .36, -4.515, false); n.rotation.y = Math.PI; }
+  cyl(.015, .015, 1.1, chromeM, g, -1.15, HT, -4.4, 6, false);
+  const flag = new THREE.Group(); flag.position.set(-1.15, HT + .95, -4.4); g.add(flag); mesh(new THREE.PlaneGeometry(.5, .3), M('#ef7f63', { side: THREE.DoubleSide, roughness: .9 }), flag, 0, 0, -.25, false).rotation.y = Math.PI / 2;
+  sph(.05, glowMat('#ff4d4d', .6, 3), g, .95, HT + .1, 3.4, 8); sph(.05, glowMat('#46e07a', .6, 3), g, -.95, HT + .1, 3.4, 8);
+  act(g, { type: 'yacht' });
+
+  // seats: 3 + 3 along the cockpit sides facing in, 2 on the aft bench, 2 on the bow cushion
+  const L = [[1.12, -3.35, -Math.PI / 2], [1.12, -2.5, -Math.PI / 2], [1.12, -1.65, -Math.PI / 2], [-1.12, -3.35, Math.PI / 2], [-1.12, -2.5, Math.PI / 2], [-1.12, -1.65, Math.PI / 2],
+    [-.5, -4.1, 0], [.5, -4.1, 0], [-.42, 3.0, 0], [.42, 3.0, 0]].map(([x, z, r], i) => ({ x, z, r, y: i < 8 ? HT + .4 : HT + .22 }));
+  const ids = L.map(() => addSeat(0, berth.x, berth.z, 0, 1, 'boat')), s0 = ids[0];
+  const isSeat = i => i >= s0 && i < s0 + ids.length, v = new THREE.Vector3();
+  function place(ms, t){
+    state(ms); const { pos, yaw } = st, fx = Math.sin(yaw), fz = Math.cos(yaw), px = Math.cos(yaw), pz = -Math.sin(yaw);
+    const hb = seaH(pos.x + fx * 3.5, pos.z + fz * 3.5, t), hs = seaH(pos.x - fx * 3.5, pos.z - fz * 3.5, t), hp = seaH(pos.x + px * 1.4, pos.z + pz * 1.4, t), hr = seaH(pos.x - px * 1.4, pos.z - pz * 1.4, t);
+    g.position.set(pos.x, -.36 + (hb + hs + hp + hr) * .2, pos.z); g.rotation.set((hs - hb) / 7 * .7, yaw, (hp - hr) / 2.8 * .5);
+    flag.rotation.y = Math.sin(t * 3.1) * .3 + (st.cruising ? .1 : 0); g.updateMatrixWorld(true);
+    L.forEach((l, k) => { const s = seats[ids[k]]; v.set(l.x, l.y, l.z); g.localToWorld(v); s.x = v.x; s.z = v.z; s.h = v.y; s.rot = yaw + l.r; });
+  }
+  const local = new THREE.Vector3();
+  // nearest free seat to where the yacht was tapped (or the first free one)
+  function pick(pt){ let best = -1, bd = 1e9; ids.forEach((id, k) => { const s = seats[id]; if (s.occ || s.occRemote) return; let d = k; if (pt){ local.copy(pt); g.worldToLocal(local); d = Math.hypot(local.x - L[k].x, local.z - L[k].z); } if (d < bd){ bd = d; best = id; } }); return best; }
+  return { g, st, state, place, isSeat, pick, ids, PERIOD };
+})();
+
 /* ---------- lights ---------- */
 const hemi = new THREE.HemisphereLight(C('#f2b8a0'), C('#6b5a70'), .55); scene.add(hemi);
 const sun = new THREE.DirectionalLight(C('#ffb070'), 1); sun.castShadow = true;
@@ -1900,16 +2003,20 @@ const newSeed = () => (Math.random() * 2147483647) | 0;
 let mySeed = (() => { const v = parseInt(store.get('bj-seed'), 10); return Number.isFinite(v) && v > 0 ? v : newSeed(); })();
 let myName = store.get('bj-name') || ['파도소리', '윤슬', '노을빛', '모래알', '갈매기', '바닷바람', '라떼한잔'][(Math.random() * 7) | 0] + ((Math.random() * 90 + 10) | 0);
 let me = null; // avatar
-const ctrl = { floor: 0, target: null, pendingSeat: -1, pendingDig: -1, path: [], stuck: 0, petWait: 0, stairCool: 0 };
+const ctrl = { floor: 0, target: null, via: [], pendingSeat: -1, pendingDig: -1, pendingBoard: false, boardPt: null, path: [], stuck: 0, petWait: 0, stairCool: 0 };
 
 /* ---------- collision ---------- */
 const BEACH_Z = -12.15, BEACH_B = [-24, 24, -19.6, 7.5];
 const onBeachAt = (f, z) => f === 0 && z < BEACH_Z;
-const groundY = (f, x, z) => onBeachAt(f, z) ? Math.max(sandY(x, z), -.32) + .03 : FL[f];
+const groundY = (f, x, z) => { if (f === 0 && onPier(x, z)){ if (z <= PIER.zr) return PIER.y; const sg = Math.max(sandY(x, z), -.32) + .03; return sg + (PIER.y - sg) * clamp((PIER.z0 - z) / (PIER.z0 - PIER.zr), 0, 1); }
+  return onBeachAt(f, z) ? Math.max(sandY(x, z), -.32) + .03 : FL[f]; };
 const BOUNDS = [[-11.5, 11.5, -11.9, 7.5], [-11.4, 11.4, -7.6, 7.5], [-11.6, 11.6, -7.7, 7.7]];
 function resolve(f, x, z, r = .32){
   // past the deck edge (only reachable down the front steps) is the beach
-  const b = f === 0 && z < BOUNDS[0][2] ? BEACH_B : BOUNDS[f]; x = clamp(x, b[0], b[1]); z = clamp(z, b[2], b[3]);
+  const b = f === 0 && z < BOUNDS[0][2] ? BEACH_B : BOUNDS[f];
+  // past the waterline only the pier strip is walkable (out to the berth)
+  if (f === 0 && z < BEACH_B[2] && (Math.abs(x - PIER.x) < PIER.w + .3 || z < BEACH_B[2] - .3)){ x = clamp(x, PIER.x - PIER.w, PIER.x + PIER.w); z = clamp(z, PIER.z1, b[3]); }
+  else { x = clamp(x, b[0], b[1]); z = clamp(z, b[2], b[3]); }
   for (const o of obstacles){
     if (o.f !== f) continue;
     if (o.t === 'c'){ const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz), m = o.r + r; if (d < m && d > 1e-4){ x = o.x + dx / d * m; z = o.z + dz / d * m; } }
@@ -1994,6 +2101,7 @@ addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 function isShown(o){ while (o){ if (!o.visible) return false; o = o.parent; } return true; }
 function onTap(x, y){
   if (cam.mode === 'scope' || cam.mode === 'selfie' || !entered || !me) return;
+  if (riding() && Y.st.cruising){ standUp(); return; }
   ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
   const hits = ray.intersectObjects(interactives, false).filter(h => isShown(h.object));
   const floorY = FL[ctrl.floor];
@@ -2003,11 +2111,15 @@ function onTap(x, y){
   if (hit){ const a = hit.object.userData.act; if (handleAct(a, hit.point)) return; }
   if (!hitFloor || ctrl.path.length) return;
   const beach = ctrl.floor === 0 && fp.z < BEACH_Z, b = beach ? BEACH_B : BOUNDS[ctrl.floor]; if (fp.x < b[0] - 1 || fp.x > b[1] + 1 || fp.z < b[2] - (beach ? 40 : 1) || fp.z > b[3] + 1) return;
-  standUp(); ctrl.pendingSeat = -1; ctrl.pendingDig = -1; ctrl.petWait = 0; me.petUntil = 0; ctrl.target = new THREE.Vector3(clamp(fp.x, b[0], b[1]), floorY, clamp(fp.z, b[2], b[3])); ctrl.stuck = 0;
-  ripple(ctrl.target);
+  standUp(); ctrl.pendingSeat = -1; ctrl.pendingDig = -1; ctrl.petWait = 0; me.petUntil = 0; ctrl.pendingBoard = false;
+  if (beach && fp.z < b[2] && Math.abs(fp.x - PIER.x) < PIER.w + .5) walkTo(clamp(fp.x, PIER.x - PIER.w, PIER.x + PIER.w), Math.max(fp.z, PIER.z1 + .15));
+  else walkTo(clamp(fp.x, b[0], b[1]), clamp(fp.z, b[2], b[3]));
+  ripple(ctrl.via[0] || ctrl.target);
 }
 function handleAct(a, pt){
   if (!a) return false;
+  ctrl.via = []; ctrl.pendingBoard = false;
+  if (a.type === 'yacht'){ goBoard(pt); return true; }
   if (a.type === 'seat'){
     const s = seats[a.i]; if (!s) return false;
     if (s.f !== ctrl.floor){ toast('그 자리는 다른 층이에요. 층을 먼저 옮겨주세요'); return true; }
@@ -2044,9 +2156,55 @@ let toastT = 0;
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2600); }
 
 /* ---------- actions ---------- */
-function standUp(){ if (!me || me.seat < 0) return; const s = seats[me.seat]; s.occ = false; me.seat = -1; me.pos.set(s.x + Math.sin(s.rot) * .6, FL[s.f] || 0, s.z + Math.cos(s.rot) * .6); const [x, z] = resolve(ctrl.floor, me.pos.x, me.pos.z); me.pos.x = x; me.pos.z = z; $('#bStand').hidden = true; $('#bWave').hidden = false; pushPresence(true); }
+// the pier meets the beach only at its foot, so walks on or off it go through there
+function walkTo(x, z){
+  const wet = (px, pz) => pz < BEACH_B[2] + .05 && onPier(px, pz), dst = new THREE.Vector3(x, groundY(ctrl.floor, x, z), z);
+  ctrl.via = []; ctrl.stuck = 0;
+  if (ctrl.floor === 0 && wet(me.pos.x, me.pos.z) !== wet(x, z)){ ctrl.target = new THREE.Vector3(PIER.x, PIER.y, BEACH_B[2] + .5); ctrl.via = [dst]; } else ctrl.target = dst;
+}
+const riding = () => !!me && Y.isSeat(me.seat);
+function goBoard(pt){
+  if (!me) return; const st = Y.st;
+  if (riding()){ toast(st.cruising ? `⛵ 항해 중 · ${mmss(st.back)} 후 도착해요` : `⛵ ${mmss(st.left)} 후 출항해요`); return; }
+  if (st.cruising){ toast(`⛵ 요트가 항해 중이에요 · ${mmss(st.back)} 후 돌아와요`); return; }
+  if (ctrl.floor !== 0){ toast('요트는 1층 해변 선착장에서 타요 · 층을 먼저 옮겨주세요'); return; }
+  if (Y.pick(null) < 0){ toast('요트 자리가 다 찼어요 · 다음 출항을 기다려 주세요'); return; }
+  standUp(); ctrl.pendingSeat = -1; ctrl.pendingDig = -1; ctrl.petWait = 0; me.petUntil = 0;
+  walkTo(PIER.x, PIER.z1 + .2); ctrl.pendingBoard = true; ctrl.boardPt = pt ? pt.clone() : null;
+  toast(`⛵ 선착장으로 가는 중 · ${mmss(st.left)} 후 출항`);
+}
+function boardNow(){
+  const st = Y.st; if (st.cruising){ toast(`⛵ 아쉽게 놓쳤어요 · 다음 출항은 ${mmss(st.left)} 후`); return; }
+  const i = Y.pick(ctrl.boardPt); if (i < 0){ toast('요트 자리가 다 찼어요'); return; }
+  sitAt(i); toast(`⛵ 탑승했어요 · ${mmss(st.left)} 후 출항해요`);
+}
+function standUp(){ if (!me || me.seat < 0) return;
+  if (Y.isSeat(me.seat)){ // off the yacht only at the pier
+    if (Y.st.cruising){ const n = performance.now(); if (n > (W.boatToast || 0)){ W.boatToast = n + 2500; toast(`⛵ 항해 중이에요 · ${mmss(Y.st.back)} 후 도착하면 내릴 수 있어요`); } return; }
+    seats[me.seat].occ = false; me.seat = -1; me.pos.set(PIER.x, PIER.y, PIER.z1 + .45); me.rot = 0; me.g.rotation.y = 0; $('#bStand').hidden = true; $('#bWave').hidden = false; pushPresence(true); return; }
+  const s = seats[me.seat]; s.occ = false; me.seat = -1; me.pos.set(s.x + Math.sin(s.rot) * .6, FL[s.f] || 0, s.z + Math.cos(s.rot) * .6); const [x, z] = resolve(ctrl.floor, me.pos.x, me.pos.z); me.pos.x = x; me.pos.z = z; $('#bStand').hidden = true; $('#bWave').hidden = false; pushPresence(true); }
 function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.occ = true; $('#bStand').hidden = false; $('#bWave').hidden = true; pushPresence(true); }
 $('#bStand').onclick = () => standUp();
+$('#yInfo').onclick = () => goBoard(null);
+let yInfoS = -1, yWas = null, ySoon = false, yRide = false;
+function yachtTick(){
+  if (!me) return; const st = Y.st, ride = riding();
+  if (ride !== yRide){ yRide = ride; if (ride){ $('#chipF').textContent = '⛵'; $('#chipName').textContent = '요트'; } else { W.beach = null; beachTick(); } yInfoS = -1; }
+  if (yWas !== null && st.cruising !== yWas){
+    if (st.cruising){ if (ride) toast('⛵ 출항! 바다를 한 바퀴 돌고 5분 뒤 돌아와요'); else if (W.beach) toast('⛵ 요트가 출항했어요 · 다음 배는 15분 뒤예요'); }
+    else if (ride) toast('⛵ 도착했어요 · 내리려면 일어나기를 눌러요');
+  }
+  yWas = st.cruising;
+  if (st.cruising) ySoon = false; else if (st.left <= 60 && !ySoon){ ySoon = true; if (!ride && W.beach) toast('⛵ 1분 뒤 요트가 출항해요 · 선착장 끝에서 타요'); }
+  const sNow = Math.floor(Date.now() / 1000); if (sNow === yInfoS) return; yInfoS = sNow;
+  let b, t;
+  if (ride && st.cruising){ b = '요트 항해 중'; t = `<em>${mmss(st.back)}</em> 후 선착장 도착`; }
+  else if (ride){ b = '요트 탑승 중'; t = `<em>${mmss(st.left)}</em> 후 출항 · 일어나면 내려요`; }
+  else if (st.cruising){ b = '요트 투어 항해 중'; t = `<em>${mmss(st.back)}</em> 후 돌아와요 · 15분마다 출항`; }
+  else { b = st.left <= 120 ? '곧 요트 출항!' : '요트 투어 · 15분마다'; t = `<em>${mmss(st.left)}</em> 후 출항 · 눌러서 타기`; }
+  const el = $('#yInfo'); el.classList.toggle('live', st.cruising || ride); el.classList.toggle('soon', !st.cruising && !ride && st.left <= 120);
+  el.querySelector('b').textContent = b; el.querySelector('.t').innerHTML = t;
+}
 $('#bWave').onclick = () => { if (!me) return; me.waveUntil = performance.now() + 2200; myWave = Date.now(); pushPresence(true); };
 // photo mode: frame the shot, capture the 3D view plus name tags/bubbles, then save or share
 const photo = { on: false, tags: true, grid: true, plain: null, polaroid: null, kind: 'polaroid', url: '', selfie: false };
@@ -2249,7 +2407,7 @@ $('#dex').addEventListener('click', e => { if (e.target.id === 'dex') $('#dex').
 
 // --- beach UI: chip says 해변, the wave button becomes 해루질
 function beachTick(){
-  const on = !!me && onBeachAt(ctrl.floor, me.pos.z - .15); if (on === W.beach) return; W.beach = on;
+  const on = !!me && onBeachAt(ctrl.floor, me.pos.z - .15) && !riding(); if (on === W.beach) return; W.beach = on;
   $('#bDig').hidden = !on; $('#bWave').hidden = on || me.seat >= 0;
   if (on){ $('#chipF').textContent = '해변'; $('#chipName').textContent = '모래사장'; if (!W.beachHi){ W.beachHi = 1; toast('✨ 반짝이는 숨구멍을 눌러 해루질해요'); } }
   else { $('#chipF').textContent = `${visFloor + 1}F`; $('#chipName').textContent = ['카운터', '라운지', '루프탑'][visFloor] || ''; }
@@ -2544,6 +2702,7 @@ function frame(){
   // environment blend
   if (envT < 1){ envT = Math.min(1, envT + dt / 2.2); const k = envT * envT * (3 - 2 * envT); applyEnv(envLerp(envFromS, envTo, k)); }
   oceanU.uTime.value = t; oceanU.uCam.value.copy(camera.position);
+  Y.place(Date.now(), t); yachtTick();
   swashU.uTime.value = t;
 
   // me
@@ -2562,17 +2721,17 @@ function frame(){
       if (joy.id !== null && jm > .15){ kx += joy.vx; kz -= joy.vy; spMul = Math.min(1, .35 + jm * .75); }
       let dir = null;
       if ((kx || kz) && cam.mode === 'selfie'){ sf.yaw = clamp(sf.yaw - kx * dt * 1.4, -1.2, 1.2); sf.pitch = clamp(sf.pitch - kz * dt * .9, -.3, .8); }
-      else if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
-      else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } if (ctrl.pendingDig >= 0){ const k = ctrl.pendingDig; ctrl.pendingDig = -1; startDig(k); } } else dir = tmpV.normalize(); }
+      else if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.via = []; ctrl.pendingBoard = false; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
+      else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ if (ctrl.via.length){ ctrl.target = ctrl.via.shift(); ctrl.stuck = 0; } else { ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } if (ctrl.pendingDig >= 0){ const k = ctrl.pendingDig; ctrl.pendingDig = -1; startDig(k); } if (ctrl.pendingBoard){ ctrl.pendingBoard = false; boardNow(); } } } else dir = tmpV.normalize(); }
       if (dir && me.seat < 0 && !ctrl.target && stairFromWalk(dir)){ moved = true; me.moving = true; }
       else if (dir && me.seat < 0){
         const sp = 3.0 * dt * spMul; const ox = me.pos.x, oz = me.pos.z;
         const [nx, nz] = resolve(ctrl.floor, me.pos.x + dir.x * sp, me.pos.z + dir.z * sp);
         if ((nx - ox) * dir.x + (nz - oz) * dir.z >= 0){ me.pos.x = nx; me.pos.z = nz; }
         me.pos.y = groundY(ctrl.floor, me.pos.x, me.pos.z); me.rot = Math.atan2(dir.x, dir.z);
-        if (onBeachAt(ctrl.floor, me.pos.z) && me.pos.z <= BEACH_B[2] + .02 && dir.z < -.3 && now > (W.seaToast || 0)){ W.seaToast = now + 5000; toast('🌊 바다는 못 들어가요 · 물가에서 해루질해요'); }
+        if (onBeachAt(ctrl.floor, me.pos.z) && me.pos.z <= BEACH_B[2] + .02 && !onPier(me.pos.x, me.pos.z) && dir.z < -.3 && now > (W.seaToast || 0)){ W.seaToast = now + 5000; toast('🌊 바다는 못 들어가요 · 물가에서 해루질해요'); }
         const real = Math.hypot(me.pos.x - ox, me.pos.z - oz);
-        if (real < sp * .25){ ctrl.stuck += dt; if (ctrl.stuck > .35){ if (ctrl.pendingSeat >= 0 && ctrl.target && Math.hypot(ctrl.target.x - me.pos.x, ctrl.target.z - me.pos.z) < 1.3){ sitAt(ctrl.pendingSeat); } ctrl.target = null; ctrl.pendingSeat = -1; ctrl.stuck = 0; } } else ctrl.stuck = 0;
+        if (real < sp * .25){ ctrl.stuck += dt; if (ctrl.stuck > .35){ if (ctrl.pendingSeat >= 0 && ctrl.target && Math.hypot(ctrl.target.x - me.pos.x, ctrl.target.z - me.pos.z) < 1.3){ sitAt(ctrl.pendingSeat); } if (ctrl.pendingBoard && !ctrl.via.length && Math.hypot(PIER.x - me.pos.x, PIER.z1 - me.pos.z) < 1.6) boardNow(); ctrl.target = null; ctrl.via = []; ctrl.pendingBoard = false; ctrl.pendingSeat = -1; ctrl.stuck = 0; } } else ctrl.stuck = 0;
         moved = true; me.moving = true;
       } else me.moving = false;
     }
@@ -2581,9 +2740,12 @@ function frame(){
       else { const cat = cats[ctrl.petCat | 0], dc = Math.hypot(cat.pos.x - me.pos.x, cat.pos.z - me.pos.z); if (!cat.walking && (dc < 1.0 || (dc < 1.9 && (!ctrl.target || ctrl.stuck > .15)))){ ctrl.petWait = 0; ctrl.target = null; startPet(); } }
     }
     if (moved) pushPresence();
+    if (riding()) placeSeated(me, me.seat);
     poseAvatar(me, dt, t);
     sendPresence(now);
     setVisibleFloor(ctrl.floor);
+    // out at sea the whole café is in view, so show every floor and wall
+    if (riding()){ floors.forEach(g => g.visible = true); W.allFloors = 1; } else if (W.allFloors){ W.allFloors = 0; const v = visFloor; visFloor = -1; setVisibleFloor(v); W.beach = null; beachTick(); }
   } else setVisibleFloor(2);
 
   spotsTick(t, now); beachTick();
@@ -2592,6 +2754,7 @@ function frame(){
     const a = r.a; const d = a.pos.distanceTo(r.tgt);
     if (d > 6) a.pos.copy(r.tgt); else if (d > 1e-3) a.pos.lerp(r.tgt, Math.min(1, (3.6 * dt) / d));
     a.rot = r.rot; a.moving = r.moving || d > .05; a.seat = r.seat;
+    if (Y.isSeat(r.seat)){ placeSeated(a, r.seat); a.moving = false; }
     poseAvatar(a, dt, t);
     a.g.visible = r.f <= visFloor && !r.first;
   }
@@ -2655,7 +2818,7 @@ function frame(){
     camera.lookAt(cam.target);
   }
   // dollhouse walls: hide the walls between the camera and the room
-  walls.forEach(w => { w.mesh.visible = ((camera.position.x - w.px) * w.nx + (camera.position.z - w.pz) * w.nz) < 0; });
+  walls.forEach(w => { w.mesh.visible = !!W.allFloors || ((camera.position.x - w.px) * w.nx + (camera.position.z - w.pz) * w.nz) < 0; });
 
   // 2D name tags and bubbles
   tagLayer.hidden = !entered || cam.mode === 'scope' || (photo.on && !photo.tags);
