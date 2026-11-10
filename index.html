@@ -176,6 +176,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #photo .opts button{height:34px;padding:0 14px;border-radius:99px;color:var(--ink);font-size:12.5px}
 #photo .opts button[aria-pressed="true"]{background:rgba(255,245,232,.92);color:var(--accent-ink)}
 #shutter{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));width:72px;height:72px;padding:0;border-radius:50%;border:4px solid #fff5e8;background:rgba(255,245,232,.25);display:grid;place-items:center}
+#selfieBtn{position:absolute;left:calc(50% + 54px);bottom:calc(36px + env(safe-area-inset-bottom,0px));height:44px;padding:0 13px 0 11px;border-radius:22px;display:flex;align-items:center;gap:5px;color:var(--ink);font-size:12.5px}
+#selfieBtn[aria-pressed="true"]{background:rgba(255,245,232,.92);color:var(--accent-ink)}
 #shutter span{width:54px;height:54px;border-radius:50%;background:#fff5e8;transition:transform .12s}
 #shutter:active span{transform:scale(.9)}
 #photo .flash{position:absolute;inset:0;background:#fff;opacity:0}
@@ -374,9 +376,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </div>
 <div id="photo" hidden>
   <div class="vf" aria-hidden="true"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="grid"></div></div>
-  <div class="top"><span class="panel lab">사진 모드 · 드래그로 구도 잡기</span><button id="photoExit" class="panel round" type="button" aria-label="사진 모드 닫기"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="top"><span id="photoLab" class="panel lab">사진 모드 · 드래그로 구도 잡기</span><button id="photoExit" class="panel round" type="button" aria-label="사진 모드 닫기"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
   <div class="opts"><button id="optTags" class="panel" type="button" aria-pressed="true">이름표</button><button id="optGrid" class="panel" type="button" aria-pressed="true">격자</button></div>
   <button id="shutter" type="button" aria-label="사진 찍기"><span></span></button>
+  <button id="selfieBtn" class="panel" type="button" aria-pressed="false" aria-label="셀카 모드"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5a2 2 0 0 1 2-2h1.8l1.4-2h5.6l1.4 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12.6a3 3 0 0 1 5.2-2M15 12.4a3 3 0 0 1-5.2 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14.6 8.6v2.1h-2.1M9.4 16.4v-2.1h2.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>셀카</span></button>
   <div class="flash"></div>
 </div>
 <div id="shot" role="dialog" aria-label="찍은 사진" hidden>
@@ -1615,6 +1618,7 @@ const CB = (() => {
     m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvP = position;');
       sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vP;').replace('void main() {', 'void main() { vec3 p = vP; float e = 1.27 + .10 * exp(-pow((p.x - .02) / .09, 2.)) - .03 * min(1., abs(p.x) / .22) - .1 * smoothstep(.19, .3, abs(p.x)); if (p.z > .02 && abs(p.x) < .4 && p.y < e) discard;'); };
     m.customProgramCacheKey = () => 'bangsA'; bangMats.set(hex, m); return m; };
+  const phoneMats = { body: new THREE.MeshStandardMaterial({ color: C('#2b2b30'), roughness: .35, metalness: .4 }), lens: new THREE.MeshStandardMaterial({ color: C('#0d0d10'), roughness: .15 }) };
   const trowelMats = { handle: new THREE.MeshStandardMaterial({ color: C('#9a6238'), roughness: .55 }), blade: new THREE.MeshStandardMaterial({ color: C('#b8bec4'), roughness: .3, metalness: .75 }) };
   const eyeMats = new Map(), faceMatFor = i => { if (!i) return G.faceMat; if (eyeMats.has(i)) return eyeMats.get(i);
     const m = G.faceMat.clone(), t = new THREE.TextureLoader().load('chars/eyes/' + EYE_COLORS[i][0] + '.png'); t.encoding = THREE.sRGBEncoding; t.flipY = false; t.anisotropy = 4; m.map = t; eyeMats.set(i, m); return m; };
@@ -1631,6 +1635,9 @@ const CB = (() => {
     B['hand.L'].add(a.holder); a.holder.position.set(.05, .01, .045);
     // 해루질 trowel: floats just in front of the right hand's fingertips, shown only while digging
     if (G.trowel){ const tw = G.trowel.clone(); tw.traverse(o => { if (o.isMesh){ o.geometry.computeVertexNormals(); o.material = o.name === 'blade' ? trowelMats.blade : trowelMats.handle; o.castShadow = true; } }); tw.visible = false; B['hand.R'].add(tw); a.trowel = tw; }
+    // selfie phone: follows the right hand with its screen turned to the face (others see it; my own selfie view hides it)
+    { const ph = new THREE.Group(), bd = new THREE.Mesh(new THREE.BoxGeometry(.1, .19, .016), phoneMats.body), ln = new THREE.Mesh(new THREE.CylinderGeometry(.013, .013, .006, 12), phoneMats.lens);
+      bd.castShadow = true; ln.rotation.x = Math.PI / 2; ln.position.set(-.026, .065, -.01); ph.add(bd, ln); ph.visible = false; a.g.add(ph); a.phone = ph; }
     a.g.add(body); a.B = B;
     // outfit
     const L = a.L, dc = DRESS_COLORS[L.outfitC], cloth = hex => matFor(clothMats, hex, { roughness: .9, side: THREE.DoubleSide, skinning: true });
@@ -1709,6 +1716,7 @@ function poseAvatar(a, dt, t){
 */
 // chibi poses: walk, idle, sit, lounge, crouch to pet, wave (right hand), hold a cup (left hand)
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), mix3 = (p, q, k) => p.map((v, i) => v + (q[i] - v) * k);
+const SELFIE_POSE = { ua: [0, .2, -.3], fa: [0, 0, 0], hand: [0, 0, 0] }, _phV = new THREE.Vector3(), _phH = new THREE.Vector3();
 function poseAvatar(a, dt, t){
   const now = performance.now();
   a.g.position.copy(a.pos);
@@ -1757,9 +1765,15 @@ function poseAvatar(a, dt, t){
   if (u > .01){ const w = Math.sin(t * TAU * 2.2) * u;
     uaR = mix3(uaR, [0, .85, -.15], u); faR = mix3(faR, [0, .15, -1.2 - .4 * w], u);
     R('hand.R', 0, 0, -.1 * u - .2 * w); B['shoulder.R'].rotation.z = -.12 * u; B.head.rotation.z += .1 * u; }
+  // selfie: right arm reaches out holding the phone, head tilts a little and (for me) turns to the lens
+  const selfie = !!a.selfie && !petting, mine = a === me && cam.mode === 'selfie';
+  if (a.phone) a.phone.visible = selfie && !mine;
+  if (selfie){ uaR = SELFIE_POSE.ua.slice(); faR = SELFIE_POSE.fa.slice(); R('hand.R', ...SELFIE_POSE.hand); B.head.rotation.z += .1;
+    if (mine){ B.neck.rotation.y = clamp(sf.yaw * .55, -.6, .6); B.head.rotation.x -= clamp(sf.pitch, -.3, .8) * .3; } }
   B['shoulder.L'].rotation.z -= .08; B['shoulder.R'].rotation.z += .08;
   R('upperArm.L', ...uaL); R('upperArm.R', ...uaR); R('foreArm.L', ...faL); R('foreArm.R', ...faR);
   // keep the cup upright whatever the arm is doing
+  if (a.phone && a.phone.visible){ B['hand.R'].getWorldPosition(_phV); B.head.getWorldPosition(_phH); _phH.y += .2 * a.g.scale.x; _phV.lerp(_phH, -.08); a.phone.position.copy(a.g.worldToLocal(_phV.clone())); a.phone.lookAt(_phH); }
   if (a.itemObj){ a.holder.parent.getWorldQuaternion(_q1).invert(); a.g.getWorldQuaternion(_q2); a.holder.quaternion.copy(_q1.multiply(_q2)); }
 }
 function placeSeated(a, i){ const s = seats[i]; a.seat = i; a.pos.set(s.x, FL[s.f] + s.h - (HIP - .06) * a.L.size, s.z); a.rot = s.rot; a.g.rotation.y = s.rot; a.moving = false; }
@@ -1959,12 +1973,12 @@ cv.addEventListener('pointermove', e => {
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
   if (pointers.size === 2){
     const [a, b] = [...pointers.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y), mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-    if (pinchD) cam.dist = clamp(cam.dist * pinchD / d, 4, 40); pinchD = d;
-    if (twoMid && cam.mode !== 'scope'){ cam.theta -= (mid.x - twoMid.x) * .007; cam.phi = clamp(cam.phi + (mid.y - twoMid.y) * .005, .08, 1.38); }
+    if (pinchD){ if (cam.mode === 'selfie') sf.dist = clamp(sf.dist * pinchD / d, .8, 3.2); else cam.dist = clamp(cam.dist * pinchD / d, 4, 40); } pinchD = d;
+    if (twoMid && cam.mode !== 'scope' && cam.mode !== 'selfie'){ cam.theta -= (mid.x - twoMid.x) * .007; cam.phi = clamp(cam.phi + (mid.y - twoMid.y) * .005, .08, 1.38); }
     twoMid = mid; dragMoved = 99; return;
   }
   dragMoved += Math.abs(dx) + Math.abs(dy);
-  if (dragMoved > 6){ cv.classList.add('dragging'); if (cam.mode === 'scope'){ scope.yaw -= dx * .0016; scope.pitch = clamp(scope.pitch + dy * .0012, -.2, .25); } else { cam.theta -= dx * .006; cam.phi = clamp(cam.phi + dy * .004, .08, 1.38); } }
+  if (dragMoved > 6){ cv.classList.add('dragging'); if (cam.mode === 'scope'){ scope.yaw -= dx * .0016; scope.pitch = clamp(scope.pitch + dy * .0012, -.2, .25); } else if (cam.mode === 'selfie'){ sf.yaw = clamp(sf.yaw - dx * .006, -1.2, 1.2); sf.pitch = clamp(sf.pitch + dy * .004, -.3, .8); } else { cam.theta -= dx * .006; cam.phi = clamp(cam.phi + dy * .004, .08, 1.38); } }
 });
 function endPointer(e){
   const had = pointers.has(e.pointerId); pointers.delete(e.pointerId); cv.classList.remove('dragging');
@@ -1972,14 +1986,14 @@ function endPointer(e){
   if (had && dragMoved <= 6 && pointers.size === 0) onTap(e.clientX, e.clientY);
 }
 cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', e => { pointers.delete(e.pointerId); cv.classList.remove('dragging'); });
-cv.addEventListener('wheel', e => { e.preventDefault(); if (cam.mode === 'scope'){ scope.fov = clamp(scope.fov + e.deltaY * .01, 6, 30); return; } cam.dist = clamp(cam.dist * (1 + e.deltaY * .0011), 4, 40); }, { passive: false });
+cv.addEventListener('wheel', e => { e.preventDefault(); if (cam.mode === 'scope'){ scope.fov = clamp(scope.fov + e.deltaY * .01, 6, 30); return; } if (cam.mode === 'selfie'){ sf.dist = clamp(sf.dist * (1 + e.deltaY * .0011), .8, 3.2); return; } cam.dist = clamp(cam.dist * (1 + e.deltaY * .0011), 4, 40); }, { passive: false });
 const keys = {};
 addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; keys[e.key.toLowerCase()] = true; });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 
 function isShown(o){ while (o){ if (!o.visible) return false; o = o.parent; } return true; }
 function onTap(x, y){
-  if (cam.mode === 'scope' || !entered || !me) return;
+  if (cam.mode === 'scope' || cam.mode === 'selfie' || !entered || !me) return;
   ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
   const hits = ray.intersectObjects(interactives, false).filter(h => isShown(h.object));
   const floorY = FL[ctrl.floor];
@@ -2035,11 +2049,22 @@ function sitAt(i){ const s = seats[i]; if (s.occ) return; placeSeated(me, i); s.
 $('#bStand').onclick = () => standUp();
 $('#bWave').onclick = () => { if (!me) return; me.waveUntil = performance.now() + 2200; myWave = Date.now(); pushPresence(true); };
 // photo mode: frame the shot, capture the 3D view plus name tags/bubbles, then save or share
-const photo = { on: false, tags: true, grid: true, plain: null, polaroid: null, kind: 'polaroid', url: '' };
+const photo = { on: false, tags: true, grid: true, plain: null, polaroid: null, kind: 'polaroid', url: '', selfie: false };
+// selfie: the camera floats at arm's length in front of my face; drag swings it around me, pinch/wheel pulls it closer or further
+const sf = { yaw: 0, pitch: .16, dist: 1.4, head: new THREE.Vector3(), aim: new THREE.Vector3() };
+function setSelfie(on){
+  if (on && !me) return; photo.selfie = on; if (me) me.selfie = on;
+  if (on){ cam.mode = 'selfie'; sf.yaw = 0; sf.pitch = .16; sf.dist = innerWidth < innerHeight ? 2.1 : 1.5; ctrl.target = null; ctrl.pendingSeat = -1; ctrl.pendingDig = -1; camera.fov = 54; }
+  else { if (cam.mode === 'selfie') cam.mode = 'follow'; camera.fov = 48; }
+  camera.updateProjectionMatrix();
+  $('#selfieBtn').setAttribute('aria-pressed', on); $('#photoLab').textContent = on ? '셀카 모드 · 드래그로 각도 바꾸기' : '사진 모드 · 드래그로 구도 잡기';
+  pushPresence(true);
+}
 function openPhoto(){ if (!me) return; setPeopleOpen(false); setSoundOpen(false); setFloorMenuOpen(false); setEmoOpen(false); photo.on = true; $('#photo').hidden = false; $('#hud').hidden = true; cancelJoy(); joy.el.hidden = true; }
-function closePhoto(){ photo.on = false; $('#photo').hidden = true; $('#shot').hidden = true; $('#hud').hidden = false; joy.el.hidden = !isTouch; }
+function closePhoto(){ if (photo.selfie) setSelfie(false); photo.on = false; $('#photo').hidden = true; $('#shot').hidden = true; $('#hud').hidden = false; joy.el.hidden = !isTouch; }
 $('#camBtn').addEventListener('click', e => { e.stopPropagation(); openPhoto(); });
 $('#photoExit').onclick = closePhoto;
+$('#selfieBtn').onclick = () => setSelfie(!photo.selfie);
 $('#optTags').onclick = () => { photo.tags = !photo.tags; $('#optTags').setAttribute('aria-pressed', photo.tags); };
 $('#optGrid').onclick = () => { photo.grid = !photo.grid; $('#optGrid').setAttribute('aria-pressed', photo.grid); $('#photo').classList.toggle('nogrid', !photo.grid); };
 function pillPath(g, x, y, w, h, r){ roundRect(g, x, y, w, h, Math.min(r, h / 2, w / 2)); }
@@ -2078,7 +2103,7 @@ function capture(){
   const d = new Date(Date.now() + 9 * 3600e3), date = `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')}`;
   const fl = ['카운터', '라운지', '루프탑'][ctrl.floor] || '';
   q.textBaseline = 'middle'; q.fillStyle = '#3a2618'; q.font = `700 ${Math.round(cap * .3)}px "Gowun Batang", serif`; q.textAlign = 'left'; q.fillText('☕ 해변가 CAFE', m * 1.3, m + ch + cap / 2);
-  q.fillStyle = '#8a6a4a'; q.font = `${Math.round(cap * .2)}px ${getComputedStyle(document.body).fontFamily}`; q.textAlign = 'right'; q.fillText(`${date} · ${fl}`, pol.width - m * 1.3, m + ch + cap / 2 + 2);
+  q.fillStyle = '#8a6a4a'; q.font = `${Math.round(cap * .2)}px ${getComputedStyle(document.body).fontFamily}`; q.textAlign = 'right'; q.fillText(`${date} · ${fl}${photo.selfie ? ' · 셀카' : ''}`, pol.width - m * 1.3, m + ch + cap / 2 + 2);
   return { plain, polaroid: pol };
 }
 function showShot(){ const c = photo.kind === 'plain' ? photo.plain : photo.polaroid; const img = $('#shotImg'); img.src = c.toDataURL('image/jpeg', .92); img.classList.toggle('plain', photo.kind === 'plain'); document.querySelectorAll('#shot .kind button').forEach(b => b.setAttribute('aria-checked', b.dataset.k === photo.kind)); }
@@ -2359,7 +2384,7 @@ function pushPresence(force){ presenceDirty = true; if (force) lastSent = 0; }
 function sendPresence(now){
   if (!room || !me || !presenceDirty || now - lastSent < 110) return; presenceDirty = false; lastSent = now;
   const r2 = v => Math.round(v * 100) / 100;
-  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, em: myEmo, et: myEmoT, pt: myPet, pc: myPetCat, dg: myDig, st: mySayT, say: mySay, vp: W.vip, mv: me.moving ? 1 : 0 }).catch(() => {});
+  room.presence({ n: myName, ap: mySeed, x: r2(me.pos.x), y: r2(me.pos.y), z: r2(me.pos.z), r: r2(me.rot), f: ctrl.floor, s: me.seat, i: me.item, w: myWave, em: myEmo, et: myEmoT, pt: myPet, pc: myPetCat, dg: myDig, st: mySayT, say: mySay, vp: W.vip, mv: me.moving ? 1 : 0, sf: me.selfie ? 1 : 0 }).catch(() => {});
 }
 const num = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(v, a, b) : d;
 function handlePeers(list){
@@ -2374,7 +2399,7 @@ function handlePeers(list){
     if (!r){ r = { a: null, name: '', seed: -1, tgt: new THREE.Vector3(), w: 0, st: 0, seat: -1, f: 0, first: true }; remotes.set(p.peer, r); }
     if (r.seed !== seed){ const old = r.a; const a = makeAvatar(seed); scene.add(a.g); if (old){ a.pos.copy(old.pos); a.g.rotation.y = old.g.rotation.y; setItem(a, old.item); scene.remove(old.g); removeTag(old); } r.a = a; r.seed = seed; r.name = ''; }
     if (r.name !== name){ r.name = name; setLabel(r.a, name, wearColor(r.a.L)); }
-    r.tgt.set(num(pr.x, -40, 40, 0), num(pr.y, -2, 12, 0), num(pr.z, -40, 40, 0)); r.rot = num(pr.r, -10, 10, 0); r.f = num(pr.f, 0, 2, 0) | 0; r.moving = pr.mv === 1;
+    r.tgt.set(num(pr.x, -40, 40, 0), num(pr.y, -2, 12, 0), num(pr.z, -40, 40, 0)); r.rot = num(pr.r, -10, 10, 0); r.f = num(pr.f, 0, 2, 0) | 0; r.moving = pr.mv === 1; r.a.selfie = pr.sf === 1;
     if (r.first && typeof pr.x === 'number'){ r.a.pos.copy(r.tgt); r.first = false; }
     r.a.g.userData.ready = !r.first;
     const si = num(pr.s, -1, seats.length - 1, -1) | 0;
@@ -2536,7 +2561,8 @@ function frame(){
       const jm = Math.hypot(joy.vx, joy.vy);
       if (joy.id !== null && jm > .15){ kx += joy.vx; kz -= joy.vy; spMul = Math.min(1, .35 + jm * .75); }
       let dir = null;
-      if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
+      if ((kx || kz) && cam.mode === 'selfie'){ sf.yaw = clamp(sf.yaw - kx * dt * 1.4, -1.2, 1.2); sf.pitch = clamp(sf.pitch - kz * dt * .9, -.3, .8); }
+      else if ((kx || kz) && cam.mode === 'follow'){ standUp(); ctrl.target = null; ctrl.pendingSeat = -1; ctrl.petWait = 0; me.petUntil = 0; fwd.set(-Math.sin(cam.theta), 0, -Math.cos(cam.theta)); const right = new THREE.Vector3(-fwd.z, 0, fwd.x); dir = fwd.multiplyScalar(kz).add(right.multiplyScalar(kx)).normalize(); }
       else if (ctrl.target){ tmpV.subVectors(ctrl.target, me.pos); tmpV.y = 0; const d = tmpV.length(); if (d < .12){ ctrl.target = null; if (ctrl.pendingSeat >= 0){ sitAt(ctrl.pendingSeat); ctrl.pendingSeat = -1; } if (ctrl.pendingDig >= 0){ const k = ctrl.pendingDig; ctrl.pendingDig = -1; startDig(k); } } else dir = tmpV.normalize(); }
       if (dir && me.seat < 0 && !ctrl.target && stairFromWalk(dir)){ moved = true; me.moving = true; }
       else if (dir && me.seat < 0){
@@ -2611,7 +2637,13 @@ function frame(){
   } else if (cam.mode === 'follow' && me){
     cam.tgt.set(me.pos.x, me.pos.y + 1.0, me.pos.z);
   }
-  if (cam.mode === 'scope'){
+  if (cam.mode === 'selfie' && me && me.B){
+    // aim a little under the eyes so shoulders fit in; the camera sits in front of the face, turned with me
+    me.B.head.getWorldPosition(sf.head); const k = me.g.scale.x; sf.aim.set(sf.head.x, sf.head.y + .2 * k, sf.head.z);
+    const yw = me.g.rotation.y + sf.yaw, cp = Math.cos(sf.pitch);
+    camera.position.set(sf.aim.x + Math.sin(yw) * cp * sf.dist, sf.aim.y + Math.sin(sf.pitch) * sf.dist, sf.aim.z + Math.cos(yw) * cp * sf.dist);
+    camera.position.y = Math.max(camera.position.y, me.pos.y + .15); camera.lookAt(sf.aim);
+  } else if (cam.mode === 'scope'){
     camera.position.set(9.55, FL[2] + 1.45, -7.3);
     tmpV.set(Math.sin(Math.PI + scope.yaw) * Math.cos(scope.pitch), Math.sin(scope.pitch), Math.cos(Math.PI + scope.yaw) * Math.cos(scope.pitch));
     camera.lookAt(tmpV.add(camera.position)); camera.fov += (scope.fov - camera.fov) * Math.min(1, dt * 4); camera.updateProjectionMatrix();
