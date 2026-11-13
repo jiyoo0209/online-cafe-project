@@ -1535,7 +1535,8 @@ function lookFrom(seed){
   if (L.style === 5 && L.hat < 0) L.hat = 0;
   // chibi: hairstyle and hair colour come from the seed (random with 다른 모습 뽑기)
   // girls (8 hairstyles): dress, or a top with a skirt or shorts; boys (2 hairstyles): a top with long pants or shorts
-  L.male = r() < .35; L.style = L.male ? 8 + ((seed >>> 1) & 1) : (seed >>> 1) & 7;
+  // girls: 4 bits pick from 12 styles; 8–11 are the newer file hairs (odango…hipony), 12–15 fall back to the older 4–7 so most existing looks stay the same
+  { const v = (seed >>> 1) & 15; L.male = r() < .35; L.style = L.male ? 8 + ((seed >>> 1) & 1) : v < 8 ? v : v < 12 ? v + 2 : v - 8; }
   L.dress = !L.male && r() < .4; L.outfitC = (r() * DRESS_COLORS.length) | 0;
   L.top = r() < .55 ? 'tshirt' : 'tank'; L.bottom = L.male ? (r() < .55 ? 'pants' : 'short') : (r() < .55 ? 'skirt' : 'short');
   L.topC = (r() * TOP_COLORS.length) | 0; L.botC = (r() * BOTTOM_COLORS.length) | 0; L.shoeC = (r() * SHOE_COLORS.length) | 0;
@@ -1617,9 +1618,11 @@ function makeAvatar(seed, o = {}){
 }
 */
 /* ---------- chibi avatars: one body rigged in the page, 8 hairstyles, face decal (chars/chibi.glb) ---------- */
-const HAIR_KEYS = ['twin', 'bob', 'fluffy', 'sidetail', 'wavy', 'braid', 'bunears', 'x7', 'm1', 'm2'];
-const MALE_HAIRS = ['m1', 'm2'];   // separate files chars/hair_<key>.glb, no hair-coloured scalp
-const HAIR_NAMES = ['트윈테일', '긴 생머리', '레이어드 컷', '웨이브 양갈래', '긴 웨이브', '옆 땋은 머리', '단발', '낮은 양묶음', '짧은 웨이브', '넘긴 머리'];
+const HAIR_KEYS = ['twin', 'bob', 'fluffy', 'sidetail', 'wavy', 'braid', 'bunears', 'x7', 'm1', 'm2', 'odango', 'sidebun', 'shwave', 'hipony'];
+const MALE_HAIRS = ['m1', 'm2'];
+const FILE_HAIRS = [...MALE_HAIRS, 'odango', 'sidebun', 'shwave', 'hipony'];   // separate files chars/hair_<key>.glb
+const NO_SCALP = [...MALE_HAIRS, 'shwave'];   // no hair-coloured scalp under these
+const HAIR_NAMES = ['트윈테일', '긴 생머리', '레이어드 컷', '웨이브 양갈래', '긴 웨이브', '옆 땋은 머리', '단발', '낮은 양묶음', '짧은 웨이브', '넘긴 머리', '양쪽 똥머리', '옆 똥머리', '어깨 웨이브', '하이 포니테일'];
 const HAIR_COLORS = [['흑갈색', '#2b2220'], ['다크 브라운', '#4a2e22'], ['초코', '#5e3a29'], ['밤색', '#7a4b32'], ['캐러멜', '#a8714a'], ['금발', '#d9b77a'],
   ['애쉬 그레이', '#a9a4a2'], ['와인', '#8a3b45'], ['핑크', '#e7a0b5'], ['하늘', '#9ab6e2'], ['라벤더', '#b49ad8'], ['민트', '#9cc9b7']];
 // outfits (more to come): each is a mesh already fitted to the chibi body in chars/outfits/<key>.glb
@@ -1689,8 +1692,8 @@ const CB = (() => {
     { const pos = new Float32Array(P.count * 3); for (let i = 0; i < P.count; i++){ const y = P.getY(i), d = .02 + (y < .3 ? .018 * (.3 - y) / .2 : 0) + (y > .5 ? .004 : 0); pos[i * 3] = P.getX(i) + N.getX(i) * d; pos[i * 3 + 1] = y + N.getY(i) * d; pos[i * 3 + 2] = P.getZ(i) + N.getZ(i) * d; }
       const keep = []; for (let t = 0; t < idx.length; t += 3){ let ok = true; for (let q = 0; q < 3; q++){ const y = P.getY(idx[t + q]); if (!(y > .085 && y < .625)) ok = false; } if (ok) keep.push(idx[t], idx[t + 1], idx[t + 2]); }
       const s = new THREE.BufferGeometry(); s.setAttribute('position', new THREE.BufferAttribute(pos, 3)); s.setAttribute('normal', N); s.setAttribute('skinIndex', g.attributes.skinIndex); s.setAttribute('skinWeight', g.attributes.skinWeight); s.setIndex(keep); G.outfit_pants = s; } }
-  function loadMaleHair(done){ let left = MALE_HAIRS.length + 2; const fin = () => { if (--left === 0) done(); };
-    [...MALE_HAIRS, 'scalp_braid', 'trowel'].forEach(k => { const url = 'chars/' + (k.startsWith('scalp') || k === 'trowel' ? k : 'hair_' + k) + '.glb', ok = gl => { if (k === 'trowel'){ G.trowel = gl.scene; return fin(); } let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G[k.startsWith('scalp') ? k : 'hair_' + k] = m.geometry; fin(); };
+  function loadMaleHair(done){ let left = FILE_HAIRS.length + 2; const fin = () => { if (--left === 0) done(); };
+    [...FILE_HAIRS, 'scalp_braid', 'trowel'].forEach(k => { const url = 'chars/' + (k.startsWith('scalp') || k === 'trowel' ? k : 'hair_' + k) + '.glb', ok = gl => { if (k === 'trowel'){ G.trowel = gl.scene; return fin(); } let m; gl.scene.traverse(x => { if (x.isMesh && !m) m = x; }); m.geometry.computeVertexNormals(); G[k.startsWith('scalp') ? k : 'hair_' + k] = m.geometry; fin(); };
       if (!THREE.GLTFLoader) return fin(); const ld = new THREE.GLTFLoader(); ld.load(url, ok, undefined, () => {
         fetch(url + '.txt').then(r => r.ok ? r.text() : Promise.reject()).then(b64 => { const bin = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0)); ld.parse(bin.buffer, 'chars/', ok, fin); }).catch(fin); }); }); }
   // skirts and the dress also have a seated shape (<key>_sit.glb, same vertices) that only follows the hips
@@ -1734,7 +1737,7 @@ const CB = (() => {
     body.add(B.hips); body.bind(new THREE.Skeleton(names.map(nm => B[nm]))); body.castShadow = true; body.receiveShadow = true; body.frustumCulled = false;
     const hm = matFor(hairMats, a.L.hair, { roughness: .6, side: THREE.DoubleSide }), key = HAIR_KEYS[a.L.style];
     const onHead = (geo, m, cast) => { const o = new THREE.Mesh(geo, m); o.position.copy(J.head).negate(); o.castShadow = cast; B.head.add(o); return o; };
-    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!MALE_HAIRS.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, faceMatFor(a.L.eye), false).renderOrder = 1;
+    if (G['hair_' + key]) onHead(G['hair_' + key], hm, true); if (!NO_SCALP.includes(key)) onHead(key === 'braid' && G.scalp_braid ? G.scalp_braid : key === 'braid' ? G.scalpLo : G.scalp, key === 'braid' && G.scalp_braid ? bangsMat(a.L.hair) : hm, false); onHead(G.face, faceMatFor(a.L.eye), false).renderOrder = 1;
     B['hand.L'].add(a.holder); a.holder.position.set(.05, .01, .045);
     // 해루질 trowel: floats just in front of the right hand's fingertips, shown only while digging
     if (G.trowel){ const tw = G.trowel.clone(); tw.traverse(o => { if (o.isMesh){ o.geometry.computeVertexNormals(); o.material = o.name === 'blade' ? trowelMats.blade : trowelMats.handle; o.castShadow = true; } }); tw.visible = false; B['hand.R'].add(tw); a.trowel = tw; }
